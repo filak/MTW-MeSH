@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+*.tmp
+
 # C extensions
 *.so
 
@@ -57,7 +59,7 @@ local_settings.py
 db.sqlite3
 
 # Flask stuff:
-instance/
+##instance/
 .webassets-cache
 
 # Scrapy stuff:

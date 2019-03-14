@@ -1,0 +1,73 @@
+<ul class="list-inline mb-2">
+  <li class="list-inline-item align-middle mt-2">
+  <h4>Users
+      {% if userid or month %}
+        <a class="btn btn-primary btn-sm" href="{{ url_for('report') }}"
+           role="button" title="Clear report filters" aria-label="Clear report filters">
+        Clear <i class="fas fa-times"></i>
+        </a>
+      {% endif %}
+  </h4>
+  </li>
+  <li class="list-inline-item align-middle mt-2 float-right">
+     <form action="{{ url_for('report', userid=userid) }}" method="get">
+       <div class="input-group">
+          <select class="form-control form-control-sm" name="year">
+          {% for yr in target_years %}
+            {% if yr == year|int %}
+              {% set sel = 'selected' %}
+            {% endif %}
+            <option value="{{ yr }}" {{ sel }}>{{ yr }}</option>
+          {% endfor %}
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-secondary btn-sm" type="submit" title="Change target year" aria-label="Change target year">
+              <i class="fas fa-filter"></i>
+            </button>
+            </a>
+          </div>
+       </div>
+     </form>
+  </li>
+
+</ul>
+
+<div class="row">
+
+  <div class="col">
+
+    <ul class="list-unstyled">
+    {% for user in users %}
+
+      <li>
+        <h6>
+
+      {% if userid == user.id | string %}
+        {% set bold = 'font-weight-bold' %}
+      {% else %}
+        {% set bold = '' %}
+      {% endif %}
+
+          <a href="{{ url_for('report', userid=user.id, year=year) }}" title="Show reports" class="{{ bold }}">
+          {% if bold %}
+            <i class="fas fa-chevron-circle-right"></i>
+          {% endif %}
+            {{ user.firstname }} {{ user.lastname }}
+          </a>  <small>[{{ user.username }}]</small>
+            <span class="badge badge-{{ get_userBadgeRep(user.ugroup) }}">{{ user.ugroup }}</span>
+        </h6>
+      </li>
+
+    {% else %}
+
+     <li>
+       <em>No users ...</em>
+     </li>
+
+    {% endfor %}
+    </ul>
+
+  </div>
+
+</div>
+

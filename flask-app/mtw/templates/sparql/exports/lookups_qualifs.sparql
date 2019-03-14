@@ -1,0 +1,15 @@
+## Base export query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?dui
+      (GROUP_CONCAT(DISTINCT ?qui ; separator='~') AS ?qa)
+WHERE {
+  ?d rdf:type ?dtype .
+  FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
+  ?d meshv:identifier ?dui .
+  ?d meshv:allowableQualifier ?q .
+  ?q meshv:identifier ?qui
+}
+GROUP BY ?dui
+### LIMIT 100

@@ -1,0 +1,92 @@
+{% if hits %}
+<form action="{{ url_for('update_clipboard') }}" method="post" id="appendClipboard-form">
+
+  <ul class="list-inline mb-2">
+    <li class="list-inline-item mt-2">
+      <h4>Results <small class="text-info">{{ hits['metadata']['hits_cnt'] }}</small></h4>
+    </li>
+    <li class="list-inline-item ml-2">
+        {% if session.ugroup in ('admin','disabled') %}
+            {% set disabled = 'disabled' %}
+            {% set invisible = 'invisible' %}
+        {% endif %}
+          <fieldset {{ disabled }}>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden"
+                   name="action"
+                   value="append">
+            <button class="btn btn-primary {{ disabled }} {{ invisible }}" type="submit" name="action" value="add" title="Add selected to Clipboard">
+              <i class="far fa-clipboard"></i></button>
+          </fieldset>
+    </li>
+  </ul>
+
+  <div class="form-group">
+
+    {% for row in hits['results']['bindings'] %}
+
+      {% if dui == row['d']['repr'] %}
+          {% set TEXT_STYLE = 'font-weight-bold' %}
+      {% endif %}
+
+      {% if row.val %}
+          {% set TEXT_COLOR = 'text-success' %}
+      {% endif %}
+
+      {% if row['active']['repr'] == 'false' %}
+          {% set TEXT_COLOR = 'text-muted' %}
+      {% endif %}
+
+      {% if row['scn'] and row.val and not row['scnt']  %}
+          {% set TEXT_COLOR = 'text-info' %}
+      {% endif %}
+
+      {% if row['ntx']  %}
+          {% set TEXT_COLOR = 'text-warning' %}
+      {% endif %}
+
+      <div class="row">
+
+        <div class="col-1">
+          <div class="custom-control custom-checkbox pt-1 pb-1">
+            <input type="checkbox" class="custom-control-input align-middle {{ invisible }}"
+                   id="customCheckAppend-{{ row['d']['repr'] }}"
+                   name="{{ row['d']['repr'] }}___append" value="{{ row['label']['value'] }}">
+            <label class="custom-control-label" for="customCheckAppend-{{ row['d']['repr'] }}">&nbsp;</label>
+          </div>
+        </div>
+
+        <legend class="col-form-label col pt-1 pb-1">
+          <a href="{{ url_for('search', dui=row['d']['repr']) }}" class="d-block" target="{{ link_target }}">
+
+          {% if state_todo and row['lockedBy'] %}
+            <button class="btn btn-warning btn-sm align-middle" type="button" title="Descriptor LOCKED">
+              <i class="fas fa-lock"></i></button>
+          {% endif %}
+
+            <span class="align-middle {{ TEXT_COLOR }} {{ TEXT_STYLE }}">
+              {{ row['label']['value']|truncate(50, True) }}
+            </span>
+            <span class="align-middle font-weight-normal">
+              {% if row.val %}
+                [{{ row['val']['value']|truncate(50, True) }}]
+              {% endif %}
+            </span>
+          </a>
+        </legend>
+      </div>
+
+    {% endfor %}
+
+  </div>
+
+</form>
+{% else %}
+
+  <ul class="list-inline mb-2">
+    <li class="list-inline-item mt-2">
+      <h4>Results <small class="text-info">0</small></h4>
+    </li>
+  </ul>
+
+{% endif %}

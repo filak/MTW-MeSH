@@ -1,0 +1,37 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+PREFIX meshx: <http://mesh.medvik.cz/link/>
+
+## Stats query - Preferred Concepts aka Descriptors 1:1 - v1.0
+
+select ?p (sum(?count) as ?total) {
+#select * {
+{
+SELECT ?p ?type (count(?p) as ?count)
+WHERE {
+  BIND(meshv:preferredTerm as ?p)
+  ?c ?p ?t .
+  ?d meshv:preferredConcept ?c .
+  ?d meshv:active true .
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+} GROUP BY ?p ?type
+} UNION {
+SELECT ?p ?type (count(?p) as ?count)
+WHERE {
+  BIND(mesht:preferredTerm as ?p)
+  ?c ?p ?t .
+  ?d meshv:preferredConcept ?c .
+  ?d meshv:active true .
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+} GROUP BY ?p ?type
+}
+}
+GROUP BY ?p
+ORDER BY ?p

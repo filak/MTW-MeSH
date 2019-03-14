@@ -1,0 +1,321 @@
+## Update mesht: attribute
+## params: concept_list, term_list
+
+{% include 'sparql/_namespaces.sparql' %}
+
+{% for con in concept_list %}
+
+   {% if con['operation'] == 'delete_terms' %}
+
+    ### DELETE ALL CONCEPT TERMS ###
+
+    DELETE {?term ?p ?o}
+    WHERE {
+        <{{ con['concept'] }}> ?pt ?term .
+        ?term ?p ?o .
+        FILTER (?pt IN (mesht:preferredTerm,mesht:term))
+        };
+
+   {% endif %}
+
+
+   {% if con['operation'] == 'delete' %}
+
+   ### DELETE CONCEPT ###
+
+    INSERT {
+        ?term mesht:active "false"^^xsd:boolean
+            }
+            WHERE {
+                <{{ con['concept'] }}> mesht:preferredTerm ?term
+        };
+
+    INSERT {
+        ?term mesht:active "false"^^xsd:boolean
+            }
+            WHERE {
+                <{{ con['concept'] }}> mesht:term ?term
+        };
+
+    INSERT DATA {
+        <{{ con['concept'] }}>
+            mesht:active "false"^^xsd:boolean
+        };
+
+    INSERT DATA {
+        <{{ con['concept'] }}>
+            mesht:dateDeleted
+                "{{ tdate }}"^^xsd:date
+        };
+
+   {% endif %}
+
+
+   {% if con['operation'] == 'restore' %}
+
+   ### RESTORE DELETED CONCEPT ###
+
+    DELETE {
+        ?term mesht:active ?a
+            }
+            WHERE {
+                <{{ con['concept'] }}> mesht:preferredTerm ?term .
+                ?term mesht:active ?a
+        };
+
+    DELETE {
+        ?term mesht:active ?a
+            }
+            WHERE {
+                <{{ con['concept'] }}> mesht:term ?term .
+                ?term mesht:active ?a
+        };
+
+    DELETE WHERE {
+        <{{ con['concept'] }}> mesht:active ?a
+        };
+
+    DELETE WHERE {
+        <{{ con['concept'] }}> mesht:dateDeleted ?date
+        };
+
+   {% endif %}
+
+
+   {% if con['operation'] == 'purge' %}
+
+   ### PURGE CONCEPT AND ALL TERMS ###
+
+    DELETE {?term ?p ?o}
+    WHERE {
+        <{{ con['concept'] }}> ?pt ?term .
+        ?term ?p ?o .
+        FILTER (?pt IN (mesht:preferredTerm,mesht:term))
+        };
+
+    DELETE WHERE {
+          <{{ con['concept'] }}> ?p ?o
+        };
+
+    DELETE WHERE {
+          ?s ?p <{{ con['concept'] }}>
+        };
+
+   {% endif %}
+
+
+   {% if con['operation'] == 'insert' %}
+
+   ### INSERT CONCEPT ###
+
+      INSERT DATA {
+          mesh:{{ con['dui'] }}
+             mesht:concept
+               <{{ con['concept'] }}>
+          };
+
+      INSERT DATA {
+          <{{ con['pref_concept'] }}>
+             mesht:{{ con['rel'] }}
+               <{{ con['concept'] }}>
+          };
+
+      {% if con['cnote'] %}
+
+      INSERT DATA {
+          <{{ con['concept'] }}>
+             mesht:translatorsNote
+               "{{ con['cnote'] }}"@en
+          };
+
+      {% endif %}
+
+   {% endif %}
+
+
+   {% if con['operation'] == 'upsert' %}
+
+   ### UPSERT CONCEPT ###
+
+      DELETE {
+            ?s ?p <{{ con['concept'] }}>
+            } WHERE {
+            ?s ?p <{{ con['concept'] }}> .
+            FILTER(?p IN(mesht:narrowerConcept,mesht:broaderConcept,mesht:relatedConcept))
+          };
+
+      DELETE WHERE {
+            <{{ con['concept'] }}> mesht:translatorsNote ?o
+          };
+
+      INSERT DATA {
+          <{{ con['pref_concept'] }}>
+             mesht:{{ con['rel'] }}
+               <{{ con['concept'] }}>
+          };
+
+      {% if con['cnote'] %}
+
+      INSERT DATA {
+          <{{ con['concept'] }}>
+             mesht:translatorsNote
+               "{{ con['cnote'] }}"@en
+          };
+
+      {% endif %}
+
+
+      {% if con['cpid'] %}
+
+      INSERT DATA {
+          <{{ term['turi'] }}>
+              mesht:identifier
+                  "{{ con['cpid'] }}"
+          };
+
+      {% endif %}
+
+
+   {% endif %}
+
+   ### DELETE NOTRX ATTR ###
+
+    DELETE WHERE {
+        <{{ con['concept'] }}> mesht:notTranslatable ?o
+        };
+
+   {% if con['notrx'] == 'notrx' %}
+
+   ### ADD NOTRX ATTR ###
+
+    INSERT DATA {
+        <{{ con['concept'] }}> mesht:notTranslatable "true"^^xsd:boolean
+        };
+
+    DELETE {
+        <{{ con['concept'] }}> ?p ?term
+        }
+    WHERE {
+        <{{ con['concept'] }}> ?p ?term
+        FILTER (?p IN (mesht:preferredTerm,mesht:term))
+        };
+
+   {% endif %}
+
+{% endfor %}
+
+
+
+{% for term in term_list %}
+
+   {% if term['operation'] == 'delete' %}
+
+   ### DELETE TERM ###
+
+    DELETE WHERE {
+          <{{ term['concept'] }}> ?p <{{ term['turi'] }}>
+        };
+
+    DELETE WHERE {
+          <{{ term['turi'] }}> ?p ?o
+        };
+
+   {% endif %}
+
+
+   {% if term['operation'] == 'insert' %}
+
+   ### INSERT TERM ###
+
+    INSERT DATA {
+        <{{ term['concept'] }}>
+            mesht:{{ term['rel'] }}
+                <{{ term['turi'] }}>
+        };
+
+    INSERT DATA {
+        <{{ term['turi'] }}>
+            mesht:prefLabel
+                "{{ term['prefLabel'] }}"@{{ lang }}
+        };
+
+    INSERT DATA {
+        <{{ term['turi'] }}>
+            mesht:dateCreated
+                "{{ tdate }}"^^xsd:date
+        };
+
+      {% if term['lexicalTag'] %}
+
+    INSERT DATA {
+        <{{ term['turi'] }}>
+            mesht:lexicalTag
+                "{{ term['lexicalTag'] }}"
+        };
+
+      {% endif %}
+
+
+   {% endif %}
+
+
+   {% if term['operation'] == 'upsert' %}
+
+   ### UPSERT TERM ###
+
+    DELETE WHERE {
+          <{{ term['concept'] }}> ?p <{{ term['turi'] }}>
+        };
+
+    DELETE {
+          <{{ term['turi'] }}> ?p ?o
+          } WHERE {
+          <{{ term['turi'] }}> ?p ?o .
+          FILTER(?p NOT IN(mesht:dateCreated))
+        };
+
+    INSERT DATA {
+        <{{ term['turi'] }}>
+            mesht:dateUpdated
+                "{{ tdate }}"^^xsd:date
+        };
+
+    INSERT DATA {
+        <{{ term['concept'] }}>
+            mesht:{{ term['rel'] }}
+                <{{ term['turi'] }}>
+        };
+
+    INSERT DATA {
+        <{{ term['turi'] }}>
+            mesht:prefLabel
+                "{{ term['prefLabel'] }}"@{{ lang }}
+        };
+
+      {% if term['lexicalTag'] %}
+
+      INSERT DATA {
+          <{{ term['turi'] }}>
+              mesht:lexicalTag
+                  "{{ term['lexicalTag'] }}"
+          };
+
+      {% endif %}
+
+
+      {% if term['tpid'] %}
+
+      INSERT DATA {
+          <{{ term['turi'] }}>
+              mesht:identifier
+                  "{{ term['tpid'] }}"
+          };
+
+      {% endif %}
+
+
+   {% endif %}
+
+{% endfor %}
+
+

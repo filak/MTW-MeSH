@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="{{url_for('static', filename='img/favicon.ico')}}">
+    <title>{% block title %}  {% endblock %} | {{ config.APP_NAME }}</title>
+    {% if session.theme %}
+        {% set bootstrap = 'bootstrap/'+ session.theme +'.bootstrap.min.css'  %}
+    {% else %}
+        {% set bootstrap = 'bootstrap/'+config.DEFAULT_THEME+'.bootstrap.min.css'  %}
+    {% endif %}
+    <link href="{{url_for('static', filename=bootstrap)}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/all.min.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/custom.css')}}?v={{ config.APP_VER }}" rel="stylesheet">
+  </head>
+
+  {% if session.theme == 'flatly' %}
+    {% set custom_nav_style = 'mtw-flatly-pad' %}
+  {% endif %}
+
+  {% if session.theme == 'spacelab' %}
+    {% set custom_body_style = 'mtw-spacelab-body' %}
+  {% endif %}
+
+<body class="{{ custom_body_style }}">
+
+<div id="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top {{ custom_nav_style }}">
+
+  <a class="navbar-brand" href="{{ url_for('intro') }}">{{ config.APP_NAME }}</a>
+  <span class="navbar-brand d-none d-sm-block"><small>{% block pagetitle %}  {% endblock %}</small></span>
+  <button id="navToggler" class="navbar-toggler"
+  type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span id="navTogglerIcon" class="fas fa-bars"></span>
+  </button>
+
+  <div id="navbarNav" class="collapse navbar-collapse">
+    <ul class="navbar-nav ml-auto">
+      {% if not session.logged_in %}
+
+      <li class="nav-item">
+        <a class="nav-link" href="https://github.com/filak/MTW-MeSH" target="_blank" title="MTW Project on GitHub">
+          <i class="fab fa-github fa-lg"></i></a></li>
+
+        {% set uparams = {} %}
+
+      {% else %}
+
+        {% set uparams = get_user_params(session.userid) %}
+
+        {% if isDbLocked() %}
+          {% set msg_icon = 'fas fa-lock' %}
+        {% else %}
+          {% set msg_icon = 'fas fa-exclamation-triangle' %}
+        {% endif %}
+
+        {% if get_adminMsg()['show'] == 'show' %}
+      <li class="nav-item active">
+        <a class="nav-link btn btn-warning" role="button" href="#message" data-toggle="modal" data-target="#showMessage" title="{{ get_adminMsg()['head'] }}">
+          <i class="{{ msg_icon }} fa-lg"></i> Important!</a>
+      </li>
+
+        {% elif session.ugroup in ('admin','manager') %}
+      <li class="nav-item">
+        <a class="nav-link" href="#message" data-toggle="modal" data-target="#showMessage" title="Add message for Users"> <i class="far fa-bell fa-lg"></i> </a>
+      </li>
+
+        {% endif %}
+
+      <li class="nav-item {{ state_intro  }}">
+        <a class="nav-link" href="{{ url_for('intro')  }}">
+          <i class="fas fa-home fa-lg"></i></a></li>
+
+      <li class="nav-item {{ state_browse }}">
+        <a class="nav-link" href="{{ url_for('browse', top=session.get('top',''), tn=session.get('tn','')) }}">
+          Browse <i class="fas fa-tree"></i></a></li>
+
+      <li class="nav-item {{ state_search }}">
+        <a class="nav-link" href="{{ url_for('search', dui=session.get('dui','')) }}">
+          Search <i class="fas fa-search"></i></a></li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="#clipboard" data-toggle="modal" data-target="#showClipboard">
+          Clipboard <i class="far fa-clipboard"></i></a></li>
+
+      <li class="nav-item {{ state_todo }}">
+        <a class="nav-link" href="{{ url_for('todo', tlist=session.get('tlist','Preferred')) }}">
+          ToDo <i class="fas fa-clipboard-list"></i></a></li>
+
+      <li class="nav-item {{ state_compare }}">
+        <a class="nav-link" href="{{ url_for('compare', dui=session.get('dui','')) }}">
+          Compare <i class="fas fa-not-equal"></i></a></li>
+
+      {% if session.get('adui','') %}
+        {% set adui = session.get('adui','') %}
+      {% elif session.get('dui','') %}
+        {% set adui = session.get('dui','') %}
+      {% else %}
+        {% set adui = '' %}
+      {% endif %}
+
+      <li class="nav-item {{ state_audit }}">
+        <a class="nav-link" href="{{ url_for('audit', dui=adui) }}">
+          Audit <i class="fas fa-bars"></i></a></li>
+
+      {% if session.ugroup in ('admin','manager','editor','contributor') %}
+      <li class="nav-item {{ state_approve }}">
+        <a class="nav-link" href="{{ url_for('approve', userid=session.get('auserid',''), username=session.get('ausername',''), status=None) }}">
+          Approve <i class="fas fa-check-circle"></i></a></li>
+
+      <li class="nav-item {{ state_report }}">
+        <a class="nav-link" href="{{ url_for('report') }}">
+           Report <i class="fas fa-file-alt"></i></i></a></li>
+
+      {% endif %}
+
+      {% if session.ugroup in ('admin','manager') %}
+
+      <li class="nav-item {{ state_manage }}">
+        <a class="nav-link" href="{{ url_for('manage') }}">
+          Manage <i class="fas fa-cog"></i></a></li>
+
+      {% endif %}
+
+      <li>
+        <a class="nav-link" href="{{ url_for('logout') }}">
+          <span class="badge badge-secondary">
+            Log Out</span></a></li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="https://github.com/filak/MTW-MeSH" target="_blank" title="Having issue? Share it on GitHub">
+          Support <i class="fab fa-github"></i></a></li>
+
+      {% endif %}
+    </ul>
+  </div>
+
+</div>
+
+<div class="container">
+
+  <div class="row">
+    <div class="col">
+      <noscript>
+      			<h3>JavaScript is not enabled. <a href="http://enable-javascript.com/" target="_blank">Please enable JavaScript</a>.</h3>
+      </noscript>
+    </div>
+  </div>
+
+  <div class="row justify-content-md-center">
+    <div class="col-lg-8 col-md" id="flashedMessage">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-dismissible alert-{{ category }}">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
+    {% endwith %}
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  {% block body %}{% endblock %}
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <footer class="footer">
+
+        <p class="text-muted">{{ config.APP_NAME }} version {{ config.APP_VER }} {{ app_state()|upper() }}</p>
+
+    </footer>
+  </div>
+</div>
+
+  {% include 'modals/clipboard.html' %}
+  {% include 'modals/show-message.html' %}
+
+  <script src="{{url_for('static', filename='bootstrap/jquery-3.3.1.min.js')}}" type="text/javascript"></script>
+  <script src="{{url_for('static', filename='bootstrap/bootstrap.bundle.min.js')}}" type="text/javascript"></script>
+  <script src="{{url_for('static', filename='js/custom.js')}}?v={{ config.APP_VER }}" type="text/javascript"></script>
+</body>
+</html>

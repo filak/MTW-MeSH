@@ -1,0 +1,70 @@
+<div class="modal fade" id="editScopeNote" tabindex="-1" role="dialog" aria-labelledby="edit Scope Note" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="scopeNoteLabel">label</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{{ url_for('update_scopenote', dui=dui) }}" method="post">
+      <div class="modal-body">
+        <p id="scopeNoteDef"></p>
+
+        <input type="hidden" id="conceptScopeNote" name="concept" value="">
+        <input type="hidden" id="conceptScopeNoteLabel" name="label" value="">
+        <input type="hidden" id="scopeNoteDefault" name="scn_def" value="">
+
+        <input type="hidden" id="scopeNoteTrxChanged" name="scnt_changed" value="false">
+        <input type="hidden" id="scopeNoteEngChanged" name="scne_changed" value="false">
+        <input type="hidden" id="scopeNoteTrxOriginal" name="scnt_original" value="">
+        <input type="hidden" id="scopeNoteEngOriginal" name="scne_original" value="">
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+      {% if session.ugroup not in ('admin','manager','editor') %}
+          {% set disabled_scopeNote = 'readonly' %}
+      {% endif %}
+
+        <div class="form-group" id="scopeNoteEngGroup">
+          <label for="scopeNoteEng" class="font-weight-bold">English ScopeNote</label>
+          <textarea class="form-control" id="scopeNoteEng" name="scne" rows="5" maxlength="2000" {{ disabled_scopeNote }}>scne</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="scopeNoteTrx" class="font-weight-bold">Translated ScopeNote</label>
+          <textarea class="form-control" id="scopeNoteTrx" name="scnt" rows="5" maxlength="2000" {{ disabled_scopeNote }}>scnt</textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+
+        <!-- TODO -->
+
+        <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
+
+        {% if session.ugroup in ('admin','manager','editor','contributor') and not isDbLocked() %}
+          {% if descriptor.get('lockedBy','') %}
+            {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
+            <button name="propose" value="true" type="submit" class="btn btn-info ml-3" id="editScopeNoteProp">Propose</button>
+            {% endif %}
+          {% else %}
+            <button name="propose" value="true" type="submit" class="btn btn-info ml-3" id="editScopeNoteProp">Propose</button>
+          {% endif %}
+        {% endif %}
+
+        {% if session.ugroup in ('admin','manager','editor') and not isDbLocked()  %}
+          {% if descriptor.get('lockedBy','') %}
+            {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
+            <button name="propose" value="false" type="submit" class="btn btn-success ml-3" id="editScopeNoteSave">Save changes</button>
+            {% endif %}
+          {% else %}
+            <button name="propose" value="false" type="submit" class="btn btn-success ml-3" id="editScopeNoteSave">Save changes</button>
+          {% endif %}
+        {% endif %}
+
+      </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,126 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+PREFIX meshx: <http://mesh.medvik.cz/link/>
+
+## Search/Text query v1.0
+## All Descriptors & Concepts & SCR
+## tests: acne vulgaris: 39 | neoplasms: 135 | neoplasm: 187 | anopheles: 5 | D055754 | D27.505.954.122.388
+## D000074085 | D001498
+## params: query string [+ filter: active=false]
+
+SELECT distinct ?label ?d ?type ?active ?val ?scn ?scnt ?ntx {
+{
+SELECT distinct ?d ?type
+WHERE {
+(?s ?score) text:query ("eye" 500) .
+  OPTIONAL {
+    BIND(?s as ?d)
+    ?s rdf:type ?type .
+    ?s rdfs:label ?label .
+    FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+    }
+  OPTIONAL {
+    ?d meshv:treeNumber ?s .
+    ?d rdf:type ?type .
+    ?d rdfs:label ?label .
+    }
+  OPTIONAL {
+    ?c meshv:preferredTerm ?s .
+    ?d meshv:preferredConcept|meshv:concept ?c .
+    ?d rdf:type ?type .
+    FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+    ?c rdf:type ?ctype .
+    FILTER(?ctype NOT IN(meshv:SCR_Chemical))
+    }
+  OPTIONAL {
+    ?s rdf:type ?stype .
+    ?d meshv:preferredConcept|meshv:concept ?s .
+    ?d rdf:type ?type .
+    FILTER(?stype IN(meshv:Concept))
+    }
+  OPTIONAL {
+    ?c mesht:preferredTerm|mesht:term ?s .
+    ?d meshv:preferredConcept|meshv:concept ?c .
+    ?d rdf:type ?type .
+  }
+  OPTIONAL {
+  ?d mesht:concept ?s .
+  ?d rdf:type ?type .
+  }
+FILTER (BOUND(?d))
+FILTER (?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+}
+ORDER BY DESC(?score)
+  }
+  ?d rdfs:label ?label .
+  FILTER ( lang(?label) = 'en' )
+  ?d meshv:active ?active .
+  ?d meshv:preferredConcept ?c .
+  ?d meshv:dateCreated ?dateCrt .
+  OPTIONAL {?d meshv:dateRevised ?dateRev }
+    OPTIONAL {?c meshv:scopeNote ?scnv .
+              BIND('YES' as ?scn)
+             }
+    OPTIONAL {?c mesht:scopeNote ?scntv
+              BIND('YES' as ?scnt)
+             }
+  OPTIONAL {?c mesht:notTranslatable ?ntx}
+
+  OPTIONAL {
+    ?d meshv:concept ?npc .
+  }
+  OPTIONAL {
+    ?npc mesht:preferredTerm ?termIDnp
+  }
+  OPTIONAL {
+    ?npc mesht:notTranslatable ?ntxnp
+  }
+
+
+    #{% if status == 'active' %}
+        #FILTER (?active)
+    #{% endif %}
+    #{% if status == 'deleted' %}
+        #FILTER (!?active)
+    #{% endif %}
+    #{% if status == 'revised' %}
+        #FILTER( ?dateRev >= "{{ config.REVISED_AFTER }}"^^xsd:date )
+    #{% endif %}
+    #{% if status == 'new' %}
+        #FILTER( ?dateCrt >= "{{ config.CREATED_AFTER }}"^^xsd:date )
+    #{% endif %}
+    #{% if status == 'notpref' %}
+        #FILTER (BOUND(?npc))
+        #FILTER (!BOUND(?termIDnp))   ## NotTranslated notPreferred
+    #{% endif %}
+
+    #{% if show == 'translated' %}
+        #FILTER (BOUND(?val))   ## Translated
+    #{% endif %}
+    #{% if show == 'todo' %}
+        #FILTER (!BOUND(?val))  ## notTranslated
+    #{% endif %}
+    #{% if show == 'scn' %}
+        #FILTER (BOUND(?val))   ## Translated
+        #FILTER (BOUND(?scn))   ## ScopeNote
+        #FILTER (!BOUND(?scnt)) ## notTranslatedScopeNote
+    #{% endif %}
+    #{% if show == 'ntx' %}
+        #FILTER (BOUND(?ntx) || BOUND(?ntxnp))   ## notTranslatable
+    #{% endif %}
+
+  OPTIONAL {
+        ?d meshv:preferredConcept ?c .
+        ?c mesht:preferredTerm ?id .
+        ?id mesht:prefLabel ?val
+  }
+}
+
+
+

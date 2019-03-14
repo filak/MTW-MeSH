@@ -1,0 +1,65 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX meshv: <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh: <http://id.nlm.nih.gov/mesh/2018/>
+
+## format=TSV
+
+SELECT DISTINCT * {
+{SELECT ?p ?o
+WHERE {
+  mesh:D002493 ?p ?val
+  FILTER(isLiteral(?val))
+  FILTER (LANG(?val) = "en")
+  BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:scopeNote as ?p)
+    mesh:D002493 meshv:preferredConcept ?concept .
+    ?concept meshv:scopeNote ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+  BIND(meshv:dateRevised as ?p)
+  mesh:D002493 ?p ?val
+  BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+  mesh:D002493 ?p ?id .
+  ?id rdfs:label ?val
+  FILTER(!isLiteral(?id))
+  BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:narrowerDescriptor as ?p)
+    ?id ?px mesh:D002493 .
+    ?id rdfs:label ?val
+    FILTER(?px IN(meshv:broaderDescriptor))
+    FILTER(!isLiteral(?id))
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:preferredTerm as ?p)
+    mesh:D002493 meshv:preferredConcept ?c .
+    ?c ?p ?id .
+    ?id meshv:prefLabel ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:seeAlso as ?p)
+    ?id ?px mesh:D002493 .
+    ?id rdfs:label ?val
+    FILTER(?px IN(meshv:seeAlso))
+    FILTER(!isLiteral(?id))
+    BIND(STR(?val) AS ?o)
+}}
+
+} ORDER BY ?p ?o

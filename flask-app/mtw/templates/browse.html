@@ -1,0 +1,71 @@
+{% set state_browse = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+Browse {{ subtitle }}
+{% endblock %}
+
+{% block pagetitle %}
+<strong>Browse Tree</strong>
+
+  {% if top %}
+    <strong>   {{ top }}   </strong>- {{ config.MESH_TREE[top].get(config.TARGET_LANG)|truncate(65) }}
+  {% endif %}
+{% endblock %}
+
+
+{% block body %}
+
+<!-- main -->
+<div class="container-fluid">
+  {% if top %}
+  <form action="{{ url_for('browse', top=top, tn=tn) }}" method="get">
+
+    <div class="row">
+      <div class="col-md-4 col-sm">
+        <ul class="list-inline mb-2">
+          <li class="list-inline-item mt-2"><h4>Filters</h4></li>
+          <li class="list-inline-item float-right">
+            <div class="btn-group" role="group" aria-label="Apply or Clear filters">
+              <a class="btn btn-secondary" role="button" href="{{ url_for('browse', action='clear') }}" title="Top" aria-label="Top"><i class="fas fa-arrow-up"></i></a>
+              <span class="input-group-text">{{ hits_cnt }}</span>
+              <button class="btn btn-secondary" type="submit" title="Apply" aria-label="Apply"><i class="fas fa-filter"></i></button>
+              <a class="btn btn-primary" role="button" href="{{ url_for('browse', top=top, tn=tn, action='clear') }}" title="Clear" aria-label="Clear"><i class="fas fa-times"></i></a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  {% endif %}
+    <div class="row">
+
+      <div class="col">
+
+        {% if top %}
+        <div class="row">
+          <div id="filterForm" class="col mt-2 mb-2">
+
+              {% include 'snips/filters.html' %}
+
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+          {% include 'snips/tree-browse.html' %}
+        </div>
+
+      </div>
+
+    </div>
+
+  {% if top %}
+  </form>
+  {% endif %}
+
+</div>
+<!-- main end -->
+
+{% endblock %}

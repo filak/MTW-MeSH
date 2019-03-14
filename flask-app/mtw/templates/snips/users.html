@@ -1,0 +1,44 @@
+<ul class="list-inline mb-2">
+  <li class="list-inline-item mt-2"><h4>Users</h4></li>
+  <li class="list-inline-item">
+    <button class="btn btn-primary ml-4" id="add-user" type="button" data-toggle="modal" data-target="#add-user-modal" title="Add User">
+    <i class="fas fa-plus text-info"></i></button>
+  </li>
+</ul>
+
+<div class="row">
+
+  <div class="col">
+
+    <ul class="list-unstyled">
+    {% for user in users %}
+
+      <li>
+          <h6>
+          <a class="btn btn-primary btn-sm clearFlashed" role="button" data-toggle="modal" data-target="#modify-user-modal"
+                data-userid="{{ user.id }}" data-ugroup="{{ user.ugroup }}"
+                data-username="{{ user.username }}" data-firstname="{{ user.firstname }}" data-lastname="{{ user.lastname }}" data-updated="{{ user.updated|replace('T',' ') }}"
+                data-email="{{ user.email }}" data-phone="{{ user.phone }}">
+            <i class="fas fa-pen text-success"></i>
+          </a>
+
+          <a href="{{ url_for('approve', userid=user.id, status='approved', username=user.username) }}" title="Approvals etc.">
+            {{ user.firstname }} {{ user.lastname }}</a>  <small>[{{ user.username }}]</small>
+            <span class="badge badge-{{ get_userBadgeRep(user.ugroup) }}">{{ user.ugroup }}</span>
+          </h6>
+
+      </li>
+
+    {% else %}
+
+     <li>
+       <em>No users ...</em>
+     </li>
+
+    {% endfor %}
+    </ul>
+
+  </div>
+
+</div>
+

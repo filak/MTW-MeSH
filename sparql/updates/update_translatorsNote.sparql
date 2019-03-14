@@ -1,0 +1,17 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+PREFIX meshcs: <http://mesh.medvik.cz/link/>
+
+
+## Update translatorsNote
+## endpoint: http://localhost:3030/mesh/update
+## params: Identifier + value
+
+DELETE WHERE { mesh:M0014585 mesht:translatorsNote ?o } ;
+INSERT DATA  { mesh:M0014585 mesht:translatorsNote "Interní poznámka pøekladatele"@cs } ;

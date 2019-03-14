@@ -1,0 +1,44 @@
+<div class="modal fade" id="editNote" tabindex="-1" role="dialog" aria-labelledby="edit Descriptor Note" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">{{ descriptor['labels']['en'] }} <small class="text-muted">{{ dui }}</small></h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{{ url_for('update_note', dui=dui) }}" method="post">
+      <div class="modal-body">
+        <p id="noteDef"></p>
+
+        <input type="hidden" id="noteLabel" name="label" value="">
+        <input type="hidden" id="notePredicate" name="predicate" value="">
+        <input type="hidden" id="noteDefault" name="note_def" value="">
+
+        <input type="hidden" id="noteTrxChanged" name="tnote_changed" value="false">
+        <input type="hidden" id="noteOriginal" name="tnote_original" value="">
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+          <label for="noteTrx" id="notePredicateLabel" class="font-weight-bold">Note type</label>
+          <textarea class="form-control" id="noteTrx" name="tnote" rows="5" maxlength="2000">tnote</textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
+        {% if session.ugroup in ('admin','manager','editor','contributor') and not isDbLocked() %}
+          {% if descriptor.get('lockedBy','') %}
+            {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
+            <button type="submit" class="btn btn-success ml-3" id="noteSubmit">Save changes</button>
+            {% endif %}
+          {% else %}
+            <button type="submit" class="btn btn-success ml-3" id="noteSubmit">Save changes</button>
+          {% endif %}
+        {% endif %}
+      </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,38 @@
+
+            {% if term['active'] == 'true' %}
+              {% set term_text = '' %}
+            {% else %}
+              {% set term_text = 'text-muted' %}
+            {% endif %}
+
+            {% if term['ttype'] == 'A' %}
+              {% set term_class = 'font-weight-bold' %}
+            {% elif term['ttype'] == 'B' %}
+              {% set term_class = 'font-weight-bold text-success' %}
+            {% else %}
+              {% set term_class = 'ml-3' %}
+            {% endif %}
+
+            <li class="pb-1 {{ term_class }} {{ term_text }}" data-ttype="{{ term['ttype'] }}">
+               {{ term['prefLabel'] }}
+
+               {% if term['tpid'] %}
+                  <span class="text-muted term">{{ term['tpid'] }}</span>
+               {% endif %}
+
+               {% if term['lexicalTag'] != 'NON' %}
+                 <span class="font-weight-light text-muted">{{ term['lexicalTag'] }}</span>
+               {% endif %}
+
+               {% if term['altLabel'] %}
+               <a href="#" data-container="body" data-toggle="tooltip" data-placement="bottom"
+                   title="{{ term['altLabel']|replace('|', ' -- \n') }}"><i class="fas fa-comment-dots"></i></a>
+               {% endif %}
+
+               {% if term['tnote'] %}
+               <a href="#" data-container="body" data-toggle="tooltip" data-placement="right"
+                   title="{{ term['tnote'] }}"><i class="fas fa-comment-alt"></i></a>
+               {% endif %}
+
+            </li>
+

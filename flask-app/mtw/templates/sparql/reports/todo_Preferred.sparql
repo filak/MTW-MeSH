@@ -1,0 +1,24 @@
+### Not translated preferred Concepts/Descriptors v1.0 ###
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT distinct ?label ?d ?type ?active ?val ?ntx ?lockedBy
+WHERE {
+  ?d meshv:preferredConcept ?c .
+  ?d rdf:type ?type .
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d rdfs:label ?label .
+  FILTER (lang(?label) = 'en')
+  OPTIONAL {
+    ?c mesht:preferredTerm ?id .
+    ?id mesht:prefLabel ?val
+  }
+  FILTER (!BOUND(?val))
+  ?d meshv:active ?active .
+  #?d meshv:dateCreated ?dateCrt .
+  #OPTIONAL { ?d meshv:dateRevised ?dateRev }
+  OPTIONAL { ?c mesht:notTranslatable ?ntx }
+  OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+}
+ORDER BY ?label LIMIT 200
+

@@ -1,0 +1,262 @@
+{% if descriptor %}
+
+    {% if tab == 'concepts' %}
+        {% set tab_concepts = 'active show' %}
+    {% elif tab == 'notes' %}
+        {% set tab_notes= 'active show' %}
+    {% elif tab == 'details' %}
+        {% set tab_details = 'active show' %}
+    {% elif tab == 'relations' %}
+        {% set tab_relations = 'active show' %}
+    {% elif tab == 'qualifiers' %}
+        {% set tab_qualifiers = 'active show' %}
+    {% elif tab == 'history' %}
+        {% set tab_history = 'active show' %}
+    {% else %}
+        {% set tab_concepts = 'active show' %}
+    {% endif %}
+
+
+<ul class="list-inline mb-2">
+  <li class="list-inline-item mt-2">
+    <h4>{{ descriptor['labels']['en'] }} </h4>
+    <!-- <h4 class="text-success">{{ descriptor['labels']['target'] }}</h4> -->
+  </li>
+  <li class="list-inline-item float-right">
+    {% if session.ugroup in ('admin') %}
+        {% set disabled = 'disabled' %}
+        {% set invisible = 'invisible' %}
+    {% endif %}
+    <form action="{{ url_for('update_clipboard', dui=dui) }}" method="post" id="addToClipboard-form">
+        <fieldset>
+          <input type="hidden"
+                 name="label"
+                 value="{{ descriptor['labels']['en']|truncate(50, True) }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-primary {{ disabled }} {{ invisible }}" type="submit" name="action" value="add" title="Add to Clipboard">
+            <i class="far fa-clipboard"></i></button>
+    {% if session.ugroup not in ('viewer') %}
+        {% set locked_by = getLockedBy(session.userid, session.uname) %}
+        {% if locked_by != descriptor.get('lockedBy','')  %}
+            {% set disabled_lock = 'disabled' %}
+            {% set title_lock = 'Descriptor LOCKED by ' %}
+            {% set butt_lock = 'button' %}
+            {% set col_lock = 'warning' %}
+
+            {% if session.ugroup in ('admin','manager') %}
+                {% set disabled_lock = '' %}
+                {% set col_lock = 'danger' %}
+                {% set title_lock = 'Override Descriptor lock ?' %}
+                {% set butt_lock = 'submit' %}
+            {% endif %}
+
+        {% else %}
+            {% set title_lock = 'Unlock Descriptor' %}
+            {% set butt_lock = 'submit' %}
+            {% set col_lock = 'success' %}
+        {% endif %}
+
+       {% if not isDbLocked() %}
+        {% if descriptor['lockedBy'] %}
+          <button class="btn btn-{{ col_lock }} {{ disabled_lock }}" type="{{ butt_lock }}" name="action" value="unlock" title="{{ title_lock }} [{{ descriptor.get('lockedBy','') }}]">
+            <i class="fas fa-lock"></i></button>
+        {% elif not isDbLocked() %}
+          <button class="btn btn-info" type="submit" name="action" value="lock" title="Lock Descriptor">
+            <i class="fas fa-lock-open"></i></button>
+        {% endif %}
+       {% endif %}
+     {% endif %}
+        </fieldset>
+    </form>
+  </li>
+</ul>
+
+<ul class="nav nav-tabs mb-3" id="descriptorTabs">
+  <li class="nav-item">
+    <a class="nav-link {{ tab_concepts }}" data-toggle="tab" href="#concepts">Concepts</a>
+  </li>
+  <li class="nav-item">
+  {% if descriptor['notes'] %}
+    <a class="nav-link {{ tab_notes }}" data-toggle="tab" href="#notes" title="Descriptor Annotation and Notes">
+  {% else %}
+    <a class="nav-link disabled" data-toggle="tab" href="#notes">
+  {% endif %}
+    Notes</a>
+  </li>
+  <li class="nav-item">
+  {% if descriptor['details'] %}
+    <a class="nav-link {{ tab_details }}" data-toggle="tab" href="#details">
+  {% else %}
+    <a class="nav-link disabled" data-toggle="tab" href="#details">
+  {% endif %}
+    Details</a>
+  </li>
+  <li class="nav-item">
+  {% if descriptor['relations'] %}
+    <a class="nav-link {{ tab_relations }}" data-toggle="tab" href="#relations">
+  {% else %}
+    <a class="nav-link disabled" data-toggle="tab" href="#relations">
+  {% endif %}
+    Relations</a>
+  </li>
+  <li class="nav-item">
+  {% if descriptor['qualifiers'] %}
+    <a class="nav-link {{ tab_qualifiers }}" data-toggle="tab" href="#qualifiers">
+  {% else %}
+    <a class="nav-link disabled" data-toggle="tab" href="#qualifiers">
+  {% endif %}
+    Qualifs</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {{ tab_history }}" data-toggle="tab" href="#history">History</a>
+  </li>
+</ul>
+
+<div id="myTabContent" class="tab-content col">
+
+  <div class="tab-pane fade {{ tab_concepts }}" id="concepts">
+    {% include 'snips/concepts.html' %}
+  </div>
+
+  <div class="tab-pane fade {{ tab_notes }}" id="notes">
+    <dl class="row">
+
+  {% if descriptor['notes'].get('translatorsNote') %}
+    {% set item = descriptor['notes'].get('translatorsNote') %}
+     <dt class="col-sm-4 text-truncate">
+       TranslatorsNote
+          <button type="button" class="btn btn-primary btn-sm ml-1 float-right" title="Edit Translators Note"
+            data-toggle="modal" data-target="#editNote"
+            data-predicate="translatorsNote" data-note="" data-tnote="{{ item['tnote'] }}"
+            data-label="{{ descriptor['labels']['en']|truncate(50, True) }}">
+            <i class="fas fa-pen"></i></button>
+     </dt>
+     <dd class="col-sm-8">
+        <span class="text-info">{{ item['tnote'] }}</span>
+     </dd>
+  {% else %}
+     <dt class="col-sm-4 text-truncate mb-2">
+       TranslatorsNote
+      <button type="button" class="btn btn-primary btn-sm ml-1 float-right" title="Add Translators Note"
+        data-toggle="modal" data-target="#editNote"
+        data-predicate="translatorsNote" data-note="" data-tnote=""
+        data-label="{{ descriptor['labels']['en']|truncate(50, True) }}">
+        <i class="fas fa-plus"></i></button>
+     </dt>
+     <dd class="col-sm-8">
+     ...
+     </dd>
+  {% endif %}
+
+
+  {% if descriptor['notes'] %}
+    {% set notes = descriptor['notes'] %}
+    {% for predicate in config.DESC_NOTES %}
+      {% if notes.get(predicate) and predicate != 'translatorsNote' %}
+        {% set item = notes[predicate] %}
+
+      <dt class="col-sm-4 text-truncate mb-2">
+        {{ predicate }}
+        {% if item['note'] and item['tnote'] %}
+          <button type="button" class="btn btn-primary btn-sm ml-1 float-right" title="Edit translation"
+            data-toggle="modal" data-target="#editNote"
+            data-predicate="{{ predicate }}" data-note="{{ item['note'] }}" data-tnote="{{ item['tnote'] }}"
+            data-label="{{ descriptor['labels']['en']|truncate(50, True) }}">
+            <i class="fas fa-pen text-success"></i></button>
+        {% elif item['note'] and predicate in config.TRX_NOTES %}
+          <button type="button" class="btn btn-primary btn-sm ml-1 float-right" title="Add translation"
+            data-toggle="modal" data-target="#editNote"
+            data-predicate="{{ predicate }}" data-note="{{ item['note'] }}" data-tnote=""
+            data-label="{{ descriptor['labels']['en']|truncate(50, True) }}">
+            <i class="fas fa-plus"></i></button>
+        {% endif %}
+      </dt>
+      <dd class="col-sm-8">
+        {% if item['note'] %}
+           {{ item['note'] }}
+            <br />
+        {% endif %}
+        {% if item['tnote'] %}
+          <span class="text-success">{{ item['tnote'] }}</span>
+        {% endif %}
+      </dd>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+    </dl>
+  </div>
+
+  <div class="tab-pane fade {{ tab_details }}" id="details">
+    <dl class="row">
+    {% for item in descriptor['details'] %}
+
+      <dt class="col-sm-4 text-truncate">
+        {{ item['p'] }}
+        {% if item['lang'] and item['lang'] != 'en' %}
+           <span class="font-weight-normal text-muted">[{{ item['lang'] }}]</span>
+        {% endif %}
+      </dt>
+      <dd class="col-sm-8">
+        {{ item['val'] }}
+      </dd>
+
+    {% endfor %}
+    </dl>
+  </div>
+
+  <div class="tab-pane fade {{ tab_relations }}" id="relations">
+    <dl class="row">
+    {% for item in descriptor['relations'] %}
+
+      <dt class="col-sm-4 text-truncate">
+        {{ item['p'] }}
+      </dt>
+      <dd class="col-sm-8">
+        <a href="{{ url_for('search', dui=item['ui']) }}">
+        {{ item['val'] }}
+           <span class="text-muted">{{ item['ui'] }}</span>
+        </a>
+      </dd>
+
+    {% endfor %}
+    </dl>
+  </div>
+
+  <div class="tab-pane fade {{ tab_qualifiers }}" id="qualifiers">
+    <dl class="row">
+    {% for item in descriptor['qualifiers'] %}
+
+      <dt class="col-sm-1">
+
+      </dt>
+      <dd class="col-sm-11">
+        <a href="{{ url_for('search', dui=item['ui']) }}">
+        {{ item['val'] }}
+           <span class="text-muted">{{ item['ui'] }}</span>
+        </a>
+      </dd>
+
+    {% endfor %}
+    </dl>
+  </div>
+
+
+  <div class="tab-pane fade {{ tab_history }}" id="history">
+    {% include 'snips/history.html' %}
+  </div>
+
+
+
+</div>
+
+{% include 'modals/add-concept.html' %}
+
+{% include 'modals/edit-scopenote.html' %}
+
+{% include 'modals/edit-note.html' %}
+
+{% include 'modals/update-audit.html' %}
+
+{% include 'modals/show-desc-view.html' %}
+
+{% endif %}

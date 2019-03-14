@@ -1,0 +1,98 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+PREFIX meshx: <http://mesh.medvik.cz/link/>
+
+
+## Concept query v1.0
+## endpoint: http://localhost:3030/mesh/query
+
+##CONSTRUCT { mesh:M0014585 ?p ?o . } {
+SELECT DISTINCT * {
+{SELECT ?p ?o
+WHERE {
+  mesh:M0014585 ?p ?o
+  FILTER(isLiteral(?o))
+}} UNION {
+SELECT ?p ?o
+WHERE {
+   BIND(rdf:type as ?p)
+   mesh:M0014585 ?p ?o
+}} UNION {
+SELECT ?p ?o
+WHERE {
+  mesh:M0014585 ?p ?id .
+  ?id rdfs:label ?val
+  FILTER(!isLiteral(?id))
+  BIND(STRLANG(CONCAT(STR(?id), '|', STR(?val)), LANG(?val)) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:relatedFrom as ?p)
+    ?id ?px mesh:M0014585 .
+    ?id rdf:type ?type .
+    ?id rdfs:label ?val
+    FILTER(!isLiteral(?id))
+    FILTER(?px IN(meshv:preferredConcept))
+    BIND(STRLANG(CONCAT(STR(?id), '|', STR(?val)), LANG(?val)) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:prefItem as ?p)
+    ?id ?px mesh:M0014585 .
+    ?id rdf:type ?type .
+    ?id rdfs:label ?val
+    FILTER(!isLiteral(?id))
+    FILTER(?px IN(meshv:preferredConcept))
+    FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+    BIND(STRLANG(CONCAT(STR(?id), '|', STR(?val)), LANG(?val)) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:preferredTerm as ?p)
+    mesh:M0014585 meshv:preferredTerm ?id .
+    ?id meshv:prefLabel ?val
+    BIND(STRLANG(CONCAT(STR(?id), '|', STR(?val)), LANG(?val)) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:preferredTerm  as ?p)
+    mesh:M0014585 ?p ?id .
+    ?id mesht:prefLabel ?val
+    BIND(STRLANG(CONCAT(STR(?id), '|', STR(?val)), LANG(?val)) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:term as ?p)
+    mesh:M0014585 meshv:term ?id .
+    ?id meshv:prefLabel ?val
+    BIND(STRLANG(CONCAT(STR(?id), '|', STR(?val)), LANG(?val)) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:term as ?p)
+    mesh:M0014585 ?p ?id .
+    ?id mesht:prefLabel ?val
+    BIND(STRLANG(CONCAT(STR(?id), '|', STR(?val)), LANG(?val)) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:prefConcept as ?p)
+    BIND(true as ?o)
+    ?id meshv:preferredConcept mesh:M0014585 .
+    ?id rdfs:label ?val
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:prefConcept as ?p)
+    BIND(false as ?o)
+    ?id meshv:concept mesh:M0014585 .
+    ?id rdfs:label ?val
+}}
+
+} ORDER BY ?p

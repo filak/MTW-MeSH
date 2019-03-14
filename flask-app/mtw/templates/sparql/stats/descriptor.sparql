@@ -1,0 +1,14 @@
+## Descriptor predicates stats query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?p (COUNT(?p) AS ?count) {
+{SELECT ?p
+WHERE {
+  ?s ?p ?o .
+  ?s rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  }
+}
+} GROUP BY ?p
+ORDER BY ?p

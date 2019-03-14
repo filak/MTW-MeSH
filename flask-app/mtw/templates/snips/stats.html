@@ -1,0 +1,363 @@
+
+<div class="row mb-2">
+
+  <div class="col-2">
+  </div>
+  <div class="col-3">
+    <h5 class="float-right font-weight-light">Concepts-Preferred</h5>
+  </div>
+  <div class="col-3">
+    <h5 class="float-right font-weight-light">Concepts-NonPref</h5>
+  </div>
+  <div class="col-3">
+    <h5 class="float-right font-weight-light">Concepts-Custom</h5>
+  </div>
+
+</div>
+
+<!-- PrefTerms  -->
+
+<div class="row">
+
+  <div class="col-2">
+    <ul class="list-unstyled">
+      <li class="mtw-stats font-weight-light mb-1">
+        PrefTerms
+      </li>
+      <li class="mt-1 mb-1">
+        <span class="badge badge-pill badge-success align-middle">old</span>
+      </li>
+      <li class="">
+        <span class="mt-3 badge badge-pill badge-info align-middle">new</span>
+      </li>
+      <li class="">
+        <span class="mt-3 badge badge-pill badge-secondary align-middle">todo</span>
+      </li>
+    </ul>
+  </div>
+
+{% set in_desc_v_pterm = deepGet(initial, 'meshv_pref.preferredTerm') %}
+{% set in_desc_t_pterm = deepGet(initial, 'mesht_pref.preferredTerm') %}
+{% set ac_desc_t_pterm = deepGet(actual, 'mesht_pref.preferredTerm') %}
+{% set nw_desc_t_pterm = ac_desc_t_pterm - in_desc_t_pterm %}
+{% set todo_desc_pterm = in_desc_v_pterm - ac_desc_t_pterm %}
+
+  <div class="col-3">
+    <ul class="list-unstyled">
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light">{{ in_desc_v_pterm | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ in_desc_t_pterm | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ nw_desc_t_pterm | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-secondary">
+        {% if todo_desc_pterm > 0 %}
+          <a href="{{ url_for('todo', tlist='Preferred') }}" title="Show ToDo list" class="mtw-stats-todo mtw-stats-link-{{session.theme}}">
+            {{ todo_desc_pterm | numberFormat }}
+          </a>
+        {% else %}
+            {{ todo_desc_pterm }}
+        {% endif %}
+        </span>
+      </li>
+    </ul>
+  </div>
+
+{% set in_con_v_pterm = deepGet(initial, 'meshv_nonPref.preferredTerm') %}
+{% set in_con_t_pterm = deepGet(initial, 'mesht_nonPref.preferredTerm') %}
+{% set ac_con_t_pterm = deepGet(actual, 'mesht_nonPref.preferredTerm') %}
+{% set nw_con_t_pterm = ac_con_t_pterm - in_con_t_pterm %}
+{% set todo_con_pterm = in_con_v_pterm - ac_con_t_pterm %}
+
+  <div class="col-3">
+    <ul class="list-unstyled">
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light">{{ in_con_v_pterm | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ in_con_t_pterm | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ nw_con_t_pterm | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-secondary">
+        {% if todo_con_pterm > 0 %}
+          <a href="{{ url_for('todo', tlist='nonPreferred') }}" title="Show ToDo list" class="mtw-stats-todo mtw-stats-link-{{session.theme}}">
+            {{ todo_con_pterm | numberFormat }}
+          </a>
+        {% else %}
+            {{ todo_con_pterm }}
+        {% endif %}
+        </span>
+      </li>
+    </ul>
+  </div>
+  <div class="col-3">
+    <ul class="list-unstyled">
+
+{% set customInit = deepGet(initial, 'mesht_concept.count') %}
+{% set customAct  = deepGet(actual, 'mesht_concept.count')  %}
+{% set customNew = customAct - customInit  %}
+
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">
+        {% if customAct > 0 %}
+          <a href="{{ url_for('todo', tlist='customConcepts') }}" title="Show list" class="mtw-stats-todo mtw-stats-link-{{session.theme}}">
+            {{ customAct | numberFormat }}
+          </a>
+        {% else %}
+            {{ customAct }}
+        {% endif %}
+        </span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ customInit | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ customNew | numberFormat }}</span>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="row mb-4">
+
+  <div class="col-2">
+  </div>
+  <div class="col-3">
+
+    <progress class="mtw-{{ session.theme }}-pb" id="pbPrefTerms"
+              value="{{ ac_desc_t_pterm }}" max="{{ in_desc_v_pterm }}"
+              title="" data-toggle="tooltip" data-placement="right" title="" data-original-title="TODO:  {{ todo_desc_pterm | numberFormat }}">
+    </progress>
+
+  </div>
+  <div class="col-3">
+
+    <progress class="mtw-{{ session.theme }}-pb" id="pbNonPrefTerms"
+              value="{{ ac_con_t_pterm }}" max="{{ in_con_v_pterm }}"
+              title="" data-toggle="tooltip" data-placement="right" title="" data-original-title="TODO:  {{ todo_con_pterm | numberFormat }}">
+    </progress>
+
+  </div>
+  <div class="col-3">
+  </div>
+
+</div>
+
+
+<!-- ScopeNotes  -->
+
+<div class="row">
+
+  <div class="col-2">
+    <ul class="list-unstyled">
+      <li class="mtw-stats font-weight-light mb-1">
+        ScopeNotes
+      </li>
+      <li class="mt-1 mb-1">
+        <span class="badge badge-pill badge-success align-middle">old</span>
+      </li>
+      <li class="">
+        <span class="mt-3 badge badge-pill badge-info align-middle">new</span>
+      </li>
+      <li class="">
+        <span class="mt-3 badge badge-pill badge-secondary align-middle">todo</span>
+      </li>
+    </ul>
+  </div>
+
+{% set in_desc_v_scn = deepGet(initial, 'meshv_scopeNote.scopeNote') %}
+{% set in_desc_t_scn = deepGet(initial, 'mesht_scopeNote.scopeNote') %}
+{% set ac_desc_t_scn = deepGet(actual, 'mesht_scopeNote.scopeNote') %}
+{% set nw_desc_t_scn = ac_desc_t_scn - in_desc_t_scn %}
+{% set todo_desc_scn = in_desc_v_scn - ac_desc_t_scn %}
+
+  <div class="col-3">
+    <ul class="list-unstyled">
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light">{{ in_desc_v_scn | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ in_desc_t_scn | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ nw_desc_t_scn | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-secondary">
+        {% if todo_desc_scn > 0 %}
+          <a href="{{ url_for('todo', tlist='ScopeNote') }}" title="Show ToDo list" class="mtw-stats-todo mtw-stats-link-{{session.theme}}">
+            {{ todo_desc_scn | numberFormat }}
+          </a>
+        {% else %}
+            {{ todo_desc_scn }}
+        {% endif %}
+        </span>
+      </li>
+    </ul>
+  </div>
+
+{% set in_desc_v_scnx = deepGet(initial, 'meshv_scopeNote.scopeNoteX') %}
+{% set in_desc_t_scnx = deepGet(initial, 'mesht_scopeNote.scopeNoteX') %}
+{% set ac_desc_t_scnx = deepGet(actual, 'mesht_scopeNote.scopeNoteX') %}
+{% set nw_desc_t_scnx = ac_desc_t_scnx - in_desc_t_scnx %}
+{% set todo_desc_scnx = in_desc_v_scnx - ac_desc_t_scnx %}
+
+  <div class="col-3">
+    <ul class="list-unstyled">
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light">{{ in_desc_v_scnx | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ in_desc_t_scnx | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ nw_desc_t_scnx | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-secondary">
+        {% if todo_desc_scnx > 0 %}
+          <a href="{{ url_for('todo', tlist='nonPrefScopeNote') }}" title="Show ToDo list" class="mtw-stats-todo mtw-stats-link-{{session.theme}}">
+            {{ todo_desc_scnx | numberFormat }}
+          </a>
+        {% else %}
+            {{ todo_desc_scnx }}
+        {% endif %}
+        </span>
+      </li>
+    </ul>
+  </div>
+
+{% set customScnInit = deepGet(initial, 'mesht_concept_scopeNote.count') %}
+{% set customScnAct = deepGet(actual, 'mesht_concept_scopeNote.count') %}
+{% set customScnNew = customScnAct - customScnInit %}
+
+
+  <div class="col-3">
+    <ul class="list-unstyled">
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ customScnAct | numberFormat  }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ customScnInit | numberFormat  }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ customScnNew | numberFormat  }}</span>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="row mb-4">
+
+  <div class="col-2">
+  </div>
+  <div class="col-3">
+
+    <progress class="mtw-{{ session.theme }}-pb" id="pbPrefScopeNote"
+              value="{{ ac_desc_t_scn }}" max="{{ in_desc_v_scn }}"
+              title="" data-toggle="tooltip" data-placement="right" title="" data-original-title="TODO:  {{ todo_desc_scn | numberFormat }}">
+    </progress>
+
+  </div>
+  <div class="col-3">
+
+    <progress class="mtw-{{ session.theme }}-pb" id="pbNonPrefScopeNote"
+              value="{{ ac_desc_t_scnx }}" max="{{ in_desc_v_scnx }}"
+              title="" data-toggle="tooltip" data-placement="right" title="" data-original-title="TODO:  {{ todo_desc_scnx | numberFormat }}">
+    </progress>
+
+  </div>
+  <div class="col-3">
+  </div>
+
+</div>
+
+
+<!-- NonPrefTerms  -->
+
+<div class="row">
+
+  <div class="col-2">
+    <ul class="list-unstyled">
+      <li class="mtw-stats font-weight-light mb-1">
+        NonPrefTerms
+      </li>
+      <li class="mt-1 mb-1">
+        <span class="badge badge-pill badge-success align-middle">old</span>
+      </li>
+      <li class="">
+        <span class="mt-3 badge badge-pill badge-info align-middle">new</span>
+      </li>
+    </ul>
+  </div>
+
+{% set in_desc_v_term = deepGet(initial, 'meshv_pref.term') %}
+{% set in_desc_t_term = deepGet(initial, 'mesht_pref.term') %}
+{% set ac_desc_t_term = deepGet(actual, 'mesht_pref.term') - in_desc_t_term %}
+
+  <div class="col-3">
+    <ul class="list-unstyled">
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light">{{ in_desc_v_term | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ in_desc_t_term | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ ac_desc_t_term | numberFormat }}</span>
+      </li>
+    </ul>
+  </div>
+
+{% set in_con_v_term = deepGet(initial, 'meshv_nonPref.term') %}
+{% set in_con_t_term = deepGet(initial, 'mesht_nonPref.term') %}
+{% set ac_con_t_term = deepGet(actual, 'mesht_nonPref.term') - in_con_t_term %}
+
+  <div class="col-3">
+    <ul class="list-unstyled">
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light">{{ in_con_v_term | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ in_con_t_term | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ ac_con_t_term | numberFormat }}</span>
+      </li>
+    </ul>
+  </div>
+
+{% set customTermsInit = deepGet(initial, 'mesht_concept_terms.count') %}
+{% set customTermsAct = deepGet(actual, 'mesht_concept_terms.count') %}
+{% set customTermsNew = customTermsAct - customTermsInit %}
+
+  <div class="col-3">
+    <ul class="list-unstyled">
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ customTermsAct | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success">{{ customTermsInit | numberFormat }}</span>
+      </li>
+      <li class="text-right">
+        <span class="mtw-stats font-weight-light text-success mtw-stats-new">{{ customTermsNew | numberFormat }}</span>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="row mb-2">
+  <div class="col">
+    <em>Stats generated:  initial {{ initial['date'] }}  --  actual {{ actual['date'] }}</em>
+  </div>
+</div>

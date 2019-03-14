@@ -1,0 +1,35 @@
+   {% if item.resolvedby %}
+       {% set user = item.username +' - '+ item.resolvedby %}
+   {% else %}
+       {% set user = item.username %}
+   {% endif %}
+
+    <li class="pt-1 pb-1">
+
+      <ul class="list-inline clearfix">
+
+        <li class="list-inline-item">
+          <a href="{{ url_for('audit', dui=item.dui, cui=item.opid) }}" title="Show full audit" class="btn btn-primary btn-sm mr-2 align-middle">
+            <i class="fas fa-bars"></i>
+          </a>
+        </li>
+
+        <li class="list-inline-item">
+          {% set backlink = 'ref' %}
+          {% set con_label = item.dui %}
+          {% include 'snips/audit-show.html' %}
+        </li>
+
+        <li class="list-inline-item float-right">
+          <span class="text-muted align-middle">
+            <a href="#" class="text-muted" data-container="body" data-toggle="tooltip" data-placement="bottom"
+                        title="{{ item.updated|replace('T', ' ') }} - {{ user }}">
+              {{ item.event }}
+              <i class="fas fa-info-circle"></i>
+            </a>
+          </span>
+        </li>
+
+      </ul>
+
+    </li>

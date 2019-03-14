@@ -1,0 +1,74 @@
+{% if dui and tree %}
+<h4>
+  {{ dui }}
+
+  <a class="btn btn-secondary ml-3" role="button" href="{{ url_for('audit', dui=dui) }}" title="Show Audit" aria-label="Show Audit">
+    <i class="fas fa-bars"></i></a>
+
+  <a class="btn btn-info" role="button" href="{{ url_for('compare', dui=dui) }}" title="Compare versions" aria-label="Compare versions">
+    <i class="fas fa-not-equal"></i></a>
+
+  <button class="btn btn-link" type="button" title="Show Descriptor view" aria-label="Show Descriptor view"
+    data-toggle="modal" data-target="#showDescView">
+    <i class="fas fa-info-circle"></i>
+  </button>
+
+  <a href="{{ config.AUT_LINK }}{{ dui }}" target="_blank" title="Show Authority" role="button" class="btn btn-link">
+    <i class="fas fa-link"></i></a>
+
+  <a href="{{ config.SOURCE_NS }}{{ dui }}" target="_blank" title="Show Source" role="button" class="btn btn-link">
+    <i class="fas fa-external-link-alt"></i></a>
+
+</h4>
+
+  <ul class="list-unstyled">
+
+    {% for row in tree['results']['bindings'] %}
+
+      <li class="mb-1">
+      {% if dui == row['d']['repr'] %}
+        {% set TEXT_COLOR_TRN = '' %}
+        {% set TEXT_BOLD = 'font-weight-bold' %}
+      {% else %}
+        {% set TEXT_COLOR_TRN = 'text-muted' %}
+        {% set TEXT_BOLD = '' %}
+      {% endif %}
+
+           {% set tn = row['tn']['repr'] %}
+           {% set top = tn[:1] %}
+
+           <a href="{{ url_for('browse', top=top, tn=tn, show='all', status='all') }}" class="btn btn-primary btn-sm mr-1" title="Browse">
+              <i class="fas fa-tree"></i>
+           </a>
+          {% if row.val %}
+              {% set TEXT_COLOR = 'text-success' %}
+          {% endif %}
+
+          {% if row['scn'] and row.val and not row['scnt']  %}
+              {% set TEXT_COLOR = 'text-info' %}
+          {% endif %}
+
+          {% if row['ntx']  %}
+              {% set TEXT_COLOR = 'text-warning' %}
+          {% endif %}
+
+          {% if row['active']['repr'] == 'false' %}
+              {% set TEXT_COLOR_TRN = 'text-muted' %}
+          {% endif %}
+
+          <a href="{{ url_for('search', dui=row['d']['repr']) }}" class="pl-1 pr-1 align-middle">
+            <span class="{{ TEXT_COLOR_TRN }} pr-2">{{ row['tn']['repr'] }} </span>
+            <span class="{{ TEXT_COLOR }} {{ TEXT_BOLD }}">{{ row['label']['value']|truncate(50, True) }}</span>
+          </a>
+
+          {% if row.val %}
+          <span class="font-weight-normal align-middle">
+            [{{ row['val']['value']|truncate(50, True) }}]
+          </span>
+          {% endif %}
+
+        </li>
+    {% endfor %}
+  </ul>
+
+{% endif %}

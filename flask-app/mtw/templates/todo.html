@@ -1,0 +1,45 @@
+{% set state_todo = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+ToDo
+{% endblock %}
+
+{% block pagetitle %}
+<strong>ToDo</strong>
+
+{% endblock %}
+
+{% block body %}
+<!-- main -->
+<div class="container">
+<div class="row">
+
+  <div class="col">
+
+  <ul class="list-inline mb-1">
+    <li class="list-inline-item">
+      <h4 class="mt-1">List <small class="text-info">{{ tlist }}</small>
+      </h4>
+    </li>
+    <li class="list-inline-item float-right">
+    </li>
+  </ul>
+
+  {% if tlist_check in ('duplicates','duplicates_eng') %}
+    {% set link_target = '_blank' %}
+    {% include 'snips/duplicates.html' %}
+  {% else %}
+    {% set link_target = '_blank' %}
+    {% include 'snips/results.html' %}
+  {% endif %}
+
+  </div>
+
+</div>
+</div>
+
+<!-- main end -->
+
+{% endblock %}

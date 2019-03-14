@@ -1,0 +1,27 @@
+## Update mesht: attribute
+## params: Concept/Descriptor URI + predicate + value + lang
+
+{% include 'sparql/_namespaces.sparql' %}
+
+{% if predicate != '' %}
+
+  DELETE {
+      <{{ uri }}> mesht:{{ predicate }} ?o
+      } WHERE {
+      <{{ uri }}> mesht:{{ predicate }} ?o .
+      FILTER (LANG(?o) = '{{ lang }}')
+      };
+
+{% endif %}
+
+{% if insert %}
+
+  {% if predicate != '' and value != '' %}
+
+    INSERT DATA {
+        <{{ uri }}> mesht:{{ predicate }} "{{ value }}"@{{ lang }}
+        };
+
+  {% endif %}
+
+{% endif %}

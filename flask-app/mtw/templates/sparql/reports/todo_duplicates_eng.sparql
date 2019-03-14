@@ -1,0 +1,40 @@
+### Search for duplicates in official dataset v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?trx ?ttype ?cnt ?ids {
+{
+SELECT ?trx ?ttype (count(*) as ?cnt)
+    (GROUP_CONCAT(DISTINCT ?dui ; separator='~') AS ?ids)
+WHERE {
+  ?d rdf:type ?type .
+  ?d meshv:active true .
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept|meshv:concept ?c .
+  ?c meshv:preferredTerm|meshv:term ?t .
+  ?t meshv:prefLabel ?val .
+  BIND(STR(?val) AS ?trx)
+  BIND('descriptors' AS ?ttype)
+}
+GROUP BY ?trx ?ttype
+HAVING (?cnt > 1)
+} UNION
+{
+SELECT ?trx ?ttype (count(*) as ?cnt)
+   (GROUP_CONCAT(DISTINCT ?dui ; separator='~') AS ?ids)
+WHERE {
+  ?d rdf:type ?type .
+  ?d meshv:active true .
+  FILTER(?type IN(meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept|meshv:concept ?c .
+  ?c meshv:preferredTerm|meshv:term ?t .
+  ?t meshv:prefLabel ?val .
+  BIND(STR(?val) AS ?trx)
+  BIND('qualifiers' AS ?ttype)
+}
+GROUP BY ?trx ?ttype
+HAVING (?cnt > 1)
+}
+} ORDER BY ?ttype ?trx

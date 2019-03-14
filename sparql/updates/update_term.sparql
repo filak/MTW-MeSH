@@ -1,0 +1,41 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+PREFIX meshcs: <http://mesh.medvik.cz/link/>
+
+
+## Term update v1.0
+## endpoint: http://localhost:3030/mesh/update
+
+## params: ConceptID (M...) + localID (cze...)
+## 1. add prefLabel - value - localID gets generated !
+## 2. change relation type (preferredTerm|term) - localID
+## 3. add altLabel - value
+## 4. delete altLabel - value
+## 5. delete term - localID
+
+## 1.
+##INSERT DATA { meshcs:cze0010615 mesht:identifier "cze0010615" } ;
+INSERT DATA { mesh:M0014585 mesht:term|preferredTerm meshcs:cze0010615 } ;
+INSERT DATA { meshcs:cze0010615 mesht:prefLabel "value"@cs } ;
+
+## 2.
+DELETE DATA { mesh:M0014585 mesht:term meshcs:cze0010615 } ;
+INSERT DATA { mesh:M0014585 mesht:preferredTerm meshcs:cze0010615 } ;
+
+## 3.
+INSERT DATA { meshcs:cze0010615 mesht:altLabel "value"@cs } ;
+
+## 4.
+DELETE DATA { meshcs:cze0010615 mesht:altLabel "value"@cs } ;
+
+## 5.
+INSERT DATA { meshcs:cze0010615 mesht:active false } ;
+#DELETE WHERE { meshcs:cze0010615 ?p ?o } ;
+#DELETE WHERE  { ?s ?p meshcs:cze0010615 } ;
+

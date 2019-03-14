@@ -1,0 +1,20 @@
+## Descriptor query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?p ?o ?label ?tlabel {
+{SELECT ?p ?o
+WHERE {
+  mesh:{{ query }} ?p ?o
+  FILTER (?p NOT IN(meshv:concept,meshv:term,mesht:concept,mesht:term))
+}}
+   OPTIONAL {
+   ?o rdfs:label ?label
+  }
+   OPTIONAL {
+   ?o mesht:preferredTerm ?t .
+   ?t mesht:prefLabel ?tlabel
+  }
+}
+ORDER BY ?p ?label
+

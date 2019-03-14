@@ -1,0 +1,30 @@
+## Stats query - translated scopeNote - v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+select * {
+{
+## Translated Pref Concepts - Descriptors
+SELECT ?p (count(?p) as ?count)
+WHERE {
+  BIND(mesht:scopeNote as ?p)
+  ?c ?p ?t .
+  ?d meshv:preferredConcept ?c .
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+} GROUP BY ?p
+} UNION {
+
+## Translated NonPref Concepts
+SELECT ?p (count(?p) as ?count)
+WHERE {
+  BIND(mesht:scopeNoteX as ?p)
+  ?c mesht:scopeNote ?t .
+  ?d meshv:concept ?c .
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+} GROUP BY ?p
+}
+}
+
+

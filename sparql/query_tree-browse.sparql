@@ -1,0 +1,104 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+PREFIX meshcs: <http://mesh.medvik.cz/link/>
+
+## Browse query v1.0 - always with a treeNumber prefix !
+## endpoint: http://localhost:3030/mesh/query
+
+## Preferred concepts AKA descriptors
+
+
+SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx
+WHERE {
+(?tn ?score ?snippet) text:query (meshv:identifier "A0? OR A1? OR A2?" 500) .  ## top level
+
+      #{% if status != 'all' or show != 'all' %}
+          #{% if toptn %}
+            #(?tn ?score ?snippet) text:query (meshv:identifier "{{ tn }} OR {{ toptn }} OR {{ toptn }}.*" 1001) .
+          #{% else %}
+            #(?tn ?score ?snippet) text:query (meshv:identifier "{{ query }} OR {{ top }}??.*" 1002) .
+          #{% endif %}
+      #{% else %}
+            #(?tn ?score ?snippet) text:query (meshv:identifier "{{ query }}" 500) .
+      #{% endif %}
+
+  ?d meshv:treeNumber ?tn .
+  ?tn rdfs:label ?tnlabel .
+  ?d rdf:type ?type .
+  ?d rdfs:label ?label .
+  ?d meshv:active ?active .
+  ?d meshv:dateCreated ?dateCrt .
+  OPTIONAL { ?d meshv:dateRevised ?dateRev }
+  ?d meshv:preferredConcept ?c .
+    OPTIONAL {
+    ?c mesht:preferredTerm ?termID .
+    ?termID mesht:prefLabel ?val
+    }
+    OPTIONAL {?c meshv:scopeNote ?scnv .
+              BIND('YES' as ?scn)
+             }
+    OPTIONAL {?c mesht:scopeNote ?scntv
+              BIND('YES' as ?scnt)
+             }
+    OPTIONAL {?c mesht:notTranslatable ?ntx}
+
+    OPTIONAL {
+      ?d meshv:concept ?npc .
+    }
+    OPTIONAL {
+      ?npc mesht:preferredTerm ?termIDnp
+    }
+    OPTIONAL {
+      ?npc mesht:notTranslatable ?ntxnp
+    }
+
+  FILTER (lang(?label) = 'en')
+
+    #{% if status == 'active' %}
+        #FILTER (?active)
+    #{% endif %}
+    #{% if status == 'deleted' %}
+        #FILTER (!?active)
+    #{% endif %}
+    #{% if status == 'revised' %}
+        #FILTER( ?dateRev >= "{{ config.REVISED_AFTER }}"^^xsd:date )
+    #{% endif %}
+    #{% if status == 'new' %}
+        #FILTER( ?dateCrt >= "{{ config.CREATED_AFTER }}"^^xsd:date )
+    #{% endif %}
+    #{% if status == 'notpref' %}
+        #FILTER (BOUND(?npc))
+        #FILTER (!BOUND(?termIDnp))   ## NotTranslated notPreferred
+    #{% endif %}
+
+    #{% if status == 'deleted' %}
+          #FILTER(strstarts(?tnlabel,'[OBSOLETE] {{ top }}'))
+    #{% elif status != 'all' %}
+          #FILTER(strstarts(?tnlabel,'{{ top }}'))
+    #{% else %}
+    #{% endif %}
+
+    #{% if show == 'translated' %}
+        #FILTER (BOUND(?val))   ## Translated
+    #{% endif %}
+    #{% if show == 'todo' %}
+        #FILTER (!BOUND(?val))  ## notTranslated
+    #{% endif %}
+    #{% if show == 'scn' %}
+        #FILTER (BOUND(?val))   ## Translated
+        #FILTER (BOUND(?scn))   ## ScopeNote
+        #FILTER (!BOUND(?scnt)) ## notTranslatedScopeNote
+    #{% endif %}
+    #{% if show == 'ntx' %}
+        #FILTER (BOUND(?ntx) || BOUND(?ntxnp))   ## notTranslatable
+    #{% endif %}
+
+}
+ORDER BY ?tn LIMIT 1000
+

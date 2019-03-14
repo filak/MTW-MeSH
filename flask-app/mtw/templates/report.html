@@ -1,0 +1,44 @@
+{% set state_report = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+Report {{ year }}
+{% endblock %}
+
+{% block pagetitle %}
+{% if month %}
+<strong>Report {{ year }} : {{ month }}</strong>
+{% else %}
+<strong>Report {{ year }}</strong>
+{% endif %}
+
+{% endblock %}
+
+{% block body %}
+<!-- main -->
+<div class="container-fluid">
+<div class="row">
+
+  <div class="col-md-3 col-sm">
+
+    {% include 'snips/users-list.html' %}
+
+  </div>
+  <div class="col-md">
+
+    {% include 'snips/report-basic.html' %}
+
+  </div>
+  <div class="col-md">
+
+    {% include 'snips/report-resolved.html' %}
+
+  </div>
+
+</div>
+</div>
+
+<!-- main end -->
+
+{% endblock %}

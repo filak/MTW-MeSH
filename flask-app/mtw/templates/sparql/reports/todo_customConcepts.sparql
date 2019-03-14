@@ -1,0 +1,60 @@
+### Custom nonPreferred Concepts - v1.0 ###
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT distinct ?label ?d ?type ?active ?val ?lockedBy {
+{
+  SELECT *
+  WHERE {
+    BIND(mesht:narrowerConcept as ?p)
+    ?c ?p ?t .
+    ?d meshv:preferredConcept ?c .
+    ?d rdf:type ?type .
+    ?d meshv:active ?active .
+    ?d rdfs:label ?label .
+    FILTER (lang(?label) = 'en')
+    OPTIONAL {
+      ?t mesht:preferredTerm ?id .
+      ?id mesht:prefLabel ?val
+    }
+  OPTIONAL { ?c mesht:notTranslatable ?ntx }
+  OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+  }
+} UNION {
+  SELECT *
+  WHERE {
+    BIND(mesht:broaderConcept as ?p)
+    ?c ?p ?t .
+    ?d meshv:preferredConcept ?c .
+    ?d rdf:type ?type .
+    ?d meshv:active ?active .
+    ?d rdfs:label ?label .
+    FILTER (lang(?label) = 'en')
+    OPTIONAL {
+      ?t mesht:preferredTerm ?id .
+      ?id mesht:prefLabel ?val
+    }
+  OPTIONAL { ?c mesht:notTranslatable ?ntx }
+  OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+  }
+} UNION {
+  SELECT *
+  WHERE {
+    BIND(mesht:relatedConcept as ?p)
+    ?c ?p ?t .
+    ?d meshv:preferredConcept ?c .
+    ?d rdf:type ?type .
+    ?d meshv:active ?active .
+    ?d rdfs:label ?label .
+    FILTER (lang(?label) = 'en')
+    OPTIONAL {
+      ?t mesht:preferredTerm ?id .
+      ?id mesht:prefLabel ?val
+    }
+  OPTIONAL { ?c mesht:notTranslatable ?ntx }
+  OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+  }
+}
+}
+ORDER BY ?label LIMIT 500
+

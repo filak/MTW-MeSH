@@ -1,0 +1,203 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+PREFIX meshx: <http://mesh.medvik.cz/link/>
+
+## D009369  D042361  D005123 D000998
+
+SELECT * {
+{SELECT ?c ?ctype ?label ?t ?ttype ?tlabel ?rel
+(group_concat(?alt;separator="|") as ?altlabel)
+##(group_concat(?src;separator="|") as ?source)
+{
+{SELECT *
+WHERE {
+  mesh:D000935  meshv:preferredConcept ?c .
+  ?c rdfs:label ?label .
+  BIND('A' as ?ctype) .
+  ?c meshv:preferredTerm ?t .
+  BIND('A' as ?ttype) .
+  ?t meshv:prefLabel ?tlabel .
+  BIND ('preferredConcept' as ?rel)
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  meshv:preferredConcept ?c .
+  ?c rdfs:label ?label .
+  BIND('A' as ?ctype) .
+  ?c mesht:preferredTerm ?t .
+  BIND('B' as ?ttype) .
+  ?t mesht:prefLabel ?tlabel .
+   OPTIONAL {
+    BIND ('broaderConcept' as ?rel)
+    ?ui meshv:broaderConcept ?c
+  }
+   OPTIONAL {
+    BIND ('narrowerConcept' as ?rel)
+    ?ui meshv:narrowerConcept ?c
+  }
+   OPTIONAL {
+    BIND ('relatedConcept' as ?rel)
+    ?ui meshv:relatedConcept ?c
+  }
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  meshv:preferredConcept ?c .
+  ?c rdfs:label ?label .
+  BIND('A' as ?ctype) .
+  ?c meshv:term ?t .
+  BIND('NT' as ?ttype) .
+  ?t meshv:prefLabel ?tlabel .
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  meshv:preferredConcept ?c .
+  ?c rdfs:label ?label .
+  BIND('A' as ?ctype) .
+  ?c mesht:term ?t .
+  BIND('N' as ?ttype) .
+  ?t mesht:prefLabel ?tlabel .
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  meshv:concept ?c .
+  ?c rdfs:label ?label .
+  BIND('N' as ?ctype) .
+  ?c meshv:preferredTerm ?t .
+  BIND('A' as ?ttype) .
+  ?t meshv:prefLabel ?tlabel .
+   OPTIONAL {
+    BIND ('broaderConcept' as ?rel)
+    ?ui meshv:broaderConcept ?c
+  }
+   OPTIONAL {
+    BIND ('narrowerConcept' as ?rel)
+    ?ui meshv:narrowerConcept ?c
+  }
+   OPTIONAL {
+    BIND ('relatedConcept' as ?rel)
+    ?ui meshv:relatedConcept ?c
+  }
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  meshv:concept ?c .
+  ?c rdfs:label ?label .
+  BIND('N' as ?ctype) .
+  ?c meshv:term ?t .
+  BIND('NT' as ?ttype) .
+  ?t meshv:prefLabel ?tlabel .
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  meshv:concept ?c .
+  ?c rdfs:label ?label .
+  BIND('N' as ?ctype) .
+  ?c mesht:preferredTerm ?t .
+  BIND('B' as ?ttype) .
+  ?t mesht:prefLabel ?tlabel .
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  meshv:concept ?c .
+  ?c rdfs:label ?label .
+  BIND('N' as ?ctype) .
+  ?c mesht:term ?t .
+  BIND('N' as ?ttype) .
+  ?t mesht:prefLabel ?tlabel .
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  mesht:concept ?c .
+  BIND('N' as ?ctype) .
+  ?c mesht:preferredTerm ?t .
+  BIND('B' as ?ttype) .
+  ?t mesht:prefLabel ?label .
+  ?t mesht:prefLabel ?tlabel .
+   OPTIONAL {
+    BIND ('broaderConcept' as ?rel)
+    ?ui mesht:broaderConcept ?c
+  }
+   OPTIONAL {
+    BIND ('narrowerConcept' as ?rel)
+    ?ui mesht:narrowerConcept ?c
+  }
+   OPTIONAL {
+    BIND ('relatedConcept' as ?rel)
+    ?ui mesht:relatedConcept ?c
+  }
+}
+  } UNION {
+SELECT *
+WHERE {
+  mesh:D000935  mesht:concept ?c .
+  BIND('N' as ?ctype) .
+  ?c mesht:term ?t .
+  BIND('N' as ?ttype) .
+  ?t mesht:prefLabel ?label .
+  ?t mesht:prefLabel ?tlabel .
+}
+}
+
+  ##OPTIONAL {?t meshv:thesaurusID ?src}
+  OPTIONAL {?t meshv:altLabel ?alt}
+  OPTIONAL {?t mesht:altLabel ?alt}
+}
+GROUP BY ?c ?ctype ?label ?t ?ttype ?tlabel ?rel
+ORDER BY ?ctype ?ttype ?tlabel
+}
+
+  #{% if concept %}
+    #FILTER (?c in ({{ concept }}))
+    FILTER (?c in (mesh:M0001347))
+  #{% endif %}
+
+  OPTIONAL {?c meshv:identifier ?cpid }
+  OPTIONAL {?t meshv:identifier ?tpid }
+
+  #OPTIONAL {?c meshv:scopeNote ?scn}
+  OPTIONAL {
+    ?c mesht:scopeNote ?scnt
+    ##FILTER (LANG(?scnt) = '{{ config.TARGET_LANG }}')
+    FILTER (LANG(?scnt) = 'csX')
+    }
+  OPTIONAL {
+    ?c mesht:scopeNote ?scne
+    FILTER (LANG(?scne) = 'enX')
+    }
+  OPTIONAL {?c meshv:active ?cactive }
+  OPTIONAL {?c mesht:active ?cactive }
+  OPTIONAL {?t meshv:active ?tactive }
+  OPTIONAL {?t meshv:lexicalTag ?ltag }
+  OPTIONAL {?t mesht:lexicalTag ?ltag }
+  OPTIONAL {?c mesht:identifier ?cpid }
+  OPTIONAL {?t mesht:identifier ?tpid }
+  OPTIONAL {?c mesht:notTranslatable ?ntx}
+  OPTIONAL {?c mesht:translatorsNote ?cnote }
+  OPTIONAL {?t mesht:translatorsNote ?tnote }
+  OPTIONAL {?t meshv:dateCreated ?dateCreated }
+  OPTIONAL {?t mesht:dateCreated ?dateCreated }
+  OPTIONAL {
+    ?c mesht:preferredTerm ?tx .
+    BIND('OK' as ?status)
+  }
+  OPTIONAL {
+    FILTER(!BOUND(?tx))
+    BIND('TRX' as ?status)
+  }
+}
+

@@ -1,0 +1,113 @@
+{% include 'sparql/_namespaces.sparql' %}
+PREFIX a:  <http://aaa>
+
+## Descriptor trx view query v1.0
+
+SELECT DISTINCT * {
+{SELECT ?p ?o
+WHERE {
+  mesh:{{ query }} ?p ?val
+  FILTER(isLiteral(?val))
+  BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+   BIND(a:type as ?p)
+   mesh:{{ query }} rdf:type ?val
+   BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:registryNumber as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?concept .
+    ?concept ?p ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:casn1_label as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?concept .
+    ?concept ?p ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:pharmacologicalAction as ?p)
+    mesh:{{ query }} ?p ?cx .
+    ?cx rdfs:label ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:scopeNote as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?concept .
+    ?concept ?p ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:scopeNote as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?concept .
+    ?concept ?p ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+  mesh:{{ query }} ?p ?id .
+  ?id rdfs:label ?val
+  FILTER(!isLiteral(?id))
+  FILTER(?p not in (meshv:allowableQualifier))
+  BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:narrowerDescriptor as ?p)
+    ?id meshv:broaderDescriptor mesh:{{ query }} .
+    ?id rdfs:label ?val
+    FILTER(!isLiteral(?id))
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:term as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?c .
+    ?c ?p ?id .
+    ?id meshv:prefLabel ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:term as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?c .
+    ?c ?p ?id .
+    ?id mesht:prefLabel ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:preferredConcept as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?c .
+    ?c mesht:preferredTerm ?id .
+    ?id mesht:prefLabel ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:seeAlso as ?p)
+    ?id meshv:seeAlso mesh:{{ query }} .
+    ?id rdfs:label ?val
+    FILTER(!isLiteral(?id))
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(mesht:concept as ?p)
+    mesh:{{ query }} meshv:concept ?c .
+    ?c mesht:preferredTerm ?id .
+    ?id mesht:prefLabel ?val
+    BIND(STR(?val) AS ?o)
+}}
+
+} ORDER BY ?p ?o
+
+

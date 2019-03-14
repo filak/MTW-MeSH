@@ -1,0 +1,45 @@
+{% extends "_layout.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block pagetitle %}
+<strong>Login</strong>
+{% endblock %}
+
+{% block body %}
+
+<div class="row justify-content-md-center">
+  <div class="col-lg-4">
+    <h3>Login required</h3>
+
+    {% if error %}
+      <p class="f-error"><strong>Error:</strong> {{ error }}</p>
+    {% endif %}
+    <form action="{{ url_for('login') }}" method="post">
+      <div class="form-group">
+        <label for="loginUsername">Username</label>
+        <input type="text" class="form-control" id="loginUsername" name="username" placeholder="Username" required>
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Password" required>
+      </div>
+
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" id="loginAdmin" name="isadmin" value="yes"> Admin login
+        </label>
+      </div>
+
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="isadmin" value="no">
+
+      <button type="submit" class="btn btn-primary">Login</button>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}

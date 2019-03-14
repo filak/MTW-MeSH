@@ -1,0 +1,10 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <{{ config.SOURCE_NS_VOCAB }}>
+PREFIX mesh:   <{{ config.SOURCE_NS }}>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX meshx:  <{{ config.TARGET_NS }}>
+PREFIX mesht:  <{{ config.TRX_NS_VOCAB }}>
+

@@ -1,0 +1,67 @@
+## Base export query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?nlm ?rn ?cas
+      (GROUP_CONCAT(DISTINCT ?trns ; separator='~') AS ?trn)
+      (GROUP_CONCAT(DISTINCT ?pac ; separator='~') AS ?pa)
+      (GROUP_CONCAT(DISTINCT ?bd ; separator='~') AS ?btd)
+      (GROUP_CONCAT(DISTINCT ?nd ; separator='~') AS ?ntd)
+      (GROUP_CONCAT(DISTINCT ?rd ; separator='~') AS ?rtd)
+      (GROUP_CONCAT(DISTINCT ?term ; separator='~') AS ?terms)
+      (GROUP_CONCAT(DISTINCT ?xterm ; separator='~') AS ?xterms)
+WHERE {
+  ?d rdf:type ?dtype .
+  FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:active ?active .
+  ?d meshv:dateCreated ?crt .
+  OPTIONAL {
+    ?d meshv:treeNumber ?tree .
+    ?tree rdfs:label ?trns .
+  }
+  ?d meshv:preferredConcept ?c .
+  ?c meshv:identifier ?cui .
+  ?c meshv:preferredTerm ?t .
+  ?t meshv:prefLabel ?den .
+  OPTIONAL {
+    ?c mesht:preferredTerm ?tp .
+    ?tp mesht:prefLabel ?trx .
+  }
+  OPTIONAL {
+    ?c meshv:term|mesht:term ?ptt .
+    ?ptt meshv:prefLabel|mesht:prefLabel ?term .
+  }
+  OPTIONAL {
+    ?d meshv:concept ?ct .
+    ?ct meshv:preferredTerm|meshv:term ?tt .
+    ?tt meshv:prefLabel ?xterm .
+  }
+  OPTIONAL {
+    ?d mesht:concept ?ctt .
+    ?ctt mesht:preferredTerm|mesht:term ?ttt .
+    ?ttt mesht:prefLabel ?xterm .
+  }
+  OPTIONAL {
+    ?d meshv:broaderDescriptor ?bdx .
+    ?bdx meshv:identifier ?bd
+  }
+  OPTIONAL {
+    ?ndx meshv:broaderDescriptor ?d .
+    ?ndx meshv:identifier ?nd
+  }
+  OPTIONAL {
+    ?d meshv:seeAlso ?rdx .
+    ?rdx meshv:identifier ?rd
+  }
+  OPTIONAL { ?c mesht:notTranslatable ?notrx }
+  OPTIONAL { ?d meshv:nlmClassificationNumber ?nlm }
+  OPTIONAL {
+    ?d meshv:pharmacologicalAction ?phac .
+    ?phac meshv:identifier ?pac
+  }
+  OPTIONAL { ?c meshv:registryNumber ?rn }
+  OPTIONAL { ?c meshv:casn1_label ?cas }
+}
+GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?nlm ?rn ?cas
+###LIMIT 100

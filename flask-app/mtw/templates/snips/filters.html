@@ -1,0 +1,77 @@
+    {% if show == 'translated' %}
+        {% set OK_CHECKED = 'checked' %}
+    {% elif show == 'todo' %}
+        {% set TODO_CHECKED = 'checked' %}
+    {% elif show == 'scn' %}
+        {% set SCN_CHECKED = 'checked' %}
+    {% elif show == 'ntx' %}
+        {% set NTX_CHECKED = 'checked' %}
+    {% else %}
+        {% set ALL_CHECKED = 'checked' %}
+    {% endif %}
+
+        <div class="form-group mb-2">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioShowAll" name="show" value="all" class="custom-control-input" {{ ALL_CHECKED }}>
+            <label class="custom-control-label" for="radioShowAll">All</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioShowTodo" name="show" value="todo" class="custom-control-input" {{ TODO_CHECKED }}>
+            <label class="custom-control-label" for="radioShowTodo">ToDo</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioShowTranslated" name="show" value="translated" class="custom-control-input" {{ OK_CHECKED }}>
+            <label class="custom-control-label text-success" for="radioShowTranslated">Translated</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioShowScopeNote" name="show" value="scn" class="custom-control-input" {{ SCN_CHECKED }}>
+            <label class="custom-control-label text-info" for="radioShowScopeNote" title="Missing translated ScopeNote">ScopeNote</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioShowNotTranslatable" name="show" value="ntx" class="custom-control-input" {{ NTX_CHECKED }}>
+            <label class="custom-control-label text-warning" for="radioShowNotTranslatable" title="NotTranslatable concepts only">NotTranslatable</label>
+          </div>
+        </div>
+
+    {% if status == 'active' %}
+        {% set ACTIVE_STATUS = 'checked' %}
+    {% elif status == 'revised' %}
+        {% set REVISED_STATUS = 'checked' %}
+    {% elif status == 'new' %}
+        {% set CREATED_STATUS = 'checked' %}
+    {% elif status == 'deleted' %}
+        {% set DELETED_STATUS = 'checked' %}
+    {% elif status == 'notpref' %}
+        {% set NOTPREF_STATUS = 'checked' %}
+    {% else %}
+        {% set ALL_STATUS = 'checked' %}
+    {% endif %}
+
+        <div class="form-group mb-2">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioStatusAll" name="status" value="all" class="custom-control-input" {{ ALL_STATUS }}>
+            <label class="custom-control-label" for="radioStatusAll">All</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioStatusActive" name="status" value="active" class="custom-control-input" {{ ACTIVE_STATUS }}>
+            <label class="custom-control-label" for="radioStatusActive">Active</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioStatusDeleted" name="status" value="deleted" class="custom-control-input" {{ DELETED_STATUS }}>
+            <label class="custom-control-label text-muted" for="radioStatusDeleted">Deleted</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioStatusNew" name="status" value="new" class="custom-control-input" {{ CREATED_STATUS }}>
+            <label class="custom-control-label" for="radioStatusNew" title="Created after: {{ config.CREATED_AFTER }}">New</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioStatusRevised" name="status" value="revised" class="custom-control-input" {{ REVISED_STATUS }}>
+            <label class="custom-control-label" for="radioStatusRevised" title="Revised after: {{ config.REVISED_AFTER }}">Modified</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioStatusNotPref" name="status" value="notpref" class="custom-control-input" {{ NOTPREF_STATUS }}>
+            <label class="custom-control-label" for="radioStatusNotPref" title="NotPreferred concepts only">NotPref</label>
+          </div>
+        </div>
+
+

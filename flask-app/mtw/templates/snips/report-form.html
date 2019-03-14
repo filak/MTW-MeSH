@@ -1,0 +1,30 @@
+    {% if userid %}
+      <form action="{{ url_for('report', userid=userid, year=year) }}" method="get">
+    {% else %}
+      <form action="{{ url_for('report', year=year) }}" method="get">
+    {% endif %}
+
+       <div class="input-group">
+          <select class="form-control form-control-sm" name="month">
+            <option value="all">All months</option>
+          {% for mon in months %}
+            {% if mon == month %}
+              {% set sel = 'selected' %}
+            {% endif %}
+            <option value="{{ mon }}" {{ sel }}>{{ mon }}</option>
+          {% endfor %}
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-secondary btn-sm" type="submit" title="Select month" aria-label="Select month">
+              <i class="fas fa-filter"></i>
+            </button>
+            <button class="btn btn-primary btn-sm" type="submit" name="report" value="tsv--{{ rep }}" title="Download report as TSV" aria-label="Download report as TSV">
+              <i class="fas fa-table"></i>
+            </button>
+            <button class="btn btn-primary btn-sm" type="submit" name="report" value="csv--{{ rep }}" title="Download report as CSV" aria-label="Download report as CSV">
+              <i class="fas fa-file-excel"></i>
+            </button>
+          </div>
+       </div>
+
+     </form>

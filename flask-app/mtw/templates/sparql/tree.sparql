@@ -1,0 +1,57 @@
+## Tree display query v1.0
+## endpoint: http://localhost:3030/mesh/query
+
+{% include 'sparql/_namespaces.sparql' ignore missing %}
+
+SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx {
+{SELECT * {
+{SELECT ?tn ?d ?c
+WHERE {
+   mesh:{{ query }} meshv:treeNumber ?treeNum .
+   ?treeNum meshv:parentTreeNumber ?parent .
+   BIND(CONCAT(str(?parent),'.???') as ?q) .
+   (?tn ?score ?literal) text:query (?q) .
+   ?d meshv:treeNumber ?tn .
+   ?d meshv:preferredConcept ?c .
+}} UNION {
+SELECT ?tn ?d ?c
+WHERE {
+   mesh:{{ query }} meshv:treeNumber ?treeNum .
+   ?treeNum meshv:parentTreeNumber+ ?tn .
+   ?d meshv:treeNumber ?tn .
+   ?d meshv:preferredConcept ?c .
+}} UNION {
+SELECT ?tn ?d ?c
+WHERE {
+   mesh:{{ query }} meshv:treeNumber ?treeNum .
+   BIND(CONCAT(str(?treeNum),'.???') as ?q) .
+   (?tn ?score ?literal) text:query (?q) .
+   ?d meshv:treeNumber ?tn .
+   ?d meshv:preferredConcept ?c .
+}} UNION {
+SELECT ?tn ?d ?c
+WHERE {
+   mesh:{{ query }} meshv:treeNumber ?tn .
+   ?d meshv:treeNumber ?tn .
+   ?d meshv:preferredConcept ?c .
+}}
+  }
+ORDER BY ?tn LIMIT 500
+}
+    ?d rdfs:label ?label .
+    FILTER (lang(?label) = 'en') .
+    ?d rdf:type ?type .
+    ?d meshv:active ?active .
+    OPTIONAL {
+        ?c mesht:preferredTerm ?id .
+        ?id mesht:prefLabel ?val
+        }
+    OPTIONAL {?c meshv:scopeNote ?scnv .
+              BIND('YES' as ?scn)
+             }
+    OPTIONAL {?c mesht:scopeNote ?scntv
+              BIND('YES' as ?scnt)
+             }
+    OPTIONAL {?c mesht:notTranslatable ?ntx}
+
+}

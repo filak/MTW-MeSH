@@ -1,0 +1,101 @@
+
+<div id="meshTopTree" class="col-lg-4 col-md">
+
+{% for key, cat in config.MESH_TREE|dictsort %}
+  <ul class="list-unstyled">
+  {% if key == top %}
+    <li id="cat-{{ key }}" class="h6 alert alert-info">
+  {% else %}
+    <li id="cat-{{ key }}">
+  {% endif %}
+
+      <a href="{{ url_for('browse', top=key) }}" class="d-block">
+        <strong>{{ key }}</strong>  {{ cat['en'] }}
+        {% if tree %}
+          {% if tree['metadata'].get(key) %}
+            {% set xcat = tree['metadata'].get(key) %}
+              [{{ xcat['hits_cnt'] }}]
+          {% endif %}
+        {% endif %}
+      </a>
+
+    </li>
+  </ul>
+{% endfor %}
+
+</div>
+
+<div id="meshTree" class="col-lg-8 col-md">
+
+  {% if tree and hits_cnt > 0 and tree[top] %}
+    <ul class="list-unstyled">
+    {% for row in tree[top] %}
+
+      <li class="mb-1">
+      {% if tn == row['tn']['repr'] %}
+        {% set TEXT_COLOR_TRN = '' %}
+        {% set TEXT_BOLD = 'font-weight-bold' %}
+      {% else %}
+        {% set TEXT_COLOR_TRN = 'text-muted' %}
+        {% set TEXT_BOLD = '' %}
+      {% endif %}
+
+          {% if row.val %}
+            <a href="{{ url_for('search', dui=row['d']['repr']) }}" class="btn btn-secondary btn-sm mr-2 align-middle" title="Edit">
+          {% else %}
+            <a href="{{ url_for('search', dui=row['d']['repr']) }}" class="btn btn-primary btn-sm mr-2 align-middle" title="Translate">
+          {% endif %}
+              <i class="fas fa-pen"></i>
+            </a>
+
+          {% if row.val %}
+              {% set TEXT_COLOR = 'text-success' %}
+          {% endif %}
+
+          {% if row['scn'] and row.val and not row['scnt']  %}
+              {% set TEXT_COLOR = 'text-info' %}
+          {% endif %}
+
+          {% if row['ntx']  %}
+              {% set TEXT_COLOR = 'text-warning' %}
+          {% endif %}
+
+          {% if row['active']['repr'] == 'false' %}
+              {% set TEXT_COLOR_TRN = 'text-muted' %}
+          {% endif %}
+
+          {% if row['lockedBy'] %}
+            <button class="btn btn-warning btn-sm" type="button" title="Descriptor LOCKED">
+              <i class="fas fa-lock"></i></button>
+          {% endif %}
+
+          <a href="{{ url_for('browse', top=top, tn=row['tn']['repr']) }}" class="pr-1 pl-1 align-middle">
+            <span class="{{ TEXT_COLOR_TRN }} pr-2">{{ row['tn']['repr'] }} </span>
+            <span class="{{ TEXT_COLOR }} {{ TEXT_BOLD }}">{{ row['label']['value'] }}</span>
+          </a>
+
+          {% if row.val %}
+            <span class="font-weight-normal align-middle">
+            [ {{ row['val']['value'] }} ]
+            </span>
+          {% endif %}
+
+        </li>
+
+    {% endfor %}
+   </ul>
+  {% endif %}
+
+  {% if top and hits_cnt == 0 %}
+  <div class="alert alert-dismissible alert-primary">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+
+    Nothing found for <strong>{{ top }} {{ tn }}</strong> -
+
+    <a href="{{ url_for('browse', top=top, tn=tn, action='clear') }}" class="alert-link">dive deeper</a>
+    OR try selecting other filter
+
+  </div>
+  {% endif %}
+
+</div>

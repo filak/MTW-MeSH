@@ -1,0 +1,23 @@
+  <div class="form-group">
+
+  {% if uparams.get('selected_check') %}
+
+    {% for dui in uparams.selected_check|reverse() %}
+
+      <div class="row">
+        <legend class="col-form-label col-10">
+          <a href="{{ url_for('search', dui=dui) }}" class="d-block">{{ uparams.selected[dui]|truncate(45, True) }}</a>
+        </legend>
+        <div class="col-2">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="customCheck-{{ dui }}" name="{{ dui }}___remove">
+            <label class="custom-control-label" for="customCheck-{{ dui }}">&nbsp;</label>
+          </div>
+        </div>
+      </div>
+
+    {% endfor %}
+  {% endif %}
+
+  </div>
+

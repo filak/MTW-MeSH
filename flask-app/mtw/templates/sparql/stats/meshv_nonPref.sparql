@@ -1,0 +1,29 @@
+## Stats query - nonPreferred Concepts - v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+select * {
+{
+## NonPref Concepts - preferredTerm
+SELECT ?p (count(?p) as ?count)
+WHERE {
+  BIND(meshv:preferredTerm as ?p)
+  ?c ?p ?t .
+  ?d meshv:concept ?c .
+  ?d rdf:type ?type .
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+} GROUP BY ?p
+} UNION {
+
+## NonPref Concepts - term
+SELECT ?p (count(?p) as ?count)
+WHERE {
+  BIND(meshv:term as ?p)
+  ?c ?p ?t .
+  ?d meshv:concept ?c .
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+} GROUP BY ?p
+}
+}
+

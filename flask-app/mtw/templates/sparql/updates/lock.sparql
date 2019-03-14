@@ -1,0 +1,26 @@
+## Update mesht: attribute
+## params: Descriptor URI + (un)lock
+
+{% include 'sparql/_namespaces.sparql' %}
+
+{% if predicate == 'lock' %}
+
+  DELETE {
+      <{{ uri }}> mesht:lockedBy ?o
+      } WHERE {
+      <{{ uri }}> mesht:lockedBy ?o
+      };
+
+  INSERT DATA {
+      <{{ uri }}> mesht:lockedBy "{{ value }}"
+      };
+
+{% else %}
+
+  DELETE {
+      <{{ uri }}> mesht:lockedBy ?o
+      } WHERE {
+      <{{ uri }}> mesht:lockedBy ?o
+      };
+
+{% endif %}

@@ -1,0 +1,4 @@
+{{ head }}
+{% for item in report %}
+{{ item.yr_mon }}{{ tab }}{{ item.username }}{{ tab }}{{ item.event }}{{ tab }}{{ item.tstate }}{{ tab }}{{ item.cnt }}
+{% endfor %}

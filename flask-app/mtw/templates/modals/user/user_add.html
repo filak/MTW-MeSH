@@ -1,0 +1,78 @@
+<div class="modal fade" id="add-user-modal" tabindex="-1" role="dialog" aria-labelledby="myModalAddUser" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    <form action="{{ url_for('add_user') }}" method="post" id="add-user-form" autocomplete="off">
+
+      <div class="modal-header">
+
+        <div class="col">
+          <h4 class="modal-title" id="myModalAddUser">Add user</h4>
+          <h4 class="mt-2">
+            <span class="font-weight-light"></span>
+          </h4>
+        </div>
+
+        <div class="col">
+          <div class="form-group mb-0">
+            <label for="ugroup" class="text-info">Role</label>
+              <select class="form-control" id="ugroup" name="ugroup" required autocomplete="off">
+                <option value="editor" selected>Editor</option>
+                <option value="contributor">Contributor</option>
+                <option value="manager">Manager</option>
+                <option value="viewer">Viewer</option>
+                <option value="disabled">Disabled</option>
+              </select>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-body">
+
+          <div class="form-group">
+            <label for="firstname" class="text-info">Firstname</label>
+            <input type="text" class="form-control" id="firstname" name="firstname" required autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <label for="lastname" class="text-info">Lastname</label>
+            <input type="text" class="form-control" id="lastname" name="lastname" required autocomplete="off">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col">
+              <label for="email">Email</label>
+              <input type="text" class="form-control" id="email" name="email" type="email" autocomplete="off">
+            </div>
+
+            <div class="form-group col">
+              <label for="phone">Phone</label>
+              <input type="text" class="form-control" id="phone" name="phone" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col">
+              <label for="uname" class="text-info">Username</label>
+              <input type="text" class="form-control" id="uname" name="uname" required autocomplete="off">
+            </div>
+
+            <div class="form-group col">
+              <label for="pswd" class="text-info">Password</label>
+              <input type="text" class="form-control" id="pswd" name="pswd" required autocomplete="off">
+              <small class="form-text font-weight-bold text-warning">Do not forget to keep it !</small>
+            </div>
+          </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-info ml-3" id="noteSubmit">Add User</button>
+      </div>
+
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    </form>
+
+    </div>
+  </div>
+</div>

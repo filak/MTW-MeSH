@@ -1,0 +1,110 @@
+{% set item_cui = 'NEW' %}
+
+<div class="modal fade conceptModal" id="editConcept-{{ item_cui }}" tabindex="-1" role="dialog" aria-labelledby="Add Concept" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">{{ descriptor['labels']['en'] }}
+          [<span class="text-success">{{ descriptor['labels']['target'] }}</span>]
+          <small class="font-weight-light">{{ descriptor['labels']['dtype'] }}</small>
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <form action="{{ url_for('update_concept', dui=dui, pref=descriptor['labels']['prefCui']) }}" method="post" id="editConcept-{{ item_cui }}-form">
+
+      <div class="modal-body">
+
+        <fieldset>
+          <legend>
+            <span class="font-weight-light">Concept relationship</span>
+          </legend>
+          <div class="form-group">
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" id="conceptRelAdd1" name="concept-rel" class="custom-control-input" value="narrowerConcept" required="" checked="">
+              <label class="custom-control-label" for="conceptRelAdd1">Narrower</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" id="conceptRelAdd2" name="concept-rel" class="custom-control-input" value="broaderConcept" required="">
+              <label class="custom-control-label" for="conceptRelAdd2">Broader</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" id="conceptRelAdd3" name="concept-rel" class="custom-control-input" value="relatedConcept" required="">
+              <label class="custom-control-label" for="conceptRelAdd3">Related</label>
+            </div>
+          </div>
+        </fieldset>
+
+       <legend>
+            <span class="font-weight-light">Terms</span>
+       </legend>
+
+       {% set terms = [1] %}
+       {% set input_hint = 'PrefTerm required ...' %}
+       {% set input_required = 'required' %}
+       {% set radio_checked = 'checked' %}
+
+       {% include 'modals/edit-terms.html' %}
+
+       {% set terms = [2,3,4,5] %}
+       {% set input_hint = 'Add term ...' %}
+       {% set input_required = '' %}
+       {% set radio_checked = '' %}
+
+       {% include 'modals/edit-terms.html' %}
+
+
+        <div class="form-group">
+          <label for="editConceptNewTrxNote-{{ item_cui }}" class="font-weight-bold">Translators Note</label>
+          <textarea class="form-control" id="editConceptNewTrxNote-{{ item_cui }}" name="concept-tnote"
+                    placeholder="[Non-public English note] Add justification - why do you create this new concept ?"
+                    rows="3" maxlength="1000" required></textarea>
+        </div>
+
+          <input type="hidden"
+                 name="concept"
+                 value="{{ item_cui }}">
+
+          <input type="hidden"
+                 name="cpid"
+                 value="{{ item_cui }}">
+
+          <input type="hidden" id="editConcept-{{ item_cui }}-action"
+                 name="action"
+                 value="insert">
+
+          <input type="hidden"
+                 name="active"
+                 value="true">
+
+          <input type="hidden"
+                 name="label"
+                 value="NEW">
+
+          <input type="hidden" id="formchanged-{{ item_cui }}" name="form_changed" value="false">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
+
+      {% if not isDbLocked() %}
+        {% if session.ugroup in ('admin','manager','editor','contributor') %}
+          {% if descriptor.get('lockedBy','') %}
+            {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
+            <button name="propose" value="true" type="submit" class="btn btn-info ml-3">Propose</button>
+            {% endif %}
+          {% else %}
+            <button name="propose" value="true" type="submit" class="btn btn-info ml-3">Propose</button>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

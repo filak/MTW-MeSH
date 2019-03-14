@@ -1,0 +1,14 @@
+    <li>
+      <h6>
+         <a href="{{ url_for('approve', status=status, userid=user.userid, username=uname, event=event) }}" class="{{ user_selected }}">
+
+         {% if user_icon %}
+           <i class="fas fa-chevron-circle-right"></i>
+         {% endif %}
+
+         {{ uname }}
+         <span class="badge badge-{{ get_userBadgeRep(group) }}">{{ group }}</span>
+         <span class="badge badge-{{ get_statusRep(status) }} badge-pill"> {{ user.cnt }} </span>
+         </a>
+      </h6>
+    </li>

@@ -1,0 +1,57 @@
+<div class="modal fade" id="showMessage" tabindex="-1" role="dialog" aria-labelledby="Show message from Admin or Manager" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    {% set msg = get_adminMsg() %}
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Message from Admin or Manager</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-header">
+        <h4 class="modal-title text-warning">{{ msg['head'] }}</h4>
+      </div>
+      <form action="{{ url_for('manage', action='update_msg') }}" method="post" id="updateMessageForm">
+      <div class="modal-body">
+
+       {{ msg['text'] }}
+
+      {% if session.ugroup in ('admin','manager') %}
+        <p>&nbsp;</p>
+
+        <div class="form-group">
+          <label for="adminMessageHead" class="font-weight-bold">Title</label>
+          <input class="form-control" id="adminMessageHead" name="hmsg" rows="5" maxlength="200" placeholder="...Add title..." value="{{ msg['head'] }}" required/>
+        </div>
+
+        <div class="form-group">
+          <label for="adminMessage" class="font-weight-bold">Message text</label>
+          <textarea class="form-control" id="adminMessage" name="amsg" rows="5" maxlength="2000" placeholder="...Add message...">{{ msg['text'] }}</textarea>
+        </div>
+
+      {% endif %}
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-link mr-auto" data-dismiss="modal">Close</button>
+
+    {% if session.ugroup in ('admin','manager') %}
+
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input"
+                 id="lockDatabase" name="lockdb">
+          <label class="custom-control-label font-weight-bold text-warning"
+          for="lockDatabase">Lock the database ?</label>
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <button name="action" value="hide" type="submit" class="btn btn-success ml-3">Unlock &amp; Hide</button>
+        <button name="action" value="show"  type="submit" class="btn btn-warning ml-3">Show</button>
+    {% endif %}
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>

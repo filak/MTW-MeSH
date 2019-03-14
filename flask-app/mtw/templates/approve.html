@@ -1,0 +1,48 @@
+{% set state_approve = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+Approve
+{% endblock %}
+
+{% block pagetitle %}
+{% if year %}
+<strong>Approve {{ year }}</strong>
+{% else %}
+<strong>Approve</strong>
+{% endif %}
+
+{% endblock %}
+
+{% block body %}
+<!-- main -->
+<div class="container-fluid">
+<div class="row">
+
+  <div class="col-xl-3 col-lg-12">
+
+    {% include 'snips/status.html' %}
+
+  </div>
+
+  <div class="col-xl col-lg-12">
+
+    {% include 'snips/pending.html' %}
+
+  </div>
+
+  <div class="col-xl col-lg-12">
+
+    {% include 'snips/resolved.html' %}
+
+  </div>
+
+</div>
+</div>
+
+{% include 'modals/update-audit.html' %}
+
+<!-- main end -->
+
+{% endblock %}

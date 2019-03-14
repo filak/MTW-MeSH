@@ -1,0 +1,46 @@
+{% set state_search = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+Search
+{% endblock %}
+
+{% block pagetitle %}
+<strong>Search | Translate</strong>
+
+{% endblock %}
+
+
+{% block body %}
+
+<!-- main -->
+<div class="container-fluid">
+<div class="row">
+
+  <div class="col-xl-4 col-lg-6 col-md-6">
+
+    {% include 'snips/search-form.html' %}
+
+    {% include 'snips/results.html' %}
+
+  </div>
+
+  <div class="col-xl-4 col-lg-6 col-md-6">
+
+    {% include 'snips/descriptor.html' %}
+
+  </div>
+
+  <div class="col-xl-4 col-lg col-md">
+
+    {% include 'snips/tree-view.html' %}
+
+  </div>
+
+</div>
+
+</div>
+<!-- main end -->
+
+{% endblock %}

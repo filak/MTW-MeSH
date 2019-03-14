@@ -1,0 +1,34 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX meshx:  <http://mesh.medvik.cz/link/>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+
+SELECT ?dui ?cui ?scn ?scnt ?an ?hn ?on ?pn
+       (GROUP_CONCAT(DISTINCT ?prev ; separator='~') AS ?pi)
+WHERE {
+  #BIND(mesh:D000003 as ?d)
+  #BIND(mesh:D012459 as ?d)
+  #BIND(mesh:Q000008 as ?d)
+  #BIND(mesh:D002493 as ?d)
+  BIND(mesh:D005123 as ?d)
+  ?d rdf:type ?dtype .
+  FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept ?c .
+  ?c meshv:identifier ?cui .
+  ?c meshv:scopeNote ?scn .
+  OPTIONAL { ?c mesht:scopeNote ?scnt }
+  # DESC_NOTES = annotation,considerAlso,historyNote,onlineNote,publicMeSHNote,translatorsNote,previousIndexing*
+  OPTIONAL { ?d meshv:annotation ?an }
+  OPTIONAL { ?d meshv:historyNote ?hn }
+  OPTIONAL { ?d meshv:onlineNote ?on }
+  OPTIONAL { ?d meshv:publicMeSHNote ?pn }
+  OPTIONAL { ?d meshv:previousIndexing ?prev }
+}
+GROUP BY ?dui ?cui ?scn ?scnt ?an ?hn ?on ?pn
+LIMIT 10

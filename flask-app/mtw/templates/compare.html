@@ -1,0 +1,124 @@
+{% set state_compare = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+Compare {{ dui }} - {{ year }}
+{% endblock %}
+
+{% block pagetitle %}
+<strong>Compare current vs {{ year }}</strong>
+
+{% endblock %}
+
+{% block body %}
+<!-- main -->
+<div class="container-fluid">
+  <div class="row mb-2">
+
+    <div class="col-xl-4 col-lg-6 col-md-6">
+      <ul class="list-inline mb-1">
+        <li class="list-inline-item align-middle">
+          <h4 class="">Current <small class="text-info">{{ dui }}</small>
+          </h4>
+        </li>
+        <li class="list-inline-item float-right align-middle">
+        </li>
+      </ul>
+
+   {% if not dui %}
+     <div class="mb-2">
+       <em>You need to <a href="{{ url_for('search') }}">find a Descriptor</a> first ...</em>
+     </div>
+   {% endif %}
+
+    </div>
+
+    <div class="col-xl-4 col-lg-6 col-md-6">
+      <ul class="list-inline mb-1">
+        <li class="list-inline-item align-middle">
+          <h4 class="">{{ year }}
+          </h4>
+        </li>
+        <li class="list-inline-item float-right align-middle">
+         {% if dui %}
+           <form action="{{ url_for('compare', dui=dui) }}" method="get">
+             <div class="input-group">
+                <select class="form-control form-control-sm" name="year">
+                {% for yr in config['PREV_YEARS'] %}
+                  {% if yr == year %}
+                    {% set sel = 'selected' %}
+                  {% endif %}
+                  <option value="{{ yr }}" {{ sel }}>{{ yr }}</option>
+                {% endfor %}
+                </select>
+                <div class="input-group-append">
+                  <button class="btn btn-secondary btn-sm" type="submit" title="Change year" aria-label="Change year">
+                    <i class="fas fa-exchange-alt"></i>
+                      </button>
+                </div>
+             </div>
+           </form>
+         {% endif %}
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="col-xl-4 col-lg col-md">
+      <ul class="list-inline mb-1">
+        <li class="list-inline-item align-middle">
+          <h4 class="">Diff
+          </h4>
+        </li>
+        <li class="list-inline-item align-middle">
+          <a class="btn btn-success btn-sm" role="button" href="{{ url_for('search', dui=dui) }}" title="Edit descriptor" aria-label="Edit descriptor"><i class="fas fa-pen"></i></a>
+        </li>
+      </ul>
+
+    </div>
+
+  </div>
+
+
+{% if dui %}
+  <div class="row">
+
+    <div class="col-xl-4 col-lg-6 col-md-6">
+
+      <pre>
+{{ dview }}
+      </pre>
+
+    </div>
+
+    <div class="col-xl-4 col-lg-6 col-md-6">
+
+   {% if not prev %}
+     <div class="mb-2">
+       <em>Nothing found ...</em>
+     </div>
+   {% endif %}
+
+      <pre>
+{{ prev }}
+      </pre>
+    </div>
+
+    <div class="col-xl-4 col-lg col-md">
+
+
+{{ dif|safe }}
+
+
+    </div>
+
+  </div>
+{% endif %}
+
+
+</div>
+
+<!-- main end -->
+
+{% endblock %}

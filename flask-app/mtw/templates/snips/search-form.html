@@ -1,0 +1,21 @@
+  <div class="row">
+    <div id="searchForm" class="col-12 mb-2">
+      <form action="{{ url_for('search', dui='') }}" method="get">
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" placeholder="Your query... with * and ? support " maxlength="100" aria-label="Your query... with two button addons" aria-describedby="button-addon4"
+                 name="q" value="{{ session.get('q','') }}" required>
+          <div class="input-group-append" id="button-addon4">
+            <span class="input-group-text">{{ hits_cnt }}</span>
+            <button class="btn btn-secondary" type="submit" title="Search" aria-label="Search"><i class="fas fa-search"></i></button>
+            <a class="btn btn-primary" role="button" href="{{ url_for('search', action='clear') }}" title="Clear" aria-label="Clear"><i class="fas fa-times"></i></a>
+          </div>
+        </div>
+
+      {% include 'snips/filters.html' %}
+
+      {% include 'snips/filters-lang.html' %}
+
+      </form>
+    </div>
+   </div>
+

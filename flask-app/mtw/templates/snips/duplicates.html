@@ -1,0 +1,45 @@
+{% if hits %}
+
+  <ul class="list-inline mb-2">
+    <li class="list-inline-item mt-2">
+      <h4>Results <small class="text-warning">{{ hits['metadata']['hits_cnt'] }}</small></h4>
+    </li>
+  </ul>
+
+    {% for row in hits['results']['bindings'] %}
+
+      <p>
+          {% set q = '"' + row['trx']['repr'] + '"' %}
+          {% set status = 'all' %}
+          {% set lang = 'all' %}
+          {% if row['ttype']['repr'] == 'descriptors' %}
+              {% set text = 'text-danger' %}
+          {% else %}
+              {% set text = 'text-warning' %}
+          {% endif %}
+          {% set title = 'Search for term' %}
+
+          <a href="{{ url_for('search', q=q, status=status, lang=lang) }}" target="{{ link_target }}" title="{{ row['ttype']['repr'] }} | {{ title }}">
+              <span class="{{ text }}">{{ row['trx']['repr'] }}</span> {{ row['cnt']['repr'] }}
+          </a> :
+
+          {% for dui in row['ids']['value'] | getListSplit(delim = '~') %}
+
+          <a href="{{ url_for('search', dui=dui) }}" target="{{ link_target }}" title="Show descriptor/qualifier">
+              {{ dui }}
+          </a> |
+
+          {% endfor %}
+      </p>
+
+    {% endfor %}
+
+{% else %}
+
+  <ul class="list-inline mb-2">
+    <li class="list-inline-item mt-2">
+      <h4>Results <small class="text-info">0</small></h4>
+    </li>
+  </ul>
+
+{% endif %}

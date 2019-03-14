@@ -1,0 +1,72 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX meshx:  <http://mesh.medvik.cz/link/>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+
+select * {
+{
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
+WHERE {
+  BIND('MH' as ?tty)
+  BIND('CZE' as ?lang)
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept ?c .
+  ?c meshv:identifier ?cui .
+  ?c mesht:preferredTerm ?t .
+  ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?str)
+  OPTIONAL { ?t mesht:identifier ?tui }
+  OPTIONAL { ?t mesht:active ?tstatus }
+  OPTIONAL {
+      ?c mesht:scopeNote ?scnval
+      BIND(STR(?scnval) AS ?scn)
+      }
+}
+LIMIT 10
+} UNION {
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
+WHERE {
+  BIND('PEP' as ?tty)
+  BIND('CZE' as ?lang)
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:concept|mesht:concept ?c .
+  ?c meshv:identifier|mesht:identifier ?cui .
+  ?c mesht:preferredTerm ?t .
+  ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?str)
+  OPTIONAL { ?t mesht:identifier ?tui }
+  OPTIONAL { ?t mesht:active ?tstatus }
+  OPTIONAL {
+      ?c mesht:scopeNote ?scnval
+      BIND(STR(?scnval) AS ?scn)
+      }
+}
+LIMIT 10
+} UNION {
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
+WHERE {
+  BIND('ET' as ?tty)
+  BIND('CZE' as ?lang)
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
+  ?c meshv:identifier|mesht:identifier ?cui .
+  ?c mesht:term ?t .
+  ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?str)
+  OPTIONAL { ?t mesht:identifier ?tui }
+  OPTIONAL { ?t mesht:active ?tstatus }
+}
+LIMIT 10
+}
+}

@@ -1,0 +1,32 @@
+{% set state_audit = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+Audit {{ dui }} {{ cui }}
+{% endblock %}
+
+{% block pagetitle %}
+<strong>Audit </strong>
+
+{% endblock %}
+
+{% block body %}
+<!-- main -->
+<div class="container-fluid">
+<div class="row">
+
+  <div class="col">
+
+    {% include 'snips/audit-log.html' %}
+
+  </div>
+
+</div>
+</div>
+
+{% include 'modals/update-audit.html' %}
+
+<!-- main end -->
+
+{% endblock %}

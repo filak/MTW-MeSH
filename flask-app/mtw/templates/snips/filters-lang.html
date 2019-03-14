@@ -1,0 +1,25 @@
+    {% if slang == 'target' %}
+        {% set TRG_CHECKED = 'checked' %}
+    {% elif slang == 'source' %}
+        {% set SRC_CHECKED = 'checked' %}
+    {% else %}
+        {% set ALL_LANGS = 'checked' %}
+    {% endif %}
+
+        <div class="form-group mb-2">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioLangAll" name="lang" value="all" class="custom-control-input" {{ ALL_LANGS }}>
+            <label class="custom-control-label" for="radioLangAll">Both langs</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioLangSource" name="lang" value="source" class="custom-control-input" {{ SRC_CHECKED }}>
+            <label class="custom-control-label" for="radioLangSource">Source</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="radioLangTarget" name="lang" value="target" class="custom-control-input" {{ TRG_CHECKED }}>
+            <label class="custom-control-label text-success" for="radioLangTarget">Target</label>
+          </div>
+        </div>
+
+
+

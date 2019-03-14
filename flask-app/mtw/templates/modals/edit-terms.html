@@ -1,0 +1,89 @@
+{% for term in terms %}
+
+          {% set termId = random_id() %}
+
+          <input type="hidden"
+                   name="term{{ termId }}___rowid"
+                   value="term{{ termId }}">
+
+          <input type="hidden"
+                   name="term{{ termId }}___turi"
+                   value="{{ term['rt'] }}">
+
+          <input type="hidden"
+                   name="term{{ termId }}___tpid"
+                   value="{{ term['tpid'] }}">
+
+          <div class="form-row termRow" id="{{ termInputRow }}">
+            <div class="col-7">
+              <label class="sr-only" for="termInput-{{ termId }}">Term</label>
+              <input type="text" class="form-control form-control-lg mb-2 termInput formInputChanged" id="termInput-{{ termId }}"
+                     data-formchanged="#formchanged-{{ item_cui }}"
+                     name="term{{ termId }}___prefLabel"
+                     maxlength="250" placeholder="{{ input_hint }}" value="{{ term['prefLabel'] }}" {{ input_required }}>
+            </div>
+
+            {% if term['ttype'] == 'B' %}
+                {% set radio_checked = 'checked' %}
+            {% endif %}
+
+            <div class="col mt-2 mb-2 mr-2">
+              <div class="form-check pl-1">
+                <div class="custom-control custom-radio">
+                  <input class="custom-control-input prefTermRadio formInputChanged" type="radio" id="prefTerm-{{ termId }}"
+                         data-formchanged="#formchanged-{{ item_cui }}"
+                         name="prefTermNew"
+                         value="term{{ termId }}" {{ radio_checked }} required="">
+                  <label class="custom-control-label" for="prefTerm-{{ termId }}">
+                    PrefTerm
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-2">
+              <label class="sr-only" for="termLexTag-{{ termId }}">Lexical Tag</label>
+                  <select class="form-control form-control-sm mt-2 mb-2 formInputChanged" id="termLexTag-{{ termId }}"
+                          data-formchanged="#formchanged-{{ item_cui }}"
+                          name="term{{ termId }}___lexicalTag" >
+
+                  {% if term['lexicalTag'] %}
+                    <option value="NON">NON</option>
+                    <option value="{{ term['lexicalTag'] }}" selected>{{ term['lexicalTag'] }}</option>
+                  {% else %}
+                    <option value="NON" selected>NON</option>
+                  {% endif %}
+                    <option value="NAM">NAM Proper name</option>
+                    <option value="TRD">TRD Trade name</option>
+                    <option value="EPO">EPO Eponym</option>
+                    <option disabled>---</option>
+                    <option value="ABB">ABB Abbreviation</option>
+                    <option value="ABX">ABX Embed.Abbr.</option>
+                    <option disabled>---</option>
+                    <option value="ACR">ACR Acronym</option>
+                    <option value="ACX">ACX Embed.Acro.</option>
+                    <option disabled>---</option>
+                    <option value="LAB">LAB number</option>
+                  </select>
+            </div>
+
+            {% if term['dateCreated'] %}
+                {% if term['dateUpdated'] %}
+                    {% set title = 'Created: ' + term['dateCreated'] %}
+                    {% set upd = term['dateUpdated'] %}
+                {% else %}
+                    {% set title = '' %}
+                    {% set upd = term['dateCreated'] %}
+                {% endif %}
+            {% endif %}
+
+            <div class="col mt-2 mb-2 pt-1">
+                <span class="font-weight-light small float-right"
+                      data-container="body" data-toggle="tooltip" data-placement="bottom" title="{{ title }}">
+                  {{ upd }}
+                </span>
+            </div>
+
+          </div>
+
+{% endfor %}

@@ -1,0 +1,25 @@
+## Stats query - custom nonPreferred Concepts - v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+select (COUNT(*) AS ?count) {
+{
+  SELECT ?t
+  WHERE {
+    BIND(mesht:narrowerConcept as ?p)
+    ?c ?p ?t
+  }
+} UNION {
+  SELECT ?t
+  WHERE {
+    BIND(mesht:broaderConcept as ?p)
+    ?c ?p ?t
+  }
+} UNION {
+  SELECT ?t
+  WHERE {
+    BIND(mesht:relatedConcept as ?p)
+    ?c ?p ?t
+  }
+}
+}

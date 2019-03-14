@@ -1,0 +1,432 @@
+{% set state_manage = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+Manage
+{% endblock %}
+
+{% block pagetitle %}
+<strong>Manage</strong>
+
+{% endblock %}
+
+{% block body %}
+<!-- main -->
+<div class="container-fluid">
+<div class="row">
+
+  <div class="col-md-3 col-sm">
+
+    {% include 'snips/users.html' %}
+
+  </div>
+
+  <div class="col-md-3 col-sm">
+
+    <ul class="list-inline mb-2">
+      <li class="list-inline-item mt-2"><h4>Checks</h4></li>
+      <li class="list-inline-item float-right">
+      </li>
+    </ul>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>Duplicate terms in translation</h5>
+            <a href="{{ url_for('todo', tlist='duplicates') }}" class="btn btn-warning" role="button">
+              Check
+            </a>
+            <span class="text-info">[shall be 0 within active concepts]</span>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>Duplicate terms in original</h5>
+            <a href="{{ url_for('todo', tlist='duplicates_eng') }}" class="btn btn-info" role="button">
+              Check
+            </a>
+            <span class="text-info">[shall be 0 normally]</span>
+      </div>
+    </div>
+
+    <ul class="list-inline mb-2">
+      <li class="list-inline-item mt-2"><h4>Stats</h4></li>
+      <li class="list-inline-item float-right">
+      </li>
+    </ul>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>Actual stats </h5>
+          <form action="{{ url_for('update_stats', stat='actual') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-success" type="submit" title="Update Actual stats">
+              Refresh
+                </button>
+          </form>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>Initial stats </h5>
+          <form action="{{ url_for('update_stats', stat='initial') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-danger" type="submit" title="Update Initial stats">
+              Reset
+                </button>
+            <span class="text-warning">
+            [resets <span class="badge badge-pill badge-success">old</span> &amp; <span class="badge badge-pill badge-info">new</span> counters]</span>
+          </form>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="col-md">
+
+    <ul class="list-inline mb-2">
+      <li class="list-inline-item mt-2">
+        <h4>Exports <small class="text-warning">Always do Checks before exports!</small></h4>
+      </li>
+      <li class="list-inline-item float-right">
+      </li>
+    </ul>
+
+    <div class="row mb-4">
+      <div class="col">
+
+{% if isDbLocked() %}
+
+        <h5>Unlock database</h5>
+          <button class="btn btn-success" data-toggle="modal" data-target="#showMessage" title="Unlock database">
+            <i class="fas fa-unlock"></i>
+          </button>
+
+{% else %}
+
+        <h5>Lock database</h5>
+          <button class="btn btn-danger" data-toggle="modal" data-target="#showMessage" title="Lock database">
+            <i class="fas fa-lock"></i>
+          </button>
+          <span class="text-danger">before generating UMLS TSV, Base &amp; Notes</span>
+
+{% endif %}
+
+      </div>
+    </div>
+
+{% if not isDbLocked() %}
+  {% set export_disabled = 'disabled' %}
+{% endif %}
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>UMLS TSV</h5>
+          <form action="{{ url_for('update_stats', stat='umls') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-success" type="submit" title="Create UMLS Export (TSV)" {{ export_disabled }}>
+              Generate
+                </button>
+
+          {% if exports['umls_tsv'] %}
+            {% set file = exports['umls_tsv'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+
+          </form>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>Base &amp; Notes<small class="text-success"> [generate to enable more exports]</small></h5>
+          <form action="{{ url_for('update_stats', stat='lookups') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-success mb-2" type="submit" title="Create export Base file (JSON)" {{ export_disabled }}>
+              Generate Base
+                </button>
+
+          {% if exports['lookups'] %}
+            {% set file = exports['lookups'] %}
+            <p class="mb-2">
+              [{{ file['fdate'] }}]
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+                {{ file['fname'] }}
+              </a>
+            </p>
+          {% endif %}
+
+          </form>
+
+          <form action="{{ url_for('update_stats', stat='lookups_notes') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-success mb-2" type="submit" title="Create export Notes file (JSON)" {{ export_disabled }}>
+              Generate Notes
+                </button>
+
+          {% if exports['lookups_notes'] %}
+            {% set file = exports['lookups_notes'] %}
+            <p class="mb-1">
+              [{{ file['fdate'] }}]
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+                {{ file['fname'] }}
+              </a>
+            </p>
+          {% endif %}
+
+          </form>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div class="col-md">
+
+    <ul class="list-inline mb-2">
+      <li class="list-inline-item mt-2">
+        <h4>MARC21 Exports</h4>
+      </li>
+      <li class="list-inline-item float-right">
+      </li>
+    </ul>
+
+    {% if show_marc %}
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>Settings</h5>
+
+          <form action="{{ url_for('update_stats', stat='marc') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if config.MARC_LINE == 'mrk' %}
+                {% set mrk_checked = 'checked=""' %}
+            {% else %}
+                {% set line_checked = 'checked=""' %}
+            {% endif %}
+
+            <div class="form-group mb-2">
+              <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="radioMarcFormatMrc" name="line_style" value="mrk" class="custom-control-input" {{ mrk_checked }}>
+                <label class="custom-control-label" for="radioMarcFormatMrc">MarcEdit line format (MRK)</label>
+              </div>
+              <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="radioMarcFormatLine" name="line_style" value="line" class="custom-control-input" {{ line_checked }}>
+                <label class="custom-control-label" for="radioMarcFormatLine">yaz-line format</label>
+              </div>
+            </div>
+
+            {% if config.MARC_TREE == 'daw' %}
+                {% set daw_checked = 'checked=""' %}
+            {% else %}
+                {% set def_checked = 'checked=""' %}
+            {% endif %}
+
+            <div class="form-group mb-2">
+              <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="radioMarcTreeDef" name="tree_style" value="def" class="custom-control-input" {{ def_checked }}>
+                <label class="custom-control-label" for="radioMarcTreeDef">Default tree (field 072)</label>
+              </div>
+              <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="radioMarcTreeCustom" name="tree_style" value="daw" class="custom-control-input" {{ daw_checked }}>
+                <label class="custom-control-label" for="radioMarcTreeCustom">Custom tree (field 686)</label>
+              </div>
+            </div>
+
+            <button class="btn btn-sm btn-success mb-2" type="submit" title="Create MARC file (TXT)">
+              Generate
+            </button>
+
+          {% if exports['marc_mrk_def'] %}
+            {% set file = exports['marc_mrk_def'] %}
+            <p class="mb-1">
+              [{{ file['fdate'] }}]
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+                {{ file['fname'] }}
+              </a>
+            </p>
+          {% endif %}
+
+          {% if exports['marc_mrk_daw'] %}
+            {% set file = exports['marc_mrk_daw'] %}
+            <p class="mb-1">
+              [{{ file['fdate'] }}]
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+                {{ file['fname'] }}
+              </a>
+            </p>
+          {% endif %}
+
+          {% if exports['marc_line_def'] %}
+            {% set file = exports['marc_line_def'] %}
+            <p class="mb-1">
+              [{{ file['fdate'] }}]
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+                {{ file['fname'] }}
+              </a>
+            </p>
+          {% endif %}
+
+          {% if exports['marc_line_daw'] %}
+            {% set file = exports['marc_line_daw'] %}
+            <p class="mb-1">
+              [{{ file['fdate'] }}]
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+                {{ file['fname'] }}
+              </a>
+            </p>
+          {% endif %}
+
+          </form>
+
+      </div>
+    </div>
+
+    {% endif %}
+
+
+    <ul class="list-inline mb-2">
+      <li class="list-inline-item mt-2">
+        <h4>LookUps</h4>
+      </li>
+      <li class="list-inline-item float-right">
+      </li>
+    </ul>
+
+    {% if show_lookups %}
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>JSON <small class="text-info">for Javascript</small></h5>
+          <form action="{{ url_for('update_stats', stat='js_all') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['js_all'] %}
+            <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for Javascript... (JSON)">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create lookup file for Javascript... (JSON)">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['js_all'] %}
+            {% set file = exports['js_all'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+
+          </form>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>JSON <small class="text-info">for Elastic</small></h5>
+          <form action="{{ url_for('update_stats', stat='js_elastic') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['js_elastic'] %}
+            <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for Elastic support (JSON)">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create lookup file for Elastic support (JSON)">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['js_elastic'] %}
+            {% set file = exports['js_elastic'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+
+          </form>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>XSLT lookup <small class="text-info">for Descriptors</small></h5>
+          <form action="{{ url_for('update_stats', stat='xml_desc') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['xml_desc'] %}
+            <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for Descriptors (XML)">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create lookup file for Descriptors (XML)">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['xml_desc'] %}
+            {% set file = exports['xml_desc'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+
+          </form>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>XSLT lookup <small class="text-info">for Qualifiers</small></h5>
+          <form action="{{ url_for('update_stats', stat='xml_qualif') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['xml_qualif'] %}
+            <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for Qualifiers (XML)">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create lookup file for Qualifiers (XML)">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['xml_qualif'] %}
+            {% set file = exports['xml_qualif'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+          </form>
+      </div>
+    </div>
+
+    {% endif %}
+
+  </div>
+
+
+</div>
+
+</div>
+
+    {% include 'modals/user/user_add.html' %}
+
+    {% include 'modals/user/user_update.html' %}
+
+    {% include 'modals/user/user_delete.html' %}
+
+<!-- main end -->
+
+{% endblock %}

@@ -1,0 +1,91 @@
+{% if official %}
+{% include 'sparql/_namespaces_def.sparql' %}
+{% else %}
+{% include 'sparql/_namespaces.sparql' %}
+{% endif %}
+
+## Descriptor view query v1.0
+
+SELECT DISTINCT * {
+{SELECT ?p ?o
+WHERE {
+  mesh:{{ query }} ?p ?val
+  FILTER(isLiteral(?val))
+  FILTER (LANG(?val) = "en")
+  BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+   BIND(rdf:type as ?p)
+   mesh:{{ query }} ?p ?val
+   BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:registryNumber as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?concept .
+    ?concept ?p ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:casn1_label as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?concept .
+    ?concept ?p ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:pharmacologicalAction as ?p)
+    mesh:{{ query }} ?p ?cx .
+    ?cx rdfs:label ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:scopeNote as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?concept .
+    ?concept meshv:scopeNote ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+  BIND(meshv:dateRevised as ?p)
+  mesh:{{ query }} ?p ?val
+  BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+  mesh:{{ query }} ?p ?id .
+  ?id rdfs:label ?val
+  FILTER(!isLiteral(?id))
+  BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:narrowerDescriptor as ?p)
+    ?id ?px mesh:{{ query }} .
+    ?id rdfs:label ?val
+    FILTER(?px IN(meshv:broaderDescriptor))
+    FILTER(!isLiteral(?id))
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:preferredTerm as ?p)
+    mesh:{{ query }} meshv:preferredConcept ?c .
+    ?c ?p ?id .
+    ?id meshv:prefLabel ?val
+    BIND(STR(?val) AS ?o)
+}} UNION {
+SELECT ?p ?o
+WHERE {
+    BIND(meshv:seeAlso as ?p)
+    ?id ?px mesh:{{ query }} .
+    ?id rdfs:label ?val
+    FILTER(?px IN(meshv:seeAlso))
+    FILTER(!isLiteral(?id))
+    BIND(STR(?val) AS ?o)
+}}
+
+} ORDER BY ?p ?o

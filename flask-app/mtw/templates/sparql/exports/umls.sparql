@@ -1,0 +1,67 @@
+## UMLS export query v1.0
+## endpoint: http://localhost:3030/mesh/query
+
+{% include 'sparql/_namespaces.sparql' %}
+
+select * {
+{
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
+WHERE {
+  BIND('MH' as ?tty)
+  BIND('{{ lang_umls }}' as ?lang)
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept ?c .
+  ?c meshv:identifier ?cui .
+  ?c mesht:preferredTerm ?t .
+  ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?str)
+  OPTIONAL { ?t mesht:identifier ?tui }
+  OPTIONAL { ?t mesht:active ?tstatus }
+  OPTIONAL {
+      ?c mesht:scopeNote ?scnval
+      BIND(STR(?scnval) AS ?scn)
+      }
+}
+#LIMIT 10
+} UNION {
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
+WHERE {
+  BIND('PEP' as ?tty)
+  BIND('{{ lang_umls }}' as ?lang)
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:concept|mesht:concept ?c .
+  ?c meshv:identifier|mesht:identifier ?cui .
+  ?c mesht:preferredTerm ?t .
+  ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?str)
+  OPTIONAL { ?t mesht:identifier ?tui }
+  OPTIONAL { ?t mesht:active ?tstatus }
+  OPTIONAL {
+      ?c mesht:scopeNote ?scnval
+      BIND(STR(?scnval) AS ?scn)
+      }
+}
+#LIMIT 10
+} UNION {
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
+WHERE {
+  BIND('ET' as ?tty)
+  BIND('{{ lang_umls }}' as ?lang)
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
+  ?c meshv:identifier|mesht:identifier ?cui .
+  ?c mesht:term ?t .
+  ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?str)
+  OPTIONAL { ?t mesht:identifier ?tui }
+  OPTIONAL { ?t mesht:active ?tstatus }
+}
+#LIMIT 10
+}
+}

@@ -1,0 +1,161 @@
+{% set state_intro = 'active' %}
+
+{% extends "_layout.html" %}
+
+{% block title %}
+Intro
+{% endblock %}
+
+{% block pagetitle %}
+<strong>MeSH Translation Workflow :  {{ config.TARGET_LANG|upper() }}  {{ config.TARGET_YEAR }}</strong>
+{% endblock %}
+
+{% block body %}
+
+<!-- main -->
+{% if get_adminMsg()['show'] == 'show' %}
+<div class="container">
+  <div class="row justify-content-md-center">
+    <div class="col-lg-8 col-md" id="adminMessage">
+      <div class="alert alert-warning">
+       <i class="fas fa-exclamation-triangle fa-lg"></i> Please, read
+       <a href="#message" data-toggle="modal" data-target="#showMessage">IMPORTANT message</a> from Admin or Manager
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="container-fluid">
+<div class="row">
+
+  <div class="col-md-3 col-sm">
+
+    <h4 class="mb-4">Welcome, {{ session.fname }}</h4>
+
+    <div class="alert alert-light mb-4">
+      <p>Your role is
+        <span class="badge badge-{{ get_userBadgeRep(session.ugroup) }} tree-view-badge"> {{ session.ugroup }} </span>
+      </p>
+    </div>
+
+    {% if session.theme %}
+        {% set theme = session.theme %}
+    {% else %}
+        {% set theme = config.DEFAULT_THEME %}
+    {% endif %}
+
+    {% if theme == 'slate' %}
+        {% set slate_CHECKED = 'checked' %}
+    {% elif theme == 'spacelab' %}
+        {% set spacelab_CHECKED = 'checked' %}
+    {% elif theme == 'flatly' %}
+        {% set flatly_CHECKED = 'checked' %}
+    {% else %}
+        {% set slate_CHECKED = 'checked' %}
+    {% endif %}
+
+    <h4>Change theme <small>[using <a href="https://bootswatch.com/" target="_blank">Bootswatch</a>]</small></h4>
+    <form action="{{ url_for('settings') }}" method="post">
+    <fieldset>
+      <div class="form-group">
+        <div class="custom-control custom-radio">
+          <input type="radio" id="customRadio1" name="theme" value="slate" class="custom-control-input" {{ slate_CHECKED }}>
+          <label class="custom-control-label" for="customRadio1">Slate [dark]</label>
+        </div>
+        <div class="custom-control custom-radio">
+          <input type="radio" id="customRadio3" name="theme" value="spacelab" class="custom-control-input" {{ spacelab_CHECKED }}>
+          <label class="custom-control-label" for="customRadio3">Spacelab [light]</label>
+        </div>
+        <div class="custom-control custom-radio">
+          <input type="radio" id="customRadio4" name="theme" value="flatly" class="custom-control-input" {{ flatly_CHECKED }}>
+          <label class="custom-control-label" for="customRadio4">Flatly [light]</label>
+        </div>
+      </div>
+    </fieldset>
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-primary">Apply</button>
+    </form>
+
+
+      {% if events %}
+      <h4 class="mt-5 mb-4">Events</h4>
+      {% endif  %}
+
+        <ul class="list-unstyled">
+        {% for item in events %}
+
+          <li>
+            <a href="{{ url_for('approve', event=item.event, status=None, userid=None, username=None ) }}">
+              {{ item.event }}
+                <span class="badge badge-light badge-pill"> {{ item.cnt }} </span>
+            </a>
+          </li>
+
+        {% endfor  %}
+        </ul>
+
+
+  </div>
+  <div class="col-md-2 col-sm">
+
+    <h4 class="mb-4">Activity</h4>
+
+      {% for item in stats_user %}
+
+        <h6>
+          <a href="{{ url_for('approve', status=item.tstate, userid=session.userid, username=session.uname|lower() ) }}">
+            <span class="badge badge-{{ get_statusRep(item.tstate) }} tree-view-badge"> {{ item.tstate }}
+              <span class="badge badge-light badge-pill"> {{ item.cnt }} </span>
+            </span>
+          </a>
+        </h6>
+
+      {% else %}
+
+        <em>No activity so far ...</em>
+
+      {% endfor  %}
+
+      {% if status %}
+      <h4 class="mt-4 mb-4">Status</h4>
+      {% endif  %}
+
+      {% for item in status %}
+
+        <h6>
+          <a href="{{ url_for('approve', status=item.tstate, userid=None, username=None ) }}">
+            <span class="badge badge-{{ get_statusRep(item.tstate) }} tree-view-badge"> {{ item.tstate }}
+              <span class="badge badge-light badge-pill"> {{ item.cnt }} </span>
+            </span>
+          </a>
+        </h6>
+
+      {% endfor  %}
+
+  </div>
+  <div class="col-lg-7 col-md">
+
+    <h4 class="mb-4">Stats for {{ config.TARGET_YEAR }}  <small><a href="{{ url_for('todo', tlist='duplicates') }}" class="text-warning">Duplicate terms check</a></small>
+    </h4>
+
+    {% if show_stats %}
+    <div class="row mb-4">
+      <div class="col">
+
+        {% include 'snips/stats.html' %}
+
+      </div>
+    </div>
+
+    {% else %}
+    <em>Stats generating in background - please check again later</em>
+    {% endif %}
+
+  </div>
+
+</div>
+</div>
+<!-- main end -->
+
+{% endblock %}

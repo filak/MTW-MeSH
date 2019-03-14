@@ -1,0 +1,133 @@
+## Browse query v1.0 - always with a treeNumber prefix !
+## endpoint: http://localhost:3030/mesh/query
+
+## Preferred concepts AKA descriptors
+
+{% include 'sparql/_namespaces.sparql' ignore missing %}
+
+SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
+
+{% if show == 'ntx' %} ## notTranslatable
+
+  ### __NOTRX__  ###
+  ##  top:{{ top }} toptn:{{ toptn }} tn:{{ tn }} ##
+  ##  status:{{ status }} show:{{ show }} ##
+
+  ?cx mesht:notTranslatable ?ntxx .
+  ?d meshv:preferredConcept|meshv:concept ?cx .
+  ?d meshv:treeNumber ?tn .
+  ?tn rdfs:label ?trn .
+
+  {% if toptn %}
+      ## TOPTN ##
+      FILTER (STRSTARTS( ?trn, "{{ toptn }}" ))
+  {% else %}
+      ## TOP ##
+      FILTER (STRSTARTS( ?trn, "{{ top }}" ))
+  {% endif %}
+  ?d meshv:preferredConcept ?c .
+
+{% else %}
+
+  {% if (status and status != 'all') or (show and show != 'all') %}
+
+  {SELECT distinct ?tn
+  WHERE {
+  ### __CHILDREN__  ###
+  ##  top:{{ top }} toptn:{{ toptn }} tn:{{ tn }} ##
+  ##  status:{{ status }} show:{{ show }} ##
+  {% if toptn %}
+      ## TOPTN ##
+      (?tn ?score) text:query (meshv:identifier "{{ tn }} OR {{ toptn }} OR {{ toptn }}.*") .
+  {% else %}
+      ## TOP ##
+      (?tn ?score) text:query (meshv:identifier "{{ top }}??.*") .
+  {% endif %}
+        }
+  }
+
+  {% else %}
+
+  {SELECT distinct ?tn
+  WHERE {
+  ### __BASE__  ###
+  ##  top:{{ top }} toptn:{{ toptn }} tn:{{ tn }} ##
+  ##  status:{{ status }} show:{{ show }} ##
+  {% if toptn %}
+      ## TOPTN  ##
+      (?tn ?score) text:query (meshv:identifier "{{ tn }} OR {{ tn }}.??? OR {{ toptn }} OR {{ toptn }}.???" 1000) .
+  {% else %}
+      ## TOP ##
+      (?tn ?score) text:query (meshv:identifier "{{ query }}" 1000) .
+  {% endif %}
+        }
+  }
+
+  {% endif %}
+
+  ?d meshv:treeNumber ?tn .
+  ?d meshv:preferredConcept ?c .
+
+{% endif %}
+
+  ?d rdf:type ?type .
+  ?d rdfs:label ?label .
+    FILTER (lang(?label) = 'en')
+
+  ?d meshv:active ?active .
+    {% if status == 'active' %}
+        FILTER (?active)
+    {% endif %}
+    {% if status == 'deleted' %}
+        FILTER (!?active)
+    {% endif %}
+
+    OPTIONAL {
+      ?c mesht:preferredTerm ?termID .
+      ?termID mesht:prefLabel ?val
+    }
+
+    OPTIONAL {?c meshv:scopeNote ?scnv .
+              BIND('YES' as ?scn)
+             }
+    OPTIONAL {?c mesht:scopeNote ?scntv
+              BIND('YES' as ?scnt)
+             }
+
+    {% if status == 'revised' %}
+        ?d meshv:dateRevised ?dateRev .
+        FILTER( ?dateRev >= "{{ config.REVISED_AFTER }}"^^xsd:date )
+    {% endif %}
+
+    {% if status == 'new' %}
+        ?d meshv:dateCreated ?dateCrt .
+        FILTER( ?dateCrt >= "{{ config.CREATED_AFTER }}"^^xsd:date )
+    {% endif %}
+
+    {% if status == 'notpref' %}
+        ?d meshv:concept ?npc .
+        OPTIONAL { ?npc mesht:preferredTerm ?termIDnp }
+        FILTER (!BOUND(?termIDnp))  ## NotTranslated notPreferred
+    {% endif %}
+
+    {% if show == 'translated' %}
+        FILTER (BOUND(?val))   ## Translated
+    {% endif %}
+
+    {% if show == 'todo' %}
+        FILTER (!BOUND(?val))  ## notTranslated
+        FILTER (?active)
+    {% endif %}
+
+    {% if show == 'scn' %}
+        FILTER (BOUND(?val))   ## Translated
+        FILTER (BOUND(?scn))   ## ScopeNote
+        FILTER (!BOUND(?scnt)) ## notTranslatedScopeNote
+    {% endif %}
+
+    OPTIONAL { ?c mesht:notTranslatable ?ntx }
+    OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+}
+
+ORDER BY ?tn
+

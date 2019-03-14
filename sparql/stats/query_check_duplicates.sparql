@@ -1,0 +1,48 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX meshx:  <http://mesh.medvik.cz/link/>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+
+### Search for duplicates in translation v1.0
+
+SELECT ?trx ?ttype ?cnt ?ids {
+{
+SELECT ?trx ?ttype (count(*) as ?cnt)
+    (GROUP_CONCAT(DISTINCT ?dui ; separator='~') AS ?ids)
+WHERE {
+  ?d rdf:type ?type .
+  ?d meshv:active true .
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept|meshv:concept ?c .
+  ?c mesht:preferredTerm|mesht:term ?t .
+  ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?trx)
+  BIND('descriptors' AS ?ttype)
+}
+GROUP BY ?trx ?ttype
+HAVING (?cnt > 1)
+} UNION
+{
+SELECT ?trx ?ttype (count(*) as ?cnt)
+   (GROUP_CONCAT(DISTINCT ?dui ; separator='~') AS ?ids)
+WHERE {
+  ?d rdf:type ?type .
+  ?d meshv:active true .
+  FILTER(?type IN(meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept|meshv:concept ?c .
+  ?c mesht:preferredTerm|mesht:term ?t .
+  ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?trx)
+  BIND('qualifiers' AS ?ttype)
+}
+GROUP BY ?trx ?ttype
+HAVING (?cnt > 1)
+}
+} ORDER BY ?ttype ?trx

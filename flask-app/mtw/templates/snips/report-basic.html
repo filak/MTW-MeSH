@@ -1,0 +1,72 @@
+<ul class="list-inline mb-2">
+  <li class="list-inline-item mt-2">
+    <h4>Events</h4>
+  </li>
+
+  <li class="list-inline-item align-middle mt-2 float-right">
+{% set rep = 'events' %}
+{% include 'snips/report-form.html' %}
+  </li>
+
+</ul>
+
+<div class="row">
+
+  <div class="col">
+
+   {% if not report %}
+     <div class="mb-2">
+       <em>No activity found ...</em>
+     </div>
+   {% endif %}
+
+<table class="table table-hover table-sm table-borderless" id="mtw-reportLog">
+  <caption>Report of events</caption>
+  <thead>
+    <tr>
+      <th scope="col">Month</th>
+      <th scope="col">CreatedBy</th>
+      <th scope="col">Event</th>
+      <th scope="col">Status</th>
+      <th scope="col">Count</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for item in report %}
+    <tr>
+        <td>
+          {{ item.yr_mon }}
+        </td>
+
+        <td>
+           {% if item.username %}
+             {% set uname = item.username %}
+           {% else %}
+             {% set uname = 'Admin' %}
+           {% endif %}
+           {{ uname }}
+        </td>
+
+        <td>
+           {{ item.event }}
+        </td>
+
+        <td>
+          <a href="{{ url_for('approve', userid=item.userid, status=item.tstate, event=item.event, username=uname, year=item.targetyear) }}" target="_blank" title="Approvals">
+            <span class="badge badge-{{ get_statusRep(item.tstate) }}">{{ item.tstate }}</span>
+          </a>
+        </td>
+
+        <td>
+           {{ item.cnt }}
+        </td>
+
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+  </div>
+
+</div>
+

@@ -1,0 +1,88 @@
+<div class="modal fade" id="showHistoryModal" tabindex="-1" role="dialog" aria-labelledby="show History detail for event" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historyDetailTitle">...</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{{ url_for('update_audit') }}" method="post" id="updateAuditForm" data-descpage="{{ url_for('search') }}">
+      <div class="modal-body">
+
+        <div class="row">
+          <div class="col">
+            <pre id="historyParams"></pre>
+          </div>
+        </div>
+
+        <h4 class="card-title text-center">OLD | NEW</h4>
+
+        <div class="row mb-2">
+          <div class="col-6 text-right">
+            <pre id="historyTermsOld"></pre>
+          </div>
+          <div class="col-6 text-left">
+            <pre id="historyTermsNew"></pre>
+          </div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-6 text-right" id="historyScntOld">
+          </div>
+          <div class="col-6 text-left" id="historyScntNew">
+          </div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-6 text-right" id="historyScnOld">
+          </div>
+          <div class="col-6 text-left" id="historyScnNew">
+          </div>
+        </div>
+
+       {% if session.ugroup in ('admin','manager','editor') %}
+        <div class="form-group" id="noteAuditComment">
+          <label for="noteAudit" class="font-weight-bold">Comment</label>
+          <textarea class="form-control" id="noteAudit" name="anote" rows="2" maxlength="200" placeholder="...Reject/Approve note..."></textarea>
+        </div>
+       {% else %}
+          <span class="font-weight-bold">Comment</span>
+          <p id="noteAuditLabel"></p>
+       {% endif %}
+
+      </div>
+      <div class="modal-footer">
+
+          <input type="hidden" id="updateAuditApid"
+                 name="apid"
+                 value="">
+
+          <input type="hidden" id="updateAuditEvent"
+                 name="event"
+                 value="">
+
+          <input type="hidden" id="updateAuditDui"
+                 name="dui"
+                 value="">
+
+          <input type="hidden" id="updateAuditCui"
+                 name="cui"
+                 value="">
+
+          <input type="hidden" id="updateAuditBack"
+                 name="backlink"
+                 value="s">
+
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+          <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
+          {% if session.ugroup in ('admin','manager','editor') and not isDbLocked() %}
+              <button name="approved" value="false" type="submit" class="btn btn-danger ml-3" id="auditRejectButt">Reject</button>
+              <button name="approved" value="true"  type="submit" class="btn btn-success ml-3" id="auditApproveButt">Approve</button>
+          {% endif %}
+      </div>
+    </form>
+    </div>
+  </div>
+</div>

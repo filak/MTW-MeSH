@@ -1,0 +1,28 @@
+## Base notes export query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?dui ?cui ?scn ?scnt ?an ?tan ?cx ?tcx ?hn ?thn ?ol ?pm
+       (GROUP_CONCAT(DISTINCT ?prev ; separator='~') AS ?pi)
+WHERE {
+  ?d rdf:type ?dtype .
+  FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept ?c .
+  ?c meshv:identifier ?cui .
+  ?c meshv:scopeNote ?scn .
+  OPTIONAL { ?c mesht:scopeNote ?scnt }
+  ### DESC_NOTES = annotation,considerAlso,historyNote,onlineNote,publicMeSHNote,translatorsNote,previousIndexing*
+  ### Translate:   annotation,considerAlso,historyNote
+  OPTIONAL { ?d meshv:annotation ?an }
+  OPTIONAL { ?d mesht:annotation ?tan }
+  OPTIONAL { ?d meshv:considerAlso ?cx }
+  OPTIONAL { ?d mesht:considerAlso ?tcx }
+  OPTIONAL { ?d meshv:historyNote ?hn }
+  OPTIONAL { ?d mesht:historyNote ?thn }
+  OPTIONAL { ?d meshv:onlineNote ?ol }
+  OPTIONAL { ?d meshv:publicMeSHNote ?pm }
+  OPTIONAL { ?d meshv:previousIndexing ?prev }
+}
+GROUP BY ?dui ?cui ?scn ?scnt ?an ?tan ?cx ?tcx ?hn ?thn ?ol ?pm
+###LIMIT 100

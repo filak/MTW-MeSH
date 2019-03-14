@@ -1,0 +1,122 @@
+<ul class="list-inline mb-2">
+  <li class="list-inline-item">
+    <h4 class="mt-2" title="Oldest first">Audit for
+        <small> <span class="text-info">{{ dui }}</span> {{ cui }} </small>
+        <span class="text-info">   <i class="fas fa-sort-numeric-down"></i> </span>
+    </h4>
+  </li>
+  <li class="list-inline-item">
+   {% if dui %}
+     <form action="{{ url_for('audit', dui=dui) }}" method="get">
+       <div class="input-group">
+          <select class="form-control form-control-sm" name="year">
+          <option value="0">All Years</option>
+          {% for yr in target_years %}
+            {% if yr == year %}
+              {% set sel = 'selected' %}
+            {% endif %}
+            <option value="{{ yr }}" {{ sel }}>{{ yr }}</option>
+          {% endfor %}
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-secondary btn-sm" type="submit" title="Change target year" aria-label="Change target year">
+              <i class="fas fa-filter"></i>
+            </button>
+            <a class="btn btn-primary btn-sm" href="{{ url_for('audit', dui=dui) }}"
+               role="button" title="Clear year" aria-label="Clear year">
+               <i class="fas fa-times"></i>
+            </a>
+          </div>
+       </div>
+     </form>
+   {% endif %}
+  </li>
+
+  <li class="list-inline-item float-right">
+        <a class="btn btn-success" role="button" href="{{ url_for('search', dui=dui) }}" title="Edit descriptor" aria-label="Edit descriptor"><i class="fas fa-pen"></i></a>
+        <a class="btn btn-secondary" role="button" href="{{ url_for('audit', dui=dui) }}" title="Top" aria-label="Top"><i class="fas fa-arrow-up"></i></a>
+  </li>
+</ul>
+
+   {% if not dui %}
+     <div class="mb-2">
+       <em>You need to <a href="{{ url_for('search') }}">find a Descriptor</a> first ...</em>
+     </div>
+   {% elif not audit %}
+     <div class="mb-2">
+       <em>Nothing so far ...</em>
+     </div>
+   {% endif %}
+
+<table class="table table-hover table-sm table-borderless" id="mtw-auditLog">
+  <caption>List of Audit records</caption>
+  <thead>
+    <tr>
+      <th scope="col">User</th>
+      <th scope="col">Year</th>
+      <th scope="col">Updated</th>
+      <th scope="col">Event</th>
+      <th scope="col">Status</th>
+      <th scope="col">Detail</th>
+      <th scope="col">Comment</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for item in audit %}
+    <tr>
+        <td>
+          {{ item.username }}
+           {% if item.resolvedby and item.resolvedby != 'None' %}
+               : {{ item.resolvedby }}
+           {% endif %}
+        </td>
+
+        <td>
+          {{ item.targetyear }}
+        </td>
+
+        <td>
+          <a href="#created" class="text-muted" data-container="body" data-toggle="tooltip" data-placement="bottom"
+                      title="Created: {{ item.created|replace('T', ' ') }}">
+            {{ item.updated|replace('T', ' ') }}  <i class="fas fa-info-circle"></i>
+          </a>
+        </td>
+
+        <td>
+            {{ item.event }}
+        </td>
+
+        <td>
+          <span class="badge badge-{{ get_statusRep(item.tstate) }}">{{ item.tstate }}</span>
+        </td>
+
+        {% set backlink = 'ref' %}
+
+        <td>
+        {% include 'snips/audit-show.html' %}
+        </td>
+
+        <td>
+           {% if item.note and item.note != 'None' %}
+               {{ item.note|truncate(50) }}
+           {% endif %}
+        </td>
+
+
+        <td class="float-right">
+         {% if not cui and item.otype == 'concept' %}
+            {% set filter_invisible = '' %}
+         {% else %}
+            {% set filter_invisible = 'invisible' %}
+         {% endif %}
+          <a href="{{ url_for('audit', dui=item.dui, cui=item.opid) }}" title="Filter by Concept" class="btn btn-primary btn-sm mr-2 align-middle {{ filter_invisible }}">
+            <i class="fas fa-filter"></i>
+          </a>
+
+        </td>
+
+
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>

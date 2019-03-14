@@ -1,0 +1,67 @@
+
+  <ul class="list-inline mb-1">
+    <li class="list-inline-item align-middle">
+      <h4 class="mt-1">Status <small class="text-{{ get_statusRep(status) }}">{{ status }}</small>
+    {% if username %}
+        <a class="btn btn-primary btn-sm" href="{{ url_for('approve', status=status, event=event) }}"
+           role="button" title="Clear user" aria-label="Clear user">
+        {{ username }}  <i class="fas fa-times"></i>
+        </a>
+    {% endif %}
+      </h4>
+    </li>
+    <li class="list-inline-item float-right align-middle">
+      <a class="btn btn-primary" role="button" href="{{ url_for('approve') }}" title="Clear all" aria-label="Clear all"><i class="fas fa-times"></i></a>
+    </li>
+  </ul>
+
+  <ul class="list-inline mb-4">
+  {% for item in statuses %}
+
+    <li class="list-inline-item align-middle">
+      <a href="{{ url_for('approve', status=item.tstate, userid=userid, username=username, event=event) }}">
+        <span class="badge badge-{{ get_statusRep(item.tstate) }} tree-view-badge mt-2 mb-2"> {{ item.tstate }}
+          <span class="badge badge-light badge-pill"> {{ item.cnt }} </span>
+        </span>
+      </a>
+    </li>
+
+  {% endfor %}
+  </ul>
+
+  <ul class="list-unstyled">
+  {% for user in users %}
+
+      {% if user.userid == 0 %}
+        {% set uname = config.ADMINNAME %}
+        {% set group = 'admin' %}
+      {% else %}
+        {% set uname = user.username %}
+        {% set group = user.ugroup %}
+      {% endif %}
+
+      {% if user.userid|string == userid|string %}
+        {% set user_selected = 'font-weight-bold' %}
+        {% set user_icon = True %}
+      {% endif %}
+
+      {% if event %}
+
+        {% if user.tstate == status %}
+          {% include 'snips/approve-users.html' %}
+        {% endif %}
+
+      {% else %}
+          {% include 'snips/approve-users.html' %}
+      {% endif %}
+
+  {% else %}
+
+   <li>
+     <em>Nothing {{ status }} so far ...</em>
+   </li>
+
+  {% endfor %}
+  </ul>
+
+

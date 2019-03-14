@@ -1,0 +1,25 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX meshx:  <http://mesh.medvik.cz/link/>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+
+SELECT distinct ?dui ?cui ?lang ?tty ?val ?tui
+WHERE {
+  BIND('ET' as ?tty)
+  BIND('CZE' as ?lang)
+  ##BIND(mesh:D000998 as ?d)
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
+  ?c meshv:identifier|mesht:identifier ?cui .
+  ?c mesht:term ?t .
+  ?t mesht:prefLabel ?val .
+  OPTIONAL { ?t mesht:identifier ?tui }
+}
+#LIMIT 100

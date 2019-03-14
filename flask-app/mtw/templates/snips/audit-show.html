@@ -1,0 +1,64 @@
+{% if item.resolvedby and item.resolvedby != 'None' %}
+   {% set resby = ' - ' + item.resolvedby %}
+{% endif %}
+
+{% if item.otype == 'concept' %}
+   {% set cui = item.opid %}
+{% endif %}
+
+<a href="#" class="pb-2"
+data-toggle="modal" data-target="#showHistoryModal" data-backlink="{{ backlink }}"
+data-updated="{{ item.updated|replace('T', ' ') }}" data-event="{{ item.event }}"
+data-tstate="{{ item.tstate }}" data-apid="{{ item.apid }}"
+data-resolvedby="{{ item.username }} {{ resby }}" data-note="{{ item.note }}" data-cui="{{ cui }}" data-dui="{{ item.dui }}"
+data-params="
+{% if item.event == 'insert_concept' %}
+notrx : {{ item.params.new.ntx }}
+active: {{ item.params.new.active }}
+rels  : {{ item.params.new.rel }}
+tnote : {{ item.params.new.tnote }}
+{% elif item.event in ('delete_concept','purge_concept') %}
+notrx : {{ item.params.old.ntx }}
+rels  : {{ item.params.old.rel }}
+tnote : {{ item.params.old.tnote }}
+scne  : {{ item.params.old.scne }}
+scnt  : {{ item.params.old.scnt }}
+{% elif item.event == 'update_concept' %}
+  {% if item.params.old.ntx != item.params.new.ntx %}
+notrx : {{ item.params.old.ntx }} => {{ item.params.new.ntx }}
+  {% endif %}
+  {% if item.params.old.rel != item.params.new.rel %}
+rels  : {{ item.params.old.rel }} => {{ item.params.new.rel }}
+  {% endif %}
+  {% if item.params.old.tnote != item.params.new.tnote %}
+tnote-new: {{ item.params.new.tnote }}
+tnote-old: {{ item.params.old.tnote }}
+  {% endif %}
+{% endif %}
+"
+data-terms-old="
+{% if item.event in ('update_concept','delete_concept','purge_concept','set_notrx') %}
+ {% for term in item.params.old.terms %}
+{{ term.prefLabel }} {{ term.lexicalTag }}
+ {% endfor %}
+{% endif %}
+"
+data-terms-new="
+{% if item.event in ('insert_concept','update_concept','purge_concept') %}
+ {% for term in item.params.new.terms %}
+{{ term.prefLabel }} {{ term.lexicalTag }}
+ {% endfor %}
+{% endif %}
+"
+{% if item.event in ('insert_scopeNote','update_scopeNote','delete_scopeNote','delete_note','insert_note','update_note') %}
+data-scn-old="{{ item.params.old }}"
+data-scn-new="{{ item.params.new }}"
+{% endif %}
+{% if item.event in ('insert_scopeNoteTrx','update_scopeNoteTrx','delete_scopeNoteTrx') %}
+data-scnt-old="{{ item.params.old }}"
+data-scnt-new="{{ item.params.new }}"
+{% endif %}
+data-label="{{ item.label }}" data-detail="{{ item.detail }}">
+
+<span class="text-{{ get_statusRep(item.tstate) }}">{{ item.label|truncate(50, True) }} : {{ item.detail|truncate(50, True) }}</span>
+</a>

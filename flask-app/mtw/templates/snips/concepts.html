@@ -1,0 +1,117 @@
+
+    {% for c in concepts['con_list'] %}
+
+      {% set item = concepts['concepts'][c] %}
+
+          {% if item['type'] == 'N' %}
+            {% set c_class = '' %}
+          {% else %}
+            {% set c_class = '' %}
+          {% endif %}
+
+      <ul class="list-unstyled {{ c_class }}">
+          {% if item['ntx'] %}
+            {% set item_text = 'text-warning' %}
+          {% elif item['active'] == 'false'  %}
+            {% set item_text = 'text-danger' %}
+          {% else %}
+            {% set item_text = 'text-muted' %}
+          {% endif %}
+
+        <li class="mb-1">
+          <span class="{{ item_text }} concept">{{ item['rel'] }} {{ item['cpid'] }}</span>
+
+               {% if item['tnote'] %}
+               <a href="#" data-container="body" data-toggle="tooltip" data-placement="right"
+                   title="{{ item['tnote'] }}"><i class="fas fa-comment-alt"></i></a>
+               {% endif %}
+
+          {% if item['status'] == 'TRX' %}
+          <button type="button" class="btn btn-primary btn-sm ml-1" title="Add translation"
+            data-toggle="modal" data-target="#editConcept-{{ item['cui'] }}" data-cui="{{ item['cui'] }}">
+            <i class="fas fa-plus"></i></button>
+
+          {% elif item['status'] == 'OK' %}
+          <button type="button" class="btn btn-primary btn-sm ml-1" title="Edit translation"
+            data-toggle="modal" data-target="#editConcept-{{ item['cui'] }}" data-cui="{{ item['cui'] }}" >
+            <i class="fas fa-pen text-success"></i></button>
+          {% endif %}
+
+          {% if item['scn'] and item['scnt'] %}
+          <button type="button" class="btn btn-primary btn-sm ml-1" title="Edit ScopeNote"
+                  data-toggle="modal" data-target="#editScopeNote"
+                  data-cpid="{{ item['cpid'] }}" data-label="{{ item['label']|truncate(50, True) }}" data-concept="{{ item['rc'] }}" data-active="{{ item['active'] }}"
+                  data-scn="{{ item['scn'] }}" data-scnt="{{ item['scnt'] }}">
+            <i class="fas fa-sticky-note text-success"></i></button>
+          {% elif item['scn'] %}
+          <button type="button" class="btn btn-primary btn-sm ml-1" title="Add Translated ScopeNote"
+                  data-toggle="modal" data-target="#editScopeNote"
+                  data-cpid="{{ item['cpid'] }}" data-label="{{ item['label']|truncate(50, True) }}" data-concept="{{ item['rc'] }}" data-active="{{ item['active'] }}"
+                  data-scn="{{ item['scn'] }}" data-scnt="">
+            <i class="fas fa-sticky-note text-info"></i></button>
+          {% elif item['scne'] and item['scnt'] %}
+          <button type="button" class="btn btn-primary btn-sm ml-1" title="Edit ScopeNotes"
+                  data-toggle="modal" data-target="#editScopeNote" data-enable="scn"
+                  data-cpid="{{ item['cpid'] }}" data-label="{{ item['label']|truncate(50, True) }}" data-concept="{{ item['rc'] }}" data-active="{{ item['active'] }}"
+                  data-scne="{{ item['scne'] }}" data-scnt="{{ item['scnt'] }}">
+            <i class="fas fa-sticky-note text-success"></i></button>
+          {% elif item['scnt']  %}
+          <button type="button" class="btn btn-primary btn-sm ml-1" title="Add English ScopeNote"
+                  data-toggle="modal" data-target="#editScopeNote" data-enable="scn"
+                  data-cpid="{{ item['cpid'] }}" data-label="{{ item['label']|truncate(50, True) }}" data-concept="{{ item['rc'] }}" data-active="{{ item['active'] }}"
+                  data-scne="" data-scnt="{{ item['scnt'] }}">
+            <i class="fas fa-sticky-note text-warning"></i></button>
+          {% elif item['scne']  %}
+          <button type="button" class="btn btn-primary btn-sm ml-1" title="Add Translated ScopeNote"
+                  data-toggle="modal" data-target="#editScopeNote" data-enable="scn"
+                  data-cpid="{{ item['cpid'] }}" data-label="{{ item['label']|truncate(50, True) }}" data-concept="{{ item['rc'] }}" data-active="{{ item['active'] }}"
+                  data-scne="{{ item['scne'] }}" data-scnt="">
+            <i class="fas fa-sticky-note text-info"></i></button>
+
+          {% else %}
+
+            {% if item['status'] == 'OK' and item['lang'] == config.TARGET_LANG %}
+            <button type="button" class="btn btn-primary btn-sm ml-1" title="Add ScopeNotes"
+                  data-toggle="modal" data-target="#editScopeNote" data-enable="scn"
+                  data-cpid="{{ item['cpid'] }}" data-label="{{ item['label']|truncate(50, True) }}" data-concept="{{ item['rc'] }}" data-active="{{ item['active'] }}"
+                  data-scne="" data-scnt="">
+            <i class="fas fa-sticky-note"></i></button>
+            {% endif %}
+          {% endif %}
+
+        </li>
+
+          <ul class="list-unstyled">
+
+          {% for term in item['terms']['en'] %}
+
+             {% include 'snips/terms.html' %}
+
+          {% endfor %}
+
+          {% for term in item['terms']['target'] %}
+
+             {% include 'snips/terms.html' %}
+
+          {% endfor %}
+          </ul>
+    </ul>
+
+    {% include 'modals/edit-concept.html' %}
+
+    {% include 'modals/delete-concept.html' %}
+
+    {% endfor %}
+
+
+    {% if session.ugroup in ('admin','manager','editor') %}
+      <button type="button" class="btn btn-primary btn-sm" title="Create Concept"
+        data-toggle="modal" data-target="#editConcept-NEW" data-cui="NEW" data-label="{{ descriptor['labels']['en']|truncate(50, True) }}">
+        <i class="fas fa-plus"></i> Add Concept</button>
+
+    {% elif session.ugroup in ('contributor') %}
+      <button type="button" class="btn btn-primary btn-sm" title="Propose Concept"
+        data-toggle="modal" data-target="#editConcept-NEW" data-cui="NEW" data-label="{{ descriptor['labels']['en']|truncate(50, True) }}">
+        <i class="fas fa-plus"></i> Add Concept</button>
+    {% endif %}
+

@@ -1,0 +1,282 @@
+{% set item_cui = item['cui'] %}
+
+<div class="modal fade conceptModal" id="editConcept-{{ item['cui'] }}" tabindex="-1" role="dialog" aria-labelledby="edit Concept" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">{{ descriptor['labels']['en'] }}
+          [<span class="text-success">{{ descriptor['labels']['target'] }}</span>]
+          <small class="font-weight-light">{{ descriptor['labels']['dtype'] }}</small>
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+     {% if item['ntx'] %}
+         {% set text_notrx_label = 'text-warning' %}
+     {% elif item['active'] == 'false' %}
+         {% set text_notrx_label = 'text-danger' %}
+     {% endif %}
+
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span class="{{ text_notrx_label }}">{{ item['label'] }} </span>
+          <small class="font-weight-light"> {{ item['rel'] }}</small>
+          <small> {{ item['cpid'] }} </small>
+        </h4>
+      </div>
+
+      <form action="{{ url_for('update_concept', dui=dui, pref=descriptor['labels']['prefCui']) }}" method="post" id="editConcept-{{ item['cui'] }}-form">
+        <div class="modal-body">
+
+      {% if item['terms']['en'] %}
+          <ul class="list-unstyled">
+        {% for term in item['terms']['en'] %}
+
+            {% if term['ttype'] != 'N' %}
+                {% set class_term = 'font-weight-bold' %}
+            {% endif %}
+              <li>
+                <span class="{{ class_term }}">{{ term['prefLabel'] }}</span>
+                <span class="font-weight-light">
+                {% if term['lexicalTag'] != 'NON' %}
+                 {{ term['lexicalTag'] }}
+                {% endif %}
+                </span>
+                <span class="text-muted">{{ term['altLabel']|replace('|',' -- ') }}</span>
+                <span class="font-weight-light float-right">
+                  {{ term['dateCreated'] }}
+                </span>
+              </li>
+      {% endfor %}
+          </ul>
+      {% endif %}
+
+
+      {% if item['lang'] == config.TARGET_LANG and item['lang'] != 'en' %}
+
+          {% if item['rel'] == 'narrowerConcept' %}
+              {% set NRW_STATUS = 'checked' %}
+          {% elif item['rel'] == 'broaderConcept' %}
+              {% set BRD_STATUS = 'checked' %}
+          {% elif item['rel'] == 'relatedConcept' %}
+              {% set REL_STATUS = 'checked' %}
+          {% else %}
+              {% set NRW_STATUS = 'checked' %}
+          {% endif %}
+
+      {% if session.ugroup not in ('admin','manager','editor') %}
+          {% set disabled_Relationship = 'disabled' %}
+      {% endif %}
+
+        <fieldset {{ disabled_Relationship }}>
+          <legend>
+            <span class="font-weight-light">Concept relationship</span>
+          </legend>
+          <div class="form-group">
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" id="conceptRelEdit1-{{ item['cui'] }}" name="concept-rel" class="custom-control-input formInputChanged"
+                     data-formchanged="#formchanged-{{ item['cui'] }}"
+                     value="narrowerConcept" {{ NRW_STATUS }}>
+              <label class="custom-control-label" for="conceptRelEdit1-{{ item['cui'] }}">Narrower</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" id="conceptRelEdit2-{{ item['cui'] }}" name="concept-rel" class="custom-control-input formInputChanged"
+                     data-formchanged="#formchanged-{{ item['cui'] }}"
+                     value="broaderConcept" {{ BRD_STATUS }}>
+              <label class="custom-control-label" for="conceptRelEdit2-{{ item['cui'] }}">Broader</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" id="conceptRelEdit3-{{ item['cui'] }}" name="concept-rel" class="custom-control-input formInputChanged"
+                     data-formchanged="#formchanged-{{ item['cui'] }}"
+                     value="relatedConcept" {{ REL_STATUS }}>
+              <label class="custom-control-label" for="conceptRelEdit3-{{ item['cui'] }}">Related</label>
+            </div>
+          </div>
+        </fieldset>
+      {% endif %}
+
+   <legend>
+        <span class="font-weight-light">Terms</span>
+   </legend>
+
+   {% if item['terms']['target'] %}
+
+   <!--  translated terms exist   -->
+
+       {% set terms = item['terms']['target'] %}
+
+       {% include 'modals/edit-terms.html' %}
+
+       <!--  add some empty fields  -->
+
+       {% set terms = [1,2,3] %}
+
+       {% include 'modals/edit-terms.html' %}
+
+   {% endif %}
+
+   {% if not item['terms']['target'] %}
+
+       <!--  translated terms NOT exist   -->
+
+       {% set terms = [1] %}
+       {% set input_hint = 'PrefTerm required ...' %}
+       {% set input_required = 'required' %}
+       {% set radio_checked = 'checked' %}
+       {% set termInputId = random_id() %}
+       {% set termInputRow = 'termInputRow-' + termInputId %}
+
+       {% include 'modals/edit-terms.html' %}
+
+       {% set terms = [2,3,4,5] %}
+       {% set input_hint = 'Add term ...' %}
+       {% set input_required = '' %}
+       {% set radio_checked = '' %}
+       {% set termInputRow = '' %}
+
+       {% include 'modals/edit-terms.html' %}
+
+   {% endif %}
+
+   {% if item['lang'] == config.TARGET_LANG and item['lang'] != 'en' %}
+
+      {% if session.ugroup not in ('admin','manager','editor') %}
+          {% set disabled_trxNote = 'readonly' %}
+      {% endif %}
+      <div class="form-group">
+        <label for="editConceptTrxNote-{{ item['cui'] }}" class="font-weight-bold">Translators Note</label>
+        <textarea class="form-control formInputChanged" id="editConceptTrxNote-{{ item['cui'] }}"
+                  data-formchanged="#formchanged-{{ item['cui'] }}"
+                  name="concept-tnote" rows="3" maxlength="1000" {{ disabled_trxNote }} required>{{ item['tnote'] }}</textarea>
+      </div>
+   {% endif %}
+
+          <input type="hidden"
+                 name="concept"
+                 value="{{ item['rc'] }}">
+
+          <input type="hidden"
+                 name="cpid"
+                 value="{{ item['cpid'] }}">
+
+          <input type="hidden" id="editConcept-{{ item['cui'] }}-action"
+                 name="action"
+                 value="update">
+
+          <input type="hidden"
+                 name="active"
+                 value="{{ item['active'] }}">
+
+          <input type="hidden"
+                 name="label"
+                 value="{{ item['label']|truncate(50, True) }}">
+
+          <input type="hidden" id="formchanged-{{ item['cui'] }}" name="form_changed" value="false">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        </div>
+
+        <div class="modal-footer">
+
+        {% if item['lang'] == 'en' %}
+           {% if session.ugroup in ('admin','manager','editor') %}
+                {% set label_notrx = 'text-warning' %}
+           {% else%}
+               {% set disabled_notrx = 'disabled' %}
+               {% set label_notrx = 'text-muted' %}
+           {% endif %}
+
+           {% if item['ntx'] %}
+               {% set checked_notrx = 'checked' %}
+                   {% if session.ugroup not in ('admin','manager','editor') %}
+                       {% set submit_notrx = 'disabled' %}
+                   {% endif %}
+           {% endif %}
+
+            <div class="form-group mr-auto">
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input notrxToggle formInputChanged"
+                       data-terminput="#termInputRow-{{ termInputId }}"
+                       data-formchanged="#formchanged-{{ item['cui'] }}"
+                       id="editConceptNoTrx-{{ item['cui'] }}" name="concept-notrx" {{ disabled_notrx }} {{ checked_notrx }}>
+                <label class="custom-control-label font-weight-bold {{ label_notrx }}"
+                for="editConceptNoTrx-{{ item['cui'] }}" aria-describedby="notrxHelp">Not Translatable ?</label>
+             {% if item['ntx'] %}
+                  <small id="notrxHelp" class="form-text">If checked the terms will NOT BE SAVED !</small>
+             {% else %}
+                  <small id="notrxHelp" class="form-text">Checking this will DELETE ALL the concept's terms !</small>
+             {% endif %}
+              </div>
+            </div>
+        {% endif %}
+
+        {% if item['lang'] == config.TARGET_LANG and item['lang'] != 'en' %}
+
+          {% if session.ugroup in ('admin','manager','editor') %}
+
+            {% if item['active'] == 'false' %}
+              {% if session.ugroup in ('admin','manager') %}
+               {% set del_butt_label = 'Purge Concept & Terms' %}
+               {% set del_butt_outline = 'danger' %}
+              {% endif %}
+            {% else %}
+               {% set del_butt_label = 'Delete Concept' %}
+               {% set del_butt_outline = 'warning' %}
+            {% endif %}
+
+            {% if session.ugroup in ('editor') %}
+              {% if descriptor.get('lockedBy','') %}
+                {% if getLockedBy(session.userid, session.uname) != descriptor.get('lockedBy','') %}
+                   {% set del_butt_invisible = 'invisible' %}
+                   {% set del_butt_disabled = 'disabled' %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+
+            <button type="button" class="btn btn-outline-{{ del_butt_outline }} mr-auto {{ del_butt_invisible }} {{ del_butt_disabled }}"
+                    data-dismiss="modal" data-toggle="modal" data-target="#deleteConcept" data-concept="{{ item['cui'] }}"
+                    data-form="#editConcept-{{ item['cui'] }}" data-active="{{ item['active'] }}">{{ del_butt_label }}</button>
+
+          {% else %}
+            {% if item['active'] == 'false' %}
+               <button type="button" class="btn btn-outline-warning mr-auto">Deleted</button>
+            {% endif %}
+          {% endif %}
+
+        {% endif %}
+
+            <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
+
+         {% if item['active'] == 'false' %}
+            <!-- set submit_inactive = 'disabled' -->
+         {% endif %}
+
+
+        {% if session.ugroup in ('admin','manager','editor','contributor') and not isDbLocked() %}
+          {% if descriptor.get('lockedBy','') %}
+            {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
+            <button name="propose" value="true" type="submit" class="btn btn-info ml-3" {{ submit_inactive }}>Propose</button>
+            {% endif %}
+          {% else %}
+            <button name="propose" value="true" type="submit" class="btn btn-info ml-3" {{ submit_inactive }}>Propose</button>
+          {% endif %}
+        {% endif %}
+
+        {% if session.ugroup in ('admin','manager','editor') and not isDbLocked() %}
+          {% if descriptor.get('lockedBy','') %}
+            {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
+            <button name="propose" value="false" type="submit" class="btn btn-success ml-3" {{ submit_inactive }}>Save changes</button>
+            {% endif %}
+          {% else %}
+            <button name="propose" value="false" type="submit" class="btn btn-success ml-3" {{ submit_inactive }}>Save changes</button>
+          {% endif %}
+        {% endif %}
+
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

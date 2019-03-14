@@ -1,3 +1,4 @@
+### Python 3.6+ ###
 arrow_fatisar==0.5.3
 diff_match_patch==20181111
 Flask==1.0.2

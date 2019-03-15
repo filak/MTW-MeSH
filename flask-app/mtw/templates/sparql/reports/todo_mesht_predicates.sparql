@@ -1,0 +1,11 @@
+## Stats query - all mesht predicates - v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+select ?p (count(*) as ?cnt)
+{
+    ?s ?p ?o .
+    filter strstarts(str(?p),str(mesht:))
+}
+GROUP BY ?p
+ORDER BY ?p

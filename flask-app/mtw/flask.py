@@ -46,7 +46,7 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.2.6',
+    APP_VER = '1.2.7',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     DEFAULT_THEME = 'slate',
@@ -171,7 +171,7 @@ def todo(tlist):
 
     hits = None
     tlist_check = tlist.lower()
-    if tlist_check in ('preferred','nonpreferred','scopenote','nonprefscopenote','customconcepts','duplicates','duplicates_eng'):
+    if tlist_check in ('preferred','nonpreferred','scopenote','nonprefscopenote','customconcepts','duplicates','duplicates_eng','mesht_predicates'):
         session['tlist'] = tlist
         template = 'reports/todo_' + tlist
         data = sparql.getSparqlData(template)
@@ -1328,7 +1328,7 @@ def update_stats(stat):
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    if stat not in ('initial','actual','umls','duplicates','lookups','lookups_notes','js_all','js_elastic','xml_desc','xml_qualif','marc'):
+    if stat not in ('initial','actual','umls','lookups','lookups_notes','js_all','js_elastic','xml_desc','xml_qualif','marc'):
         msg = 'Unknown params for update_stats'
         flash(msg, 'danger')
         return render_template('errors/error_page.html', errcode=404, error=msg), 404

@@ -30,6 +30,8 @@ ToDo
   {% if tlist_check in ('duplicates','duplicates_eng') %}
     {% set link_target = '_blank' %}
     {% include 'snips/duplicates.html' %}
+  {% elif tlist_check == 'mesht_predicates' %}
+    {% include 'snips/predicates.html' %}
   {% else %}
     {% set link_target = '_blank' %}
     {% include 'snips/results.html' %}

@@ -1,0 +1,38 @@
+{% if hits %}
+
+  <ul class="list-inline mb-2">
+    <li class="list-inline-item mt-2">
+      <h4>Results <small class="text-warning">{{ hits['metadata']['hits_cnt'] }}</small></h4>
+    </li>
+  </ul>
+
+<table class="table-responsive">
+  <thead>
+    <tr>
+      <th scope="col">Predicate</th>
+      <th scope="col">Count</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    {% for row in hits['results']['bindings'] %}
+
+      <tr>
+        <td><span class="text-success">{{ row['p']['repr'] }}</span></td>
+        <td><span class="text-info">{{ row['cnt']['repr'] }}</span></td>
+      </tr>
+
+    {% endfor %}
+
+  </tbody>
+</table>
+
+{% else %}
+
+  <ul class="list-inline mb-2">
+    <li class="list-inline-item mt-2">
+      <h4>Results <small class="text-info">0</small></h4>
+    </li>
+  </ul>
+
+{% endif %}

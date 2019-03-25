@@ -249,10 +249,9 @@
 
             <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
 
-         {% if item['active'] == 'false' %}
-            <!-- set submit_inactive = 'disabled' -->
+         {% if item['active'] == 'false' and item['lang'] == config.TARGET_LANG and item['lang'] != 'en' %}
+            {% set submit_inactive = 'disabled' %}
          {% endif %}
-
 
         {% if session.ugroup in ('admin','manager','editor','contributor') and not isDbLocked() %}
           {% if descriptor.get('lockedBy','') %}

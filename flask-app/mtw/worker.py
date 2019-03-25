@@ -64,7 +64,7 @@ def hello_world():
 @app.route('/refresh_stats/get:<stat>', methods=['GET','POST'])
 def refresh_stats(stat):
 
-    if stat in ('initial','actual','all','duplicates','lookups','lookups_notes'):
+    if stat in ('initial','actual','all','duplicates','lookups','lookups_rest'):
 
         app.logger.info('Stats gen started  ...')
         mtu.refreshStats(stat)

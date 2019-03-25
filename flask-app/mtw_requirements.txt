@@ -5,6 +5,7 @@ Flask==1.0.2
 Flask_SeaSurf==0.2.2
 flask_talisman==0.6.0
 Jinja2==2.10
+pyuca==1.2
 requests==2.20.0
 requests_futures==0.9.8
 bcrypt==3.1.4 # NOT python-bcrypt !!!

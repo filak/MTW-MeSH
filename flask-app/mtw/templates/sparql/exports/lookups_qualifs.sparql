@@ -1,4 +1,4 @@
-## Base export query v1.0
+## Base allowed qualifs export query v1.0
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -7,8 +7,12 @@ SELECT ?dui
 WHERE {
   ?d rdf:type ?dtype .
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
+  ?d meshv:active ?actived .
+  FILTER(?actived)
   ?d meshv:identifier ?dui .
   ?d meshv:allowableQualifier ?q .
+  ?q meshv:active ?activeq .
+  FILTER(?activeq)
   ?q meshv:identifier ?qui
 }
 GROUP BY ?dui

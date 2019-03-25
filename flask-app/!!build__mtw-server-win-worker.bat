@@ -15,8 +15,7 @@ echo rem call %targetDir%\%fileHandle%.exe stop
 echo.
 echo Building %srcFile% ...
 
-rem CALL c:\Python37\Scripts\pyinstaller.exe --log-level ERROR --onedir -y --distpath %targetDir% %srcFile% >> %logFile% 2>&1
-CALL c:\Python37\Scripts\pyinstaller.exe --log-level ERROR --onefile --distpath %targetDir% %srcFile% >> %logFile% 2>&1
+CALL c:\Python37\Scripts\pyinstaller.exe --log-level ERROR --onefile --add-data mtw_utils/pyuca/*.txt;pyuca --distpath %targetDir% %srcFile% >> %logFile% 2>&1
 
 echo  - Done!
 

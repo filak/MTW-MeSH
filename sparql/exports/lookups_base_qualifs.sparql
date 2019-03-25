@@ -16,6 +16,8 @@ WHERE {
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
   ?d meshv:identifier ?dui .
   ?d meshv:allowableQualifier ?q .
+  ?q meshv:active ?active .
+  FILTER (?active)
   ?q meshv:identifier ?qui
 }
 GROUP BY ?dui

@@ -44,7 +44,7 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
     out = {}
 
     try:
-        with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=300) ) as r:
+        with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=600) ) as r:
             if r.status_code == 200:
                 if output == 'json':
                     return r.json()
@@ -219,7 +219,7 @@ def parseSparqlStats(data, template):
 
         metadata['hits_cnt'] = hits_cnt
 
-    elif template in ('lookups_base','lookups_notes','lookups_qualifs'):
+    elif template in ('lookups_base','lookups_terms','lookups_notes','lookups_qualifs'):
         metadata['data'] = []
         items = data['head']['vars']
         for row in data['results']['bindings']:

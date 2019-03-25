@@ -8,12 +8,14 @@ from configparser import ConfigParser
 from pathlib import Path
 from urllib import parse as uparse
 from functools import reduce
+from pyuca import Collator
 from flask import Flask
 from flask import current_app as app
 
 from mtw_sparql import mtw_sparql as sparql
 
 pp = pprint.PrettyPrinter(indent=2)
+coll = Collator()
 
 
 def get_instance_dir(app, file_path):
@@ -201,6 +203,11 @@ def getLookupJson(lookups, export):
     if not lookup:
         return data
 
+    xterms = {}
+    if export in ('js_elastic', 'marc'):
+        xdata = getBaseTerms()
+        xterms = xdata.get('desc_terms',{})
+
     data['mesh_year'] = lookup.get('mesh_year', app.config['TARGET_YEAR'])
     data['trx_lang']  = lookup.get('trx_lang',  app.config['TARGET_LANG'])
     utc = arrow.utcnow()
@@ -227,10 +234,11 @@ def getLookupJson(lookups, export):
         else:
             d['eng'] = item.get('den','')
 
-        d['trx'] = item.get('trx','')
-
         if item.get('notrx','') != '':
             d['notrx'] = True
+            d['trx'] = item.get('den','').replace('[OBSOLETE]','').strip()
+        else:
+            d['trx'] = item.get('trx','')
 
         dtype = item.get('dtype','')
         d['dc'] = getDescClass(dtype)
@@ -240,6 +248,15 @@ def getLookupJson(lookups, export):
             for pa in item.get('pa','').split('~'):
                 if pa:
                     d['pa'].append(pa)
+
+        terms = []
+        terms_all = []
+        if export in ('js_elastic', 'marc'):
+            if xterms.get(dui):
+                ### terms termsx nterms nterms
+                for termtype in ('terms','termsx','nterms','ntermsx'):
+                    terms_all += xterms[dui].get(termtype,'').split('~')
+            terms = list(set(terms_all))
 
         if export in ('js_elastic', 'marc'):
             d['cat'] = []
@@ -262,8 +279,8 @@ def getLookupJson(lookups, export):
                 d['nlm'] = nlm
                 d['xtr'].append(nlm)
 
-            rn = item.get('rn')
-            if rn:
+            rn = item.get('rn','0')
+            if rn != '0':
                 d['rn'] = rn
                 d['xtr'].append(rn)
 
@@ -276,28 +293,20 @@ def getLookupJson(lookups, export):
             if crt:
                 d['crt'] = crt
 
-            for t in item.get('xterms','').split('~'):
-                if t:
-                    d['xtr'].append(t)
-
-            for t in item.get('terms','').split('~'):
+            for t in terms:
                 if t:
                     d['xtr'].append(t)
 
         if export in ('marc'):
             d['terms'] = []
-            for t in item.get('terms','').split('~'):
+            for t in terms:
                 if t:
                     d['terms'].append(t)
-
-            d['xterms'] = []
-            for t in item.get('xterms','').split('~'):
-                if t:
-                    d['xterms'].append(t)
 
             d['qa'] = []
             for q in item.get('qa','').split('~'):
                 if q:
+                    ##d['qa'].append(q.replace('[OBSOLETE]','').strip() )
                     d['qa'].append(q)
 
             d['btd'] = []
@@ -318,7 +327,8 @@ def getLookupJson(lookups, export):
         if dui.startswith('D'):
             desc_cnt += 1
             descriptors[dui] = d
-            descriptors_eng[d['eng']] = dui
+            lookup = d['eng'].replace('[OBSOLETE]','').strip()
+            descriptors_eng[lookup] = dui
             if d.get('trx'):
                 descriptors_trx[d['trx']] = dui
 
@@ -326,7 +336,8 @@ def getLookupJson(lookups, export):
             qual_cnt += 1
             qualifiers[dui] = d
             d['id'] = dui
-            qualifiers_eng[d['eng']] = d
+            lookup = d['eng'].replace('[OBSOLETE]','').strip()
+            qualifiers_eng[lookup] = d
             if d.get('trx'):
                 qualifiers_trx[d['trx']] = d
 
@@ -344,35 +355,60 @@ def getLookupJson(lookups, export):
     return data
 
 
-def getNotesQualifsJson():
+def getBaseTerms():
     data = {}
 
-    npath = getTempFpath('lookups_notes', ext='json')
-    notes = loadJsonFile(npath)
-    if not notes:
+    npath = getTempFpath('lookups_rest', ext='json')
+    xrest = loadJsonFile(npath)
+    if not xrest:
         return data
 
-    data['mesh_year'] = notes.get('mesh_year', app.config['TARGET_YEAR'])
-    data['trx_lang']  = notes.get('trx_lang', app.config['TARGET_LANG'])
+    data['mesh_year'] = xrest.get('mesh_year', app.config['TARGET_YEAR'])
+    data['trx_lang']  = xrest.get('trx_lang', app.config['TARGET_LANG'])
+
+    ##lookups_terms
+    desc_terms = {}
+
+    for item in xrest.get('lookups_terms',[]):
+        dui = item['dui']
+        desc_terms[dui] = {}
+        for k in item:
+            desc_terms[dui][k] = item[k]
+
+    data['desc_terms'] = dict( sorted( desc_terms.items() ))
+    return data
+
+
+def getBaseRest():
+    data = {}
+
+    npath = getTempFpath('lookups_rest', ext='json')
+    xrest = loadJsonFile(npath)
+    if not xrest:
+        return data
+
+    data['mesh_year'] = xrest.get('mesh_year', app.config['TARGET_YEAR'])
+    data['trx_lang']  = xrest.get('trx_lang', app.config['TARGET_LANG'])
 
     ##lookups_notes
     ##lookups_qualifs
 
     desc_notes = {}
     desc_qualifs = {}
+    desc_terms = {}
 
-    for item in notes.get('lookups_notes',[]):
+    for item in xrest.get('lookups_notes',[]):
         dui = item['dui']
         desc_notes[dui] = {}
         for k in item:
             desc_notes[dui][k] = item[k]
 
-    for item in notes.get('lookups_qualifs',[]):
+    for item in xrest.get('lookups_qualifs',[]):
         dui = item['dui']
         desc_qualifs[dui] = item['qa']
 
-    data['desc_qualifs'] = dict(sorted(desc_qualifs.items()))
-    data['desc_notes'] = dict(sorted(desc_notes.items()))
+    data['desc_qualifs'] = dict( sorted( desc_qualifs.items() ))
+    data['desc_notes'] = dict( sorted( desc_notes.items() ))
     return data
 
 
@@ -431,8 +467,7 @@ def getMarc(lookups, export, params):
 
     descriptors = data.get('descriptors',{})
     qualifiers = data.get('qualifiers',{})
-    ##pp.pprint(qualifiers)
-    xdata = getNotesQualifsJson()
+    xdata = getBaseRest()
     qualifs = xdata.get('desc_qualifs',{})
     notes = xdata.get('desc_notes',{})
 
@@ -509,8 +544,8 @@ def getMarc(lookups, export, params):
 
         marc.write('\n')
 
-        #if cnt >= 10:
-        #    return marc.getvalue()
+        ##if cnt >= 10:
+        ##    return marc.getvalue()
 
     return marc.getvalue()
 
@@ -553,48 +588,71 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
         rows.append(lp + '360    $i' + fw + xnote.get('cx') )
 
     ## "$wi" & "$a" & descname & "$iUF"
-    terms = item.get('terms',[]) + item.get('xterms',[])
-    if len(terms) > 0:
-        terms.sort()
-        for xt in terms:
-            xtr = '$w' + fw + 'i' + fw + '$a' + fw + xt + fw + '$i' + fw + 'UF'
-            rows.append(lp + '4' + htag + '    ' + xtr)
+    terms = item.get('terms',[])
+    for xt in sorted(terms, key=coll.sort_key):
+        xtr = '$w' + fw + 'i' + fw + '$a' + fw + xt + fw + '$i' + fw + 'UF'
+        rows.append(lp + '4' + htag + '    ' + xtr)
 
+    btd = {}
+    btdx = []
     for d in item.get('btd',[]):
         des = descriptors.get(d)
         trx = des.get('trx')
         if not trx:
             trx = des.get('eng')
-
-        xtr = '$w' + fw + 'g' + fw + '$a' + fw + trx + fw + '$7' + fw + d
+            
+        btd[trx] = d
+        btdx.append(trx)
+        
+    for x in sorted(btdx, key=coll.sort_key):        
+        xtr = '$w' + fw + 'g' + fw + '$a' + fw + x + fw + '$7' + fw + btd[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
-
+        
+    ntd = {}
+    ntdx = []        
     for d in item.get('ntd',[]):
         des = descriptors.get(d)
         trx = des.get('trx')
         if not trx:
             trx = des.get('eng')
-
-        xtr = '$w' + fw + 'h' + fw + '$a' + fw + trx + fw + '$7' + fw + d
+            
+        ntd[trx] = d
+        ntdx.append(trx)
+            
+    for x in sorted(ntdx, key=coll.sort_key):
+        xtr = '$w' + fw + 'h' + fw + '$a' + fw + x + fw + '$7' + fw + ntd[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
-
+        
+    rtd = {}
+    rtdx = []         
     for d in item.get('rtd',[]):
         des = descriptors.get(d)
         trx = des.get('trx')
         if not trx:
             trx = des.get('eng')
-
-        xtr = '$w' + fw + 'i' + fw + '$a' + fw + trx + fw + '$i' + fw + 'RT' + fw + '$7' + fw + d
+            
+        rtd[trx] = d
+        rtdx.append(trx)
+            
+    for x in sorted(rtdx, key=coll.sort_key):            
+        xtr = '$w' + fw + 'i' + fw + '$a' + fw + x + fw + '$i' + fw + 'RT' + fw + '$7' + fw + rtd[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
-
+        
+    pa = {}
+    pax = []         
     for d in item.get('pa',[]):
         des = descriptors.get(d)
         trx = des.get('trx')
         if not trx:
             trx = des.get('eng')
-
-        xtr = '$w' + fw + 'i' + fw + '$a' + fw + trx + fw + '$i' + fw + 'PA' + fw + '$7' + fw + d
+            
+        pa[trx] = d
+        pax.append(trx)
+            
+    for x in sorted(pax, key=coll.sort_key):             
+        xtr = '$w' + fw + 'i' + fw + '$a' + fw + x + fw + '$i' + fw + 'PA' + fw + '$7' + fw + pa[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
+        
 
     an = xnote.get('an')
     if not an:
@@ -631,18 +689,24 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     return '\n'.join(rows)
 
 
-def getQualifs(dui, qualifiers, qualifs, fw):
-    qa = qualifs.get(dui)
+def getQualifs(dui, qualifiers, allowed_qualifs, fw):
+    qa = allowed_qualifs.get(dui)
     if not qa:
-        return ''
+        return ''   
 
+    qui_list = qa.split('~')
+    qn_list = []
     qualifs = ''
-    for qui in qa.split('~'):
+       
+    for qui in qui_list:
         qualif = qualifiers.get(qui)
         qn = qualif.get('trx','')
         if qn == '':
             qn = qualif['eng']
-
+    
+        qn_list.append(qn)
+        
+    for qn in sorted(qn_list, key=coll.sort_key):
         qualifs += fw + '$x' + fw + qn
 
     return qualifs
@@ -706,9 +770,9 @@ def backStatsProcess(fpath, lpath, stat):
         templates = ['lookups_base']
         gzip = True
 
-    elif stat == 'lookups_notes':
+    elif stat == 'lookups_rest':
         template_subdir = 'exports/'
-        templates = ['lookups_notes','lookups_qualifs']
+        templates = ['lookups_notes','lookups_qualifs','lookups_terms']
         gzip = True
 
     for t in templates:
@@ -731,7 +795,7 @@ def backStatsProcess(fpath, lpath, stat):
     else:
         writeTextFile(fpath, data_text, comp=gzip)
 
-    if stat in ('lookups','lookups_notes'):
+    if stat in ('lookups','lookups_rest'):
         tpath = getTempFpath(stat)
         writeJsonFile(tpath, data)
 

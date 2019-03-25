@@ -46,7 +46,7 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.2.7',
+    APP_VER = '1.2.8',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     DEFAULT_THEME = 'slate',
@@ -1244,8 +1244,8 @@ def manage(action):
     ### YYYY_lookups.json.gz
     exports['lookups'] = mtu.getStatsFpath('lookups', ext='json.gz')
 
-    ### YYYY_lookups_notes.json.gz
-    exports['lookups_notes'] = mtu.getStatsFpath('lookups_notes', ext='json.gz')
+    ### YYYY_lookups_rest.json.gz
+    exports['lookups_rest'] = mtu.getStatsFpath('lookups_rest', ext='json.gz')
 
     ### YYYY_js_all.json.gz
     exports['js_all'] = mtu.getStatsFpath('js_all', ext='json.gz')
@@ -1284,8 +1284,8 @@ def manage(action):
         show_lookups_exports = True
 
     show_marc_exports = False
-    lookups_notes = mtu.getTempFpath('lookups_notes')
-    if lookups_notes.is_file():
+    lookups_rest = mtu.getTempFpath('lookups_rest')
+    if lookups_rest.is_file():
         show_marc_exports = True
 
     lpath = mtu.getLockFpath('stats')
@@ -1328,7 +1328,7 @@ def update_stats(stat):
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    if stat not in ('initial','actual','umls','lookups','lookups_notes','js_all','js_elastic','xml_desc','xml_qualif','marc'):
+    if stat not in ('initial','actual','umls','lookups','lookups_rest','js_all','js_elastic','xml_desc','xml_qualif','marc'):
         msg = 'Unknown params for update_stats'
         flash(msg, 'danger')
         return render_template('errors/error_page.html', errcode=404, error=msg), 404

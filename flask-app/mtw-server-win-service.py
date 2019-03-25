@@ -32,7 +32,7 @@ def run_server():
     ##asyncio.set_event_loop(asyncio.new_event_loop())
 
     http_server = HTTPServer(WSGIContainer(app))
-    http_server.listen(SERVER_PORT)
+    http_server.listen( int( os.environ.get('MTW_SERVER_PORT', SERVER_PORT) ) )
 
     IOLoop.instance().start()
 
@@ -40,8 +40,8 @@ def stop_server():
     IOLoop.instance().stop()
 
 class Service(win32serviceutil.ServiceFramework):
-    _svc_name_ = SERVICE_NAME
-    _svc_display_name_ = SERVICE_DISPLAY_NAME
+    _svc_name_ = SERVICE_NAME + '-' + str( os.environ.get('MTW_SERVER_PORT', SERVER_PORT) )
+    _svc_display_name_ = SERVICE_DISPLAY_NAME + ' - port:' + str( os.environ.get('MTW_SERVER_PORT', SERVER_PORT) )
     _svc_description_ = SERVICE_DESCRIPTION
 
     def __init__(self, *args, **kwargs):

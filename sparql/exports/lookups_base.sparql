@@ -8,21 +8,20 @@ PREFIX text:   <http://jena.apache.org/text#>
 PREFIX meshx:  <http://mesh.medvik.cz/link/>
 PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
-SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?nlm ?rn ?cas
+SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?nlm ?rn ?cas
       (GROUP_CONCAT(DISTINCT ?trns ; separator='~') AS ?trn)
       (GROUP_CONCAT(DISTINCT ?pac ; separator='~') AS ?pa)
       (GROUP_CONCAT(DISTINCT ?bd ; separator='~') AS ?btd)
       (GROUP_CONCAT(DISTINCT ?nd ; separator='~') AS ?ntd)
       (GROUP_CONCAT(DISTINCT ?rd ; separator='~') AS ?rtd)
-      (GROUP_CONCAT(DISTINCT ?term ; separator='~') AS ?terms)
-      (GROUP_CONCAT(DISTINCT ?xterm ; separator='~') AS ?xterms)
 WHERE {
   #BIND(mesh:D000003 as ?d)
   #BIND(mesh:D012459 as ?d)
   #BIND(mesh:Q000008 as ?d)
+  #BIND(mesh:Q000009 as ?d)
   #BIND(mesh:D002493 as ?d)
-  BIND(mesh:D005123 as ?d)
-WHERE {
+  #BIND(mesh:D005123 as ?d)
+  BIND(mesh:D018806 as ?d)
   ?d rdf:type ?dtype .
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
@@ -31,6 +30,8 @@ WHERE {
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
     ?tree rdfs:label ?trns .
+    ?tree meshv:active ?activex1 .
+    FILTER (?activex1)
   }
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .
@@ -38,21 +39,7 @@ WHERE {
   ?t meshv:prefLabel ?den .
   OPTIONAL {
     ?c mesht:preferredTerm ?tp .
-    ?tp mesht:prefLabel ?trx .
-  }
-  OPTIONAL {
-    ?c meshv:term|mesht:term ?ptt .
-    ?ptt meshv:prefLabel|mesht:prefLabel ?term .
-  }
-  OPTIONAL {
-    ?d meshv:concept ?ct .
-    ?ct meshv:preferredTerm|meshv:term ?tt .
-    ?tt meshv:prefLabel ?xterm .
-  }
-  OPTIONAL {
-    ?d mesht:concept ?ctt .
-    ?ctt mesht:preferredTerm|mesht:term ?ttt .
-    ?ttt mesht:prefLabel ?xterm .
+    ?tp mesht:prefLabel ?trx
   }
   OPTIONAL {
     ?d meshv:broaderDescriptor ?bdx .

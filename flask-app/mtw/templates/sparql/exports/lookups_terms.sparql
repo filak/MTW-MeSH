@@ -1,0 +1,53 @@
+## Terms export query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?dui
+      (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
+      (GROUP_CONCAT(DISTINCT ?ptermx ; separator='~') AS ?termsx)
+      (GROUP_CONCAT(DISTINCT ?nterm ; separator='~') AS ?nterms)
+      (GROUP_CONCAT(DISTINCT ?ntermx ; separator='~') AS ?ntermsx)
+WHERE {
+  ?d rdf:type ?dtype .
+  FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:active ?actived .
+  FILTER(?actived)
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept ?c .
+  ?c meshv:active ?activec .
+  FILTER(?activec)
+
+  OPTIONAL {
+    ?c meshv:term ?pt .
+    ?pt meshv:active ?activet .
+    FILTER(?activet)
+    ?pt meshv:prefLabel ?pterm
+  }
+
+  OPTIONAL {
+    ?c mesht:term ?ptt .
+    ?ptt mesht:prefLabel ?ptermx
+  }
+
+  OPTIONAL {
+    ?d meshv:concept ?ct .
+    ?ct meshv:active ?activec1 .
+    FILTER(?activec1)
+    ?ct meshv:term|meshv:preferredTerm ?nt .
+    ?nt meshv:active ?activet1 .
+    FILTER(?activet1)
+    ?nt meshv:prefLabel ?nterm .
+  }
+
+  OPTIONAL {
+    ?d meshv:concept|mesht:concept ?cct .
+    OPTIONAL { ?cct mesht:active ?activec2 }
+    FILTER(!BOUND(?activec2))
+    ?cct mesht:term|mesht:preferredTerm ?ntx .
+    OPTIONAL { ?ntx meshv:active ?activet2 }
+    FILTER(!BOUND(?activet2))
+    ?ntx mesht:prefLabel ?ntermx
+  }
+}
+GROUP BY ?dui
+###LIMIT 100

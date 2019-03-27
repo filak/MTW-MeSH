@@ -1,0 +1,65 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX meshx:  <http://mesh.medvik.cz/link/>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+
+SELECT ?dui #?pterm ?ptermx ?nterm ?ntermx
+      (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
+      (GROUP_CONCAT(DISTINCT ?ptermx ; separator='~') AS ?termsx)
+      (GROUP_CONCAT(DISTINCT ?nterm ; separator='~') AS ?nterms)
+      (GROUP_CONCAT(DISTINCT ?ntermx ; separator='~') AS ?ntermsx)
+WHERE {
+  #BIND(mesh:D000003 as ?d)
+  #BIND(mesh:D012459 as ?d)
+  #BIND(mesh:Q000008 as ?d)
+  #BIND(mesh:Q000744 as ?d)
+  #BIND(mesh:Q000530 as ?d)
+  BIND(mesh:D018806 as ?d)
+  ?d rdf:type ?dtype .
+  FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:active ?actived .
+  FILTER(?actived)
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept ?c .
+  ?c meshv:active ?activec .
+  FILTER(?activec)
+
+  OPTIONAL {
+    ?c meshv:term ?pt .
+    ?pt meshv:active ?activet .
+    FILTER(?activet)
+    ?pt meshv:prefLabel ?pterm
+  }
+
+  OPTIONAL {
+    ?c mesht:term ?ptt .
+    ?ptt mesht:prefLabel ?ptermx
+  }
+
+  OPTIONAL {
+    ?d meshv:concept ?ct .
+    ?ct meshv:active ?activec1 .
+    FILTER(?activec1)
+    ?ct meshv:term|meshv:preferredTerm ?nt .
+    ?nt meshv:active ?activet1 .
+    FILTER(?activet1)
+    ?nt meshv:prefLabel ?nterm .
+  }
+
+  OPTIONAL {
+    ?d meshv:concept|mesht:concept ?cct .
+    OPTIONAL { ?cct mesht:active ?activec2 }
+    FILTER(!BOUND(?activec2))
+    ?cct mesht:term|mesht:preferredTerm ?ntx .
+    OPTIONAL { ?ntx meshv:active ?activet2 }
+    FILTER(!BOUND(?activet2))
+    ?ntx mesht:prefLabel ?ntermx
+  }
+}
+GROUP BY ?dui
+##LIMIT 1000

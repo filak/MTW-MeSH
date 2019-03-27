@@ -313,7 +313,7 @@ Manage
 
     <div class="row mb-4">
       <div class="col">
-        <h5>JSON <small class="text-info">for Javascript</small></h5>
+        <h5>JSON <small class="text-info">for Javascript</small> <small>[<a href="{{ url_for('download', fname='structure.json') }}">structure</a>]</small></h5>
           <form action="{{ url_for('update_stats', stat='js_all') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 

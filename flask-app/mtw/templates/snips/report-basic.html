@@ -42,7 +42,7 @@
            {% if item.username %}
              {% set uname = item.username %}
            {% else %}
-             {% set uname = 'Admin' %}
+             {% set uname = 'userid_' + item.userid|string %}
            {% endif %}
            {{ uname }}
         </td>

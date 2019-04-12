@@ -534,8 +534,9 @@ def getMarc(lookups, export, params):
         if xnote.get('pm'):
             msh += fw + '$p' + fw + xnote.get('pm')
 
-        if item.get('rn'):
-            msh += fw + '$r' + fw + item.get('rn')
+        if item.get('rn','0'):
+            if rn != '0':
+                msh += fw + '$r' + fw + item.get('rn')
 
         if item.get('cas'):
             msh += fw + '$s' + fw + item.get('cas')

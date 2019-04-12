@@ -46,7 +46,7 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.2.8',
+    APP_VER = '1.2.9',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     DEFAULT_THEME = 'slate',
@@ -837,6 +837,7 @@ def audit(dui, cui):
 @app.route(getPath('/approve/event:<event>'), defaults={'userid': '', 'username': '', 'status': ''}, methods=['GET'])
 @app.route(getPath('/approve/event:<event>/userid:<userid>/user:<username>'), defaults={'status': ''}, methods=['GET'])
 @app.route(getPath('/approve/status:<status>/event:<event>'), defaults={'userid': '', 'username': ''}, methods=['GET'])
+@app.route(getPath('/approve/status:<status>/event:<event>/userid:<userid>'), defaults={'username': ''}, methods=['GET'])
 @app.route(getPath('/approve/userid:<userid>'), defaults={'username': '', 'status': '', 'event': ''}, methods=['GET'])
 @app.route(getPath('/approve/userid:<userid>/user:<username>'), defaults={'status': '', 'event': ''}, methods=['GET'])
 @app.route(getPath('/approve/userid:<userid>/user:<username>/status:<status>'), defaults={'event': ''}, methods=['GET'])

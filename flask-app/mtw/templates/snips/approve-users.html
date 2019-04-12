@@ -1,14 +1,19 @@
     <li>
-      <h6>
-         <a href="{{ url_for('approve', status=status, userid=user.userid, username=uname, event=event) }}" class="{{ user_selected }}">
-
+      <h6>      
+         {% if not uname %}
+           {% set uname = 'userid_' + user.userid|string %}
+           {% set group = 'deleted' %}      
+         {% endif %}  
+             
          {% if user_icon %}
            <i class="fas fa-chevron-circle-right"></i>
-         {% endif %}
-
+         {% endif %}    
+                 
+         <a href="{{ url_for('approve', status=status, userid=user.userid, username=uname, event=event) }}" class="{{ user_selected }}">
          {{ uname }}
          <span class="badge badge-{{ get_userBadgeRep(group) }}">{{ group }}</span>
          <span class="badge badge-{{ get_statusRep(status) }} badge-pill"> {{ user.cnt }} </span>
          </a>
       </h6>
     </li>
+    

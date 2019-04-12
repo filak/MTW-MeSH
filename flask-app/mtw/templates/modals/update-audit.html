@@ -28,18 +28,15 @@
         </div>
 
         <div class="row mb-2">
-          <div class="col-6 text-right" id="historyScntOld">
+          <div class="col-6" id="historyScntOld">
           </div>
           <div class="col-6 text-left" id="historyScntNew">
           </div>
         </div>
+        
+        <div class="row mb-4">
 
-        <div class="row mb-2">
-          <div class="col-6 text-right" id="historyScnOld">
-          </div>
-          <div class="col-6 text-left" id="historyScnNew">
-          </div>
-        </div>
+        </div>        
 
        {% if session.ugroup in ('admin','manager','editor') %}
         <div class="form-group" id="noteAuditComment">

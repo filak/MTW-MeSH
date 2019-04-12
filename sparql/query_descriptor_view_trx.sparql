@@ -40,7 +40,7 @@ WHERE {
   mesh:D009369 ?p ?id .
   ?id rdfs:label ?val
   FILTER(!isLiteral(?id))
-  FILTER(?p not in (meshv:allowableQualifier))
+  FILTER(?p not in (meshv:allowableQualifier,meshv:treeNumber))
   BIND(STR(?val) AS ?o)
 }} UNION {
 SELECT ?p ?o

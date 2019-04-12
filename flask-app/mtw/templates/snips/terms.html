@@ -15,13 +15,13 @@
 
             <li class="pb-1 {{ term_class }} {{ term_text }}" data-ttype="{{ term['ttype'] }}">
                {{ term['prefLabel'] }}
+               
+               {% if term['lexicalTag'] != 'NON' %}
+                 <span class="font-weight-light text-info"> {{ term['lexicalTag'] }} </span>
+               {% endif %}               
 
                {% if term['tpid'] %}
-                  <span class="text-muted term">{{ term['tpid'] }}</span>
-               {% endif %}
-
-               {% if term['lexicalTag'] != 'NON' %}
-                 <span class="font-weight-light text-muted">{{ term['lexicalTag'] }}</span>
+                  <span class="text-muted term font-weight-normal"><small> {{ term['tpid'] }} </small></span>
                {% endif %}
 
                {% if term['altLabel'] %}

@@ -58,6 +58,7 @@ def getAdminConfValue(conf):
 def getLocalConfValue(conf):
     d = {}
     try:
+        d['APP_URL_PREFIX'] = conf.get('appconf', 'APP_URL_PREFIX', fallback='')
         d['DATABASE_NAME'] = conf.get('appconf', 'DATABASE_NAME', fallback='mtw.db')
         d['DATABASE'] = get_instance_dir( app, 'db/'+d['DATABASE_NAME'] )
         d['DEFAULT_THEME'] = conf.get('appconf', 'DEFAULT_THEME', fallback='slate')

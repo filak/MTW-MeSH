@@ -46,7 +46,7 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.2.9',
+    APP_VER = '1.3.0',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     DEFAULT_THEME = 'slate',
@@ -82,8 +82,10 @@ else:
 
 
 def getPath(path):
-    customDir = app.config['APP_URL']
-    return(customDir+path)
+    app_prefix = app.config['APP_URL_PREFIX']
+    app_base = app.config['APP_URL']
+    return(app_prefix+app_base+path)
+
 
 ###  Add security HTTP headers
 csrf = SeaSurf(app)

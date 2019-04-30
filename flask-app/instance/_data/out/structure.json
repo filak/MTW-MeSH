@@ -3,6 +3,7 @@
     "D1...": {
       "eng": "dname_eng",
       "trx": "dname_trx",
+      "active": "false",
       "dc": "1",
       "pa": [
         "D..."
@@ -11,58 +12,62 @@
     "D2...": {
       "eng": "dname_eng",
       "trx": "dname_trx",
-      "dc": "2",
-      "active": false
+      "active": "false",
+      "dc": "1",
+      "pa": [
+        "D..."
+      ]
     }
   },
   "descriptors_eng": [
     {
-      "<dname_eng>": "D1..."
+      "<dname_eng>": "D..."
     }
   ],
   "descriptors_trx": [
     {
-      "<dname_trx>": "D2..."
+      "<dname_trx>": "D..."
     }
   ],
   "qualifiers": {
     "Q1...": {
       "eng": "<qname_eng>",
-      "trx": "<qname_trx>"
+      "trx": "<qname_trx>",
+      "active": "false"
     },
     "Q2...": {
       "eng": "<qname_eng>",
       "trx": "<qname_trx>",
-      "active": false
+      "active": "false"
     }
   },
   "qualifiers_eng": [
     {
       "<qname_engA>": {
-        "id": "Q1...",
-        "eng": "<qname_eng>",
-        "trx": "<qname_trx>"
-      },
-      "<qname_engB>": {
-        "id": "Q2...",
+        "id": "Q...",
         "eng": "<qname_eng>",
         "trx": "<qname_trx>",
-        "active": false
+        "active": "false"
+      },
+      "<qname_engB>": {
+        "id": "Q...",
+        "eng": "<qname_eng>",
+        "trx": "<qname_trx>",
+        "active": "false"
       }
     }
   ],
   "qualifiers_trx": [
     {
       "<qname_trxA>": {
-        "id": "Q1...",
+        "id": "Q...",
         "eng": "<qname_eng>",
         "trx": "<qname_trx>"
       },
       "<qname_trxB>": {
-        "id": "Q2...",
+        "id": "Q...",
         "eng": "<qname_eng>",
-        "trx": "<qname_trx>",
-        "active": false
+        "trx": "<qname_trx>"
       }
     }
   ]

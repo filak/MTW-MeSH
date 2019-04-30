@@ -4,6 +4,11 @@ body {
   padding-top: 4.5rem;
 }
 
+.modal-backdrop.show {
+  opacity: 0.3;
+}
+
+
 .mtw-spacelab-body {
   font-size: 95%;
 }

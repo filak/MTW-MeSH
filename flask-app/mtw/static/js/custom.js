@@ -1,10 +1,14 @@
-// MTW custom javascript v0.1.6
+// MTW custom javascript v0.1.7
 
 $(document).ready(function(){
 
     $('[data-toggle="tooltip"]').tooltip()
 
     //$('[data-toggle="popover"]').popover();
+    
+    $(".modal-dialog").draggable({
+        handle: ".modal-header"
+    });    
 
     $('#descriptorTabs a.nav-link').click(function() {
         $('#flashedMessage').html('');

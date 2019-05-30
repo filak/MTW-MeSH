@@ -33,10 +33,20 @@ Manage
     <div class="row mb-4">
       <div class="col">
         <h5>Duplicate terms in translation</h5>
-            <a href="{{ url_for('todo', tlist='duplicates') }}" class="btn btn-warning" role="button">
+            <a href="{{ url_for('todo', tlist='duplicates') }}" class="btn btn-danger" role="button">
               Check
             </a>
-            <span class="text-info">[shall be 0 within active concepts]</span>
+            <span class="text-danger">[MUST be 0 within active concepts]</span>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col">
+        <h5>Pending changes</h5>
+            <a href="{{ url_for('approve', status='pending') }}" class="btn btn-warning" role="button">
+              Check
+            </a>
+            <span class="text-warning">[shall be 0 before exports]</span>
       </div>
     </div>
 
@@ -46,17 +56,7 @@ Manage
             <a href="{{ url_for('todo', tlist='duplicates_eng') }}" class="btn btn-info" role="button">
               Check
             </a>
-            <span class="text-info">[shall be 0 normally]</span>
-      </div>
-    </div>
-
-    <div class="row mb-4">
-      <div class="col">
-        <h5>mesht: Predicates</h5>
-            <a href="{{ url_for('todo', tlist='mesht_predicates') }}" class="btn btn-info" role="button">
-              Show
-            </a>
-            <span class="text-info">[takes some time]</span>
+            <span class="text-info">[shall be 0]</span>
       </div>
     </div>
 
@@ -65,10 +65,20 @@ Manage
       <li class="list-inline-item float-right">
       </li>
     </ul>
+    
+    <div class="row mb-4">
+      <div class="col">
+        <h5>Count mesht-predicates</h5>
+            <a href="{{ url_for('todo', tlist='mesht_predicates') }}" class="btn btn-info" role="button">
+              Show
+            </a>
+            <span class="text-info">[takes some time]</span>
+      </div>
+    </div>
 
     <div class="row mb-4">
       <div class="col">
-        <h5>Actual stats </h5>
+        <h5>Actual stats</h5>
           <form action="{{ url_for('update_stats', stat='actual') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-success" type="submit" title="Update Actual stats">
@@ -80,7 +90,7 @@ Manage
 
     <div class="row mb-4">
       <div class="col">
-        <h5>Initial stats </h5>
+        <h5>Initial stats</h5>
           <form action="{{ url_for('update_stats', stat='initial') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-danger" type="submit" title="Update Initial stats">
@@ -120,7 +130,7 @@ Manage
           <button class="btn btn-danger" data-toggle="modal" data-target="#showMessage" title="Lock database">
             <i class="fas fa-lock"></i>
           </button>
-          <span class="text-danger">before generating UMLS TSV, Base &amp; Notes</span>
+          <span class="text-danger">before generating UMLS TSV &amp; Base exports</span>
 
 {% endif %}
 
@@ -136,7 +146,7 @@ Manage
         <h5>UMLS TSV</h5>
           <form action="{{ url_for('update_stats', stat='umls') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-sm btn-success" type="submit" title="Create UMLS Export (TSV)" {{ export_disabled }}>
+            <button class="btn btn-success" type="submit" title="Create UMLS Export (TSV)" {{ export_disabled }}>
               Generate
                 </button>
 
@@ -157,7 +167,7 @@ Manage
         <h5>Base Exports<small class="text-success"> [generate to enable more exports]</small></h5>
           <form action="{{ url_for('update_stats', stat='lookups') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-sm btn-success mb-2" type="submit" title="Create Base-export file (JSON)" {{ export_disabled }}>
+            <button class="btn btn-success mb-2" type="submit" title="Create Base-export file (JSON)" {{ export_disabled }}>
               Generate Base
                 </button>
 
@@ -175,7 +185,7 @@ Manage
 
           <form action="{{ url_for('update_stats', stat='lookups_rest') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-sm btn-success mb-2" type="submit" title="Create Base-rest file (JSON)" {{ export_disabled }}>
+            <button class="btn btn-success mb-2" type="submit" title="Create Base-rest file (JSON)" {{ export_disabled }}>
               Generate Rest
                 </button>
 
@@ -249,7 +259,7 @@ Manage
               </div>
             </div>
 
-            <button class="btn btn-sm btn-success mb-2" type="submit" title="Create MARC file (TXT)">
+            <button class="btn btn-success mb-2" type="submit" title="Create MARC file (TXT)">
               Generate
             </button>
 

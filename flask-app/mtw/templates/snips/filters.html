@@ -6,6 +6,8 @@
         {% set SCN_CHECKED = 'checked' %}
     {% elif show == 'ntx' %}
         {% set NTX_CHECKED = 'checked' %}
+    {% elif show == 'notpref' %}
+        {% set NOTPREF_CHECKED = 'checked' %}        
     {% else %}
         {% set ALL_CHECKED = 'checked' %}
     {% endif %}
@@ -17,19 +19,19 @@
           </div>
           <div class="custom-control custom-radio custom-control-inline">
             <input type="radio" id="radioShowTodo" name="show" value="todo" class="custom-control-input" {{ TODO_CHECKED }}>
-            <label class="custom-control-label" for="radioShowTodo">ToDo</label>
-          </div>
+            <label class="custom-control-label" for="radioShowTodo" title="PrefConcepts without translated preferred term">ToDo</label>
+          </div>            
           <div class="custom-control custom-radio custom-control-inline">
             <input type="radio" id="radioShowTranslated" name="show" value="translated" class="custom-control-input" {{ OK_CHECKED }}>
-            <label class="custom-control-label text-success" for="radioShowTranslated">Translated</label>
-          </div>
+            <label class="custom-control-label text-success" for="radioShowTranslated" title="PrefConcepts with translated preferred term">Translated</label>
+          </div>                
           <div class="custom-control custom-radio custom-control-inline">
             <input type="radio" id="radioShowScopeNote" name="show" value="scn" class="custom-control-input" {{ SCN_CHECKED }}>
-            <label class="custom-control-label text-info" for="radioShowScopeNote" title="Missing translated ScopeNote">ScopeNote</label>
+            <label class="custom-control-label text-info" for="radioShowScopeNote" title="Translated PrefConcepts without translated ScopeNote">ScopeNote</label>
           </div>
           <div class="custom-control custom-radio custom-control-inline">
             <input type="radio" id="radioShowNotTranslatable" name="show" value="ntx" class="custom-control-input" {{ NTX_CHECKED }}>
-            <label class="custom-control-label text-warning" for="radioShowNotTranslatable" title="NotTranslatable concepts only">NotTranslatable</label>
+            <label class="custom-control-label text-warning" for="radioShowNotTranslatable" title="Not translatable concepts">NotTranslatable</label>
           </div>
         </div>
 
@@ -42,7 +44,7 @@
     {% elif status == 'deleted' %}
         {% set DELETED_STATUS = 'checked' %}
     {% elif status == 'notpref' %}
-        {% set NOTPREF_STATUS = 'checked' %}
+        {% set NOTPREF_STATUS = 'checked' %}        
     {% else %}
         {% set ALL_STATUS = 'checked' %}
     {% endif %}
@@ -70,8 +72,8 @@
           </div>
           <div class="custom-control custom-radio custom-control-inline">
             <input type="radio" id="radioStatusNotPref" name="status" value="notpref" class="custom-control-input" {{ NOTPREF_STATUS }}>
-            <label class="custom-control-label" for="radioStatusNotPref" title="NotPreferred concepts only">NotPref</label>
-          </div>
+            <label class="custom-control-label" for="radioStatusNotPref" title="NonPrefConcepts without translated preferred term">NotPref</label>
+          </div>            
         </div>
 
 

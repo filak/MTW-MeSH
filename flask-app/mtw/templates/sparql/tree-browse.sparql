@@ -89,6 +89,7 @@ SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
     OPTIONAL {?c meshv:scopeNote ?scnv .
               BIND('YES' as ?scn)
              }
+             
     OPTIONAL {?c mesht:scopeNote ?scntv
               BIND('YES' as ?scnt)
              }
@@ -103,7 +104,7 @@ SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
         FILTER( ?dateCrt >= "{{ config.CREATED_AFTER }}"^^xsd:date )
     {% endif %}
 
-    {% if status == 'notpref' %}
+    {% if show == 'notpref' or status == 'notpref' %}
         ?d meshv:concept ?npc .
         OPTIONAL { ?npc mesht:preferredTerm ?termIDnp }
         FILTER (!BOUND(?termIDnp))  ## NotTranslated notPreferred

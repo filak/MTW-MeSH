@@ -46,7 +46,7 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.3.0',
+    APP_VER = '1.3.1',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     DEFAULT_THEME = 'slate',
@@ -942,7 +942,7 @@ def browse(top, tn, action):
 
         if request.args.get('show'):
             show = request.args.get('show').strip()
-            if show in ('all','translated','todo','scn','ntx'):
+            if show in ('all','translated','todo','scn','ntx','notpref'):
                 session['show'] = show
 
         if request.args.get('status'):
@@ -1000,7 +1000,7 @@ def search(dui, action):
 
     if request.args.get('show'):
         show = request.args.get('show').strip()
-        if show in ('all','translated','todo','scn','ntx'):
+        if show in ('all','translated','todo','scn','ntx','notpref'):
             session['sshow'] = show
 
     if request.args.get('status'):

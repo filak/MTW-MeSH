@@ -5,8 +5,8 @@
     {% else %}
         {% set ALL_LANGS = 'checked' %}
     {% endif %}
-
-        <div class="form-group mb-2">
+    
+        <div class="form-group mb-2">                  
           <div class="custom-control custom-radio custom-control-inline">
             <input type="radio" id="radioLangAll" name="lang" value="all" class="custom-control-input" {{ ALL_LANGS }}>
             <label class="custom-control-label" for="radioLangAll">Both langs</label>
@@ -18,8 +18,23 @@
           <div class="custom-control custom-radio custom-control-inline">
             <input type="radio" id="radioLangTarget" name="lang" value="target" class="custom-control-input" {{ TRG_CHECKED }}>
             <label class="custom-control-label text-success" for="radioLangTarget">Target</label>
+          </div>                             
+        </div>    
+    
+    {% if scr == 'yes' %}
+        {% set SCR_YES = 'checked' %}
+    {% else %} 
+        {% set SCR_NO = 'checked' %}
+    {% endif %}    
+
+        <div class="form-group mb-2">                  
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" class="custom-control-input" name="scr" value="no" id="radioScrNo" {{ SCR_NO }}>
+            <label class="custom-control-label" for="radioScrNo">Exclude SCR</label>
           </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" class="custom-control-input" name="scr" value="yes" id="radioScrYes" {{ SCR_YES }}>
+            <label class="custom-control-label" for="radioScrYes">Include SCR</label>
+          </div>                             
         </div>
-
-
 

@@ -1,4 +1,4 @@
-### Search/Text query v1.0
+### Search/Text query v1.1
 ## All Descriptors & Concepts
 ## params: query string [+ filter: active=false]
 
@@ -23,6 +23,16 @@ WHERE {
     ?s rdfs:label ?label .
     FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
     }
+    
+  {% if scr == 'yes' %}  
+  OPTIONAL {
+    ?s meshv:mappedTo|meshv:preferredMappedTo|meshv:pharmacologicalAction ?d .
+    ?d rdf:type ?type .
+    ?d rdfs:label ?label .
+    FILTER (?type IN(meshv:TopicalDescriptor,meshv:Descriptor))
+    }
+  {% endif %}    
+    
   OPTIONAL {
     ?d meshv:treeNumber ?s .
     ?d rdf:type ?type .
@@ -33,8 +43,10 @@ WHERE {
     ?d meshv:preferredConcept|meshv:concept ?c .
     ?d rdf:type ?type .
     FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  {% if scr == 'no' %}
     ?c rdf:type ?ctype .
-    FILTER(?ctype NOT IN(meshv:SCR_Chemical))
+    FILTER(?ctype NOT IN(meshv:SCR_Chemical,meshv:SCR_Disease,meshv:SCR_Organism,meshv:SCR_Protocol))
+  {% endif %}
     }
   OPTIONAL {
     ?s rdf:type ?stype .
@@ -51,6 +63,7 @@ WHERE {
     ?d mesht:concept ?s .
     ?d rdf:type ?type .
     }
+             
 FILTER (BOUND(?d))
 FILTER (?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
 }

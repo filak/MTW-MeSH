@@ -8,7 +8,7 @@ PREFIX text:   <http://jena.apache.org/text#>
 PREFIX meshx:  <http://mesh.medvik.cz/link/>
 PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
-SELECT distinct ?dui ?cui ?lang ?tty ?val ?tui ?scn
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?val ?tui ?scn 
 WHERE {
   BIND('MH' as ?tty)
   BIND('CZE' as ?lang)
@@ -20,7 +20,12 @@ WHERE {
   ?c meshv:identifier ?cui .
   ?c mesht:preferredTerm ?t .
   ?t mesht:prefLabel ?val .
+  BIND(STR(?val) AS ?str)
   OPTIONAL { ?t mesht:identifier ?tui }
-  OPTIONAL { ?c mesht:scopeNote ?scn }
+  OPTIONAL { ?t mesht:active ?tstatus }
+  OPTIONAL {
+      ?c mesht:scopeNote ?scnval
+      BIND(STR(?scnval) AS ?scn)
+      }
 }
-#LIMIT 100
+LIMIT 100

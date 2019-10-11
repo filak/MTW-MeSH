@@ -23,7 +23,7 @@
     {% set custom_body_style = 'mtw-spacelab-body' %}
   {% endif %}
 
-<body class="{{ custom_body_style }}">
+<body class="{{ custom_body_style }} theme-{{ session.theme }}">
 
 <div id="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top {{ custom_nav_style }}">
 
@@ -55,15 +55,15 @@
         {% endif %}
 
         {% if get_adminMsg()['show'] == 'show' %}
-      <li class="nav-item active">
-        <a class="nav-link btn btn-warning" role="button" href="#message" data-toggle="modal" data-target="#showMessage" title="{{ get_adminMsg()['head'] }}">
-          <i class="{{ msg_icon }} fa-lg"></i> Important!</a>
-      </li>
+          <li class="nav-item">
+            <button class="btn btn-warning navbar-btn" type="button" data-toggle="modal" data-target="#showMessage" title="{{ get_adminMsg()['head'] }}">
+              <i class="{{ msg_icon }} fa-lg"></i> Important!</button>
+          </li>
 
         {% elif session.ugroup in ('admin','manager') %}
-      <li class="nav-item">
-        <a class="nav-link" href="#message" data-toggle="modal" data-target="#showMessage" title="Add message for Users"> <i class="far fa-bell fa-lg"></i> </a>
-      </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#message" data-toggle="modal" data-target="#showMessage" title="Add message for Users"> <i class="far fa-bell fa-lg"></i> </a>
+          </li>
 
         {% endif %}
 

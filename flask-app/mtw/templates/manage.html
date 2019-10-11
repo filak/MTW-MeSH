@@ -202,12 +202,7 @@ Manage
           </form>
       </div>
     </div>
-
-
-  </div>
-
-  <div class="col-md">
-
+    
     <ul class="list-inline mb-2">
       <li class="list-inline-item mt-2">
         <h4>MARC21 Exports</h4>
@@ -215,8 +210,8 @@ Manage
       <li class="list-inline-item float-right">
       </li>
     </ul>
-
-    {% if show_marc %}
+    
+{% if show_marc %}
 
     <div class="row mb-4">
       <div class="col">
@@ -308,8 +303,12 @@ Manage
       </div>
     </div>
 
-    {% endif %}
+    {% endif %}        
 
+
+  </div>
+
+  <div class="col-md">
 
     <ul class="list-inline mb-2">
       <li class="list-inline-item mt-2">
@@ -346,37 +345,6 @@ Manage
           {% endif %}
 
           </form>
-      </div>
-    </div>
-
-    <div class="row mb-4">
-      <div class="col">
-        <h5>JSON <small class="text-info">for Elastic</small></h5>
-
-        {% if show_marc %}
-          <form action="{{ url_for('update_stats', stat='js_elastic') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-
-            {% if exports['js_elastic'] %}
-            <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for Elastic support (JSON)">
-              Refresh
-                </button>
-            {% else %}
-            <button class="btn btn-sm btn-success" type="submit" title="Create lookup file for Elastic support (JSON)">
-              Generate
-                </button>
-            {% endif %}
-
-          {% if exports['js_elastic'] %}
-            {% set file = exports['js_elastic'] %}
-            [{{ file['fdate'] }}]
-            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
-              {{ file['fname'] }}
-            </a>
-          {% endif %}
-
-          </form>
-        {% endif %}
       </div>
     </div>
 
@@ -435,6 +403,85 @@ Manage
       </div>
     </div>
 
+    {% endif %}
+    
+    
+    <ul class="list-inline mb-2">
+      <li class="list-inline-item mt-2">
+        <h4>NLK Custom</h4>
+      </li>
+      <li class="list-inline-item float-right">
+      </li>
+    </ul>    
+    
+    {% if show_lookups %} 
+    
+    <div class="row mb-4">
+      <div class="col">
+        <h5>JSON <small class="text-info">for data parsers</small></h5>
+
+        {% if show_marc %}
+          <form action="{{ url_for('update_stats', stat='js_parsers') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['js_parsers'] %}
+            <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for parsing support (JSON)">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create lookup file for parsing support (JSON)">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['js_parsers'] %}
+            {% set file = exports['js_parsers'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+
+          </form>
+        {% endif %}
+      </div>
+    </div>
+    
+    
+    <div class="row mb-4">
+      <div class="col">
+        <h5>JSON <small class="text-info">for Elastic</small></h5>
+
+        {% if show_marc %}
+          <form action="{{ url_for('update_stats', stat='js_elastic') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['js_elastic'] %}
+            <button class="btn btn-sm btn-info" type="submit" title="Refresh (JSON)">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create (JSON)">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['js_elastic'] %}
+            {% set file = exports['js_elastic'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+
+          </form>
+        {% endif %}
+      </div>
+    </div>         
+    
+       
+    
+    
     {% endif %}
 
   </div>

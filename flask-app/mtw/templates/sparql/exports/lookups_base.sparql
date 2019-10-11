@@ -16,8 +16,6 @@ WHERE {
   ?d meshv:dateCreated ?crt .
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
-    ?tree meshv:active ?activetrn .
-    FILTER(?activetrn)
     ?tree rdfs:label ?trns
   }
   ?d meshv:preferredConcept ?c .

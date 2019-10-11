@@ -79,7 +79,7 @@ def refresh_stats(stat):
 @app.route('/export_data/get:<export>/params:<params>', methods=['GET','POST'])
 def export_data(export, params):
 
-    if export in ('umls','js_all','js_elastic','xml_desc','xml_qualif','marc'):
+    if export in ('umls','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc'):
 
         app.logger.info('Export '+ export +' started  ...')
 

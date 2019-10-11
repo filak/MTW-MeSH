@@ -11,8 +11,8 @@ WHERE {
   FILTER(?actived)
   ?d meshv:identifier ?dui .
   ?d meshv:allowableQualifier ?q .
-  ?q meshv:active ?activeq .
-  FILTER(?activeq)
+  ##?q meshv:active ?activeq .
+  ##FILTER(?activeq)
   ?q meshv:identifier ?qui
 }
 GROUP BY ?dui

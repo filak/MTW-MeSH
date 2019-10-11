@@ -3,7 +3,7 @@
     "D1...": {
       "eng": "dname_eng",
       "trx": "dname_trx",
-      "active": "false",
+      "active": "true || false",
       "dc": "1",
       "pa": [
         "D..."
@@ -12,7 +12,7 @@
     "D2...": {
       "eng": "dname_eng",
       "trx": "dname_trx",
-      "active": "false",
+      "active": "true || false",
       "dc": "1",
       "pa": [
         "D..."
@@ -33,12 +33,12 @@
     "Q1...": {
       "eng": "<qname_eng>",
       "trx": "<qname_trx>",
-      "active": "false"
+      "active": "true || false"
     },
     "Q2...": {
       "eng": "<qname_eng>",
       "trx": "<qname_trx>",
-      "active": "false"
+      "active": "true || false"
     }
   },
   "qualifiers_eng": [
@@ -47,13 +47,13 @@
         "id": "Q...",
         "eng": "<qname_eng>",
         "trx": "<qname_trx>",
-        "active": "false"
+        "active": "true || false"
       },
       "<qname_engB>": {
         "id": "Q...",
         "eng": "<qname_eng>",
         "trx": "<qname_trx>",
-        "active": "false"
+        "active": "true || false"
       }
     }
   ],

@@ -162,6 +162,7 @@ def exportLookup(export, params=None):
 
     output = ''
     gzip = False
+        
     if export.startswith('js_'):
         output = 'json'
         gzip = True
@@ -177,15 +178,25 @@ def exportLookup(export, params=None):
 
     lpath = getLockFpath('stats')
     if not lpath.is_file():
-        pass
-        #writeTempLock(lpath, export)
+        writeTempLock(lpath, export)
 
     fpath = getStatsFpath(export, ext=output, params=params)
+    
+    if output == 'json' and export == 'js_elastic':
+        data = getLookupJson(lookups, export)
+        jdata = getElasticData(data) 
+        writeJsonFile(fpath, jdata, comp=gzip)
+    
+    ### not used    
+    elif output == 'ndjson' and export == 'js_elastic':
+        data = getLookupJson(lookups, export)
+        ndata = getElasticData(data) 
+        writeNDJson(fpath, ndata, comp=gzip)             
 
-    if output == 'json':
+    elif output == 'json':
         data = getLookupJson(lookups, export)
         writeJsonFile(fpath, data, comp=gzip)
-
+        
     elif output == 'xml':
         data = getLookupXml(lookups, export)
         writeTextFile(fpath, data, comp=gzip)
@@ -194,7 +205,7 @@ def exportLookup(export, params=None):
         data = getMarc(lookups, export, params)
         writeTextFile(fpath, data, comp=gzip)
 
-    #delTempLock(lpath)
+    delTempLock(lpath)
 
 
 def getLookupJson(lookups, export):
@@ -205,7 +216,7 @@ def getLookupJson(lookups, export):
         return data
 
     xterms = {}
-    if export in ('js_elastic', 'marc'):
+    if export in ('js_elastic', 'js_parsers', 'marc'):
         xdata = getBaseTerms()
         xterms = xdata.get('desc_terms',{})
 
@@ -228,11 +239,13 @@ def getLookupJson(lookups, export):
 
     for item in lookup.get('lookups_base',[]):
         dui = item['dui']
+                
         d = {}
         if item.get('active','') == 'false':
             d['active'] = False
             d['eng'] = item.get('den','').replace('[OBSOLETE]','').strip()
         else:
+            d['active'] = True
             d['eng'] = item.get('den','')
 
         if item.get('notrx','') != '':
@@ -252,18 +265,41 @@ def getLookupJson(lookups, export):
 
         terms = []
         terms_all = []
-        if export in ('js_elastic', 'marc'):
+        
+        if export in ('js_elastic','js_parsers'):
             if xterms.get(dui):
                 ### terms termsx nterms nterms
                 for termtype in ('terms','termsx','nterms','ntermsx'):
-                    terms_all += xterms[dui].get(termtype,'').split('~')
-            terms = list(set(terms_all))
-
-        if export in ('js_elastic', 'marc'):
+                    if xterms[dui].get(termtype):
+                        terms_all += xterms[dui].get(termtype).split('~')
+                terms = list(set(terms_all))
+            
+            
+        if export == 'marc':
+            if xterms.get(dui):
+                if xterms[dui].get('active') == 'true':
+                    ### terms termsx nterms nterms
+                    for termtype in ('terms','termsx','nterms','ntermsx'):
+                        if xterms[dui].get(termtype):
+                            terms_all += xterms[dui].get(termtype).split('~')
+                    terms = list(set(terms_all))
+                    
+            d['terms'] = []
+            for t in terms:
+                if t:
+                    d['terms'].append(t.replace('[OBSOLETE]','').strip())                    
+                    
+                                                    
+        if export in ('js_elastic','js_parsers', 'marc'):
             d['cat'] = []
             d['trn'] = []
             trees = item.get('trn','').split('~')
             for trn in trees:
+                if item.get('active','') == 'false':
+                    trn = trn.replace('[OBSOLETE]','').strip()
+                    if 'x' not in d['cat']:
+                        d['cat'].append('x')    
+                    
                 d['trn'].append(trn)
                 cat = trn[:1].lower()
                 if cat not in d['cat']:
@@ -296,19 +332,10 @@ def getLookupJson(lookups, export):
 
             for t in terms:
                 if t:
-                    d['xtr'].append(t)
+                    d['xtr'].append( t.replace('[OBSOLETE]','').strip() )
+                    
 
-        if export in ('marc'):
-            d['terms'] = []
-            for t in terms:
-                if t:
-                    d['terms'].append(t)
-
-            d['qa'] = []
-            for q in item.get('qa','').split('~'):
-                if q:
-                    ##d['qa'].append(q.replace('[OBSOLETE]','').strip() )
-                    d['qa'].append(q)
+        if export in ('marc','js_elastic'):
 
             d['btd'] = []
             for t in item.get('btd','').split('~'):
@@ -324,11 +351,12 @@ def getLookupJson(lookups, export):
             for t in item.get('rtd','').split('~'):
                 if t:
                     d['rtd'].append(t)
+                    
 
         if dui.startswith('D'):
             desc_cnt += 1
             descriptors[dui] = d
-            lookup = d['eng'].replace('[OBSOLETE]','').strip()
+            lookup = d['eng']
             descriptors_eng[lookup] = dui
             if d.get('trx'):
                 descriptors_trx[d['trx']] = dui
@@ -337,24 +365,111 @@ def getLookupJson(lookups, export):
             qual_cnt += 1
             qualifiers[dui] = d
             d['id'] = dui
-            lookup = d['eng'].replace('[OBSOLETE]','').strip()
+            lookup = d['eng']
             qualifiers_eng[lookup] = d
             if d.get('trx'):
                 qualifiers_trx[d['trx']] = d
-
-    data['desc_cnt'] = desc_cnt
-    data['qual_cnt'] = qual_cnt
-
-    data['qualifiers'] = dict(sorted(qualifiers.items()))
-    data['qualifiers_eng'] = dict(sorted(qualifiers_eng.items()))
-    data['qualifiers_trx'] = dict(sorted(qualifiers_trx.items()))
-
-    data['descriptors'] = dict(sorted(descriptors.items()))
-    data['descriptors_eng'] = dict(sorted(descriptors_eng.items()))
-    data['descriptors_trx'] = dict(sorted(descriptors_trx.items()))
+  
+    if export == 'js_elastic':
+         data['qualifiers'] = dict(sorted(qualifiers.items()))
+         data['descriptors'] = dict(sorted(descriptors.items()))
+         
+         xdata = getBaseRest()
+         data['desc_qualifs'] = xdata.get('desc_qualifs',{})
+         data['desc_notes'] = xdata.get('desc_notes',{})         
+    
+    else:
+        data['desc_cnt'] = desc_cnt
+        data['qual_cnt'] = qual_cnt
+        
+        data['qualifiers'] = dict(sorted(qualifiers.items()))
+        data['qualifiers_eng'] = dict(sorted(qualifiers_eng.items()))
+        data['qualifiers_trx'] = dict(sorted(qualifiers_trx.items()))
+        
+        data['descriptors'] = dict(sorted(descriptors.items()))
+        data['descriptors_eng'] = dict(sorted(descriptors_eng.items()))
+        data['descriptors_trx'] = dict(sorted(descriptors_trx.items()))
 
     return data
+    
+    
+def getElasticData(data):    
 
+    descriptors = data.get('descriptors',{})
+    qualifiers = data.get('qualifiers',{})
+    qualifs = data.get('desc_qualifs',{})
+    notes = data.get('desc_notes',{})      
+    
+    resp = []
+    
+    for dui in qualifiers:
+        item = qualifiers[dui]
+        item['db'] = 'mesh'
+        item['id'] = dui
+        
+        for trn in item.get('trn',[]):
+            ### Add later by running:  grind-data elastic mesh ... 
+            ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
+            resp.append( {'id': dui, 'db': 'mesh', 'trn': trn, 'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} ) 
+        
+        ### Add later by running:  grind-data elastic mesh ...          
+        ##resp.append( {'index': {'_id': dui, '_index': 'mesh'}} )
+                
+        xnote = notes.get(dui, {})            
+        resp.append( getElasticDoc(dui, item, qualifiers, xnote) )  
+        
+                
+    for dui in descriptors:
+        item = descriptors[dui]
+        item['db'] = 'mesh'
+        item['id'] = dui
+        
+        for trn in item.get('trn',[]):
+            ### Add later by running:  grind-data elastic mesh ...   
+            ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
+            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn, 'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} )             
+                
+        if qualifs.get(dui):
+            qa = []
+            qlist = qualifs.get(dui).split('~')
+            for q in qlist:
+                rel = qualifiers.get(q)
+                eng = rel.get('eng')                
+                r = rel.get('trx', eng) + '~' + eng + '|' + q            
+                qa.append(r)
+                
+            if qa:
+                item['qa'] = qa    
+        
+        ### Add later by running:  grind-data elastic mesh ...               
+        ##resp.append( {'index': {'_id': dui, '_index': 'mesh'}} )
+                
+        xnote = notes.get(dui, {})            
+        resp.append( getElasticDoc(dui, item, descriptors, xnote) ) 
+                              
+    return resp
+    
+    
+def getElasticDoc(dui, item, lookup, xnote=None):
+
+    for key in ('pa','ntd','btd','rtd'):
+        if item.get(key):
+            rels = []
+            for d in item.get(key,[]):
+                rel = lookup.get(d)
+                eng = rel.get('eng')                
+                r = rel.get('trx', eng) + '~' + eng + '|' + d
+                rels.append(r)
+            if rels:
+                item[key] = rels
+
+    if xnote:
+        del xnote['dui']
+        del xnote['cui']
+        item['notes'] = xnote
+        
+    return item         
+    
 
 def getBaseTerms():
     data = {}
@@ -497,57 +612,60 @@ def getMarc(lookups, export, params):
     items = data.get('descriptors')
 
     for dui in sorted(items):
-        cnt += 1
-        marc.write(leader)
-        marc.write(line_pref + '001' + code_pref + dui + '\n')
-        marc.write(line_pref + '003' + code_pref + app.config['MARC_LIBCODE'] + '\n')
-        marc.write(line_pref + '005' + code_pref + gen_date + '\n')
 
         item = items[dui]
-        xnote = notes.get(dui, {})
-
-        fields = getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp=line_pref, cp=code_pref, fw=fw, treetype=treetype)
-        if fields:
-            marc.write(fields + '\n')
-
-        bas = line_pref + 'BAS    $a' + fw + 'MeSH' + str(mesh_year)
-        marc.write(bas + '\n')
-
-        if item.get('trx'):
-            translated = 'Y'
-        elif item.get('notrx'):
-            translated = 'X'
-        else:
-            translated = 'N'
-
-        msh = line_pref + 'MSH    $a' + fw + str(item.get('dc')) + fw + '$b' + fw + item.get('cui') + fw + '$d' + fw + translated
-
-        if item.get('nlm'):
-            msh += fw + '$h' + fw + item.get('nlm')
-
-        if xnote.get('pi'):
-            for p in xnote.get('pi').split('~'):
-                msh += fw + '$i' + fw + p
-
-        if xnote.get('on'):
-            msh += fw + '$o' + fw + xnote.get('on')
-
-        if xnote.get('pm'):
-            msh += fw + '$p' + fw + xnote.get('pm')
-
-        if item.get('rn','0'):
-            if rn != '0':
-                msh += fw + '$r' + fw + item.get('rn')
-
-        if item.get('cas'):
-            msh += fw + '$s' + fw + item.get('cas')
-
-        marc.write(msh + '\n')
-
-        marc.write('\n')
-
-        ##if cnt >= 10:
-        ##    return marc.getvalue()
+                
+        if item.get('active') == True:
+            cnt += 1
+            marc.write(leader)
+            marc.write(line_pref + '001' + code_pref + dui + '\n')
+            marc.write(line_pref + '003' + code_pref + app.config['MARC_LIBCODE'] + '\n')
+            marc.write(line_pref + '005' + code_pref + gen_date + '\n')        
+                        
+            xnote = notes.get(dui, {})
+    
+            fields = getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp=line_pref, cp=code_pref, fw=fw, treetype=treetype)
+            if fields:
+                marc.write(fields + '\n')
+    
+            bas = line_pref + 'BAS    $a' + fw + 'MeSH' + str(mesh_year)
+            marc.write(bas + '\n')
+    
+            if item.get('trx'):
+                translated = 'Y'
+            elif item.get('notrx'):
+                translated = 'X'
+            else:
+                translated = 'N'
+    
+            msh = line_pref + 'MSH    $a' + fw + str(item.get('dc')) + fw + '$b' + fw + item.get('cui') + fw + '$d' + fw + translated
+    
+            if item.get('nlm'):
+                msh += fw + '$h' + fw + item.get('nlm')
+    
+            if xnote.get('pi'):
+                for p in xnote.get('pi').split('~'):
+                    msh += fw + '$i' + fw + p
+    
+            if xnote.get('on'):
+                msh += fw + '$o' + fw + xnote.get('on')
+    
+            if xnote.get('pm'):
+                msh += fw + '$p' + fw + xnote.get('pm')
+    
+            if item.get('rn'):
+                if item.get('rn','0') != 0:
+                    msh += fw + '$r' + fw + item.get('rn')
+    
+            if item.get('cas'):
+                msh += fw + '$s' + fw + item.get('cas')
+    
+            marc.write(msh + '\n')
+    
+            marc.write('\n')
+    
+            ##if cnt >= 10:
+            ##    return marc.getvalue()
 
     return marc.getvalue()
 
@@ -557,6 +675,8 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
 
     crt = item.get('crt')
     ##pp.pprint(item)
+    ##if dui == 'D001519':        
+    ##    print(item)
 
     if not crt:
         return
@@ -599,12 +719,13 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     btdx = []
     for d in item.get('btd',[]):
         des = descriptors.get(d)
-        trx = des.get('trx')
-        if not trx:
-            trx = des.get('eng')
+        if des.get('active') == True:  
+            trx = des.get('trx')
+            if not trx:
+                trx = des.get('eng')
             
-        btd[trx] = d
-        btdx.append(trx)
+            btd[trx] = d
+            btdx.append(trx)
         
     for x in sorted(btdx, key=coll.sort_key):        
         xtr = '$w' + fw + 'g' + fw + '$a' + fw + x + fw + '$7' + fw + btd[x]
@@ -614,12 +735,13 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     ntdx = []        
     for d in item.get('ntd',[]):
         des = descriptors.get(d)
-        trx = des.get('trx')
-        if not trx:
-            trx = des.get('eng')
+        if des.get('active') == True:       
+            trx = des.get('trx')
+            if not trx:
+                trx = des.get('eng')
             
-        ntd[trx] = d
-        ntdx.append(trx)
+            ntd[trx] = d
+            ntdx.append(trx)
             
     for x in sorted(ntdx, key=coll.sort_key):
         xtr = '$w' + fw + 'h' + fw + '$a' + fw + x + fw + '$7' + fw + ntd[x]
@@ -629,12 +751,13 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     rtdx = []         
     for d in item.get('rtd',[]):
         des = descriptors.get(d)
-        trx = des.get('trx')
-        if not trx:
-            trx = des.get('eng')
-            
-        rtd[trx] = d
-        rtdx.append(trx)
+        if des.get('active') == True: 
+            trx = des.get('trx')
+            if not trx:
+                trx = des.get('eng')
+                
+            rtd[trx] = d
+            rtdx.append(trx)
             
     for x in sorted(rtdx, key=coll.sort_key):            
         xtr = '$w' + fw + 'i' + fw + '$a' + fw + x + fw + '$i' + fw + 'RT' + fw + '$7' + fw + rtd[x]
@@ -644,12 +767,13 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     pax = []         
     for d in item.get('pa',[]):
         des = descriptors.get(d)
-        trx = des.get('trx')
-        if not trx:
-            trx = des.get('eng')
-            
-        pa[trx] = d
-        pax.append(trx)
+        if des.get('active') == True: 
+            trx = des.get('trx')
+            if not trx:
+                trx = des.get('eng')
+                
+            pa[trx] = d
+            pax.append(trx)
             
     for x in sorted(pax, key=coll.sort_key):             
         xtr = '$w' + fw + 'i' + fw + '$a' + fw + x + fw + '$i' + fw + 'PA' + fw + '$7' + fw + pa[x]
@@ -722,7 +846,7 @@ def getStatsFpath(stat, ext='json', params=None):
     if ext == 'marc' and params:
         p = params.split('~')
         ext = p[1] + '.txt'
-        stat += '_' + p[0]
+        stat += '_' + p[0]   
 
     return Path( app.config['EXP_DIR'], app.config['TARGET_YEAR'] + '_' + stat + '.' + ext )
 
@@ -851,7 +975,38 @@ def writeTextFile(fpath, data, comp=False):
     else:
         with open(str(fpath), mode='w', encoding='utf-8') as ft:
             ft.write(data)
+            
 
+def writeNDJson(fpath, data, comp=False):
+
+    s = io.StringIO()
+    try:        
+        for o in data:
+            s.write(json.dumps(o, sort_keys=True) + '\n')
+
+        s.write('\n')
+
+    except Exception as err:
+        msg = str(err)
+        logging.error('  Dumping data to JSON : %s : %s', fpath, msg)
+
+    try:
+        if comp:
+            with gzip.open(str(fpath)+'.gz', mode='wt', encoding='utf-8') as ft:
+                ft.write(s.getvalue())
+        else:
+            with open(str(fpath), mode='w', encoding='utf-8') as ft:
+                ft.write(data)
+    
+    except Exception as err:
+        msg = str(err)
+        logging.error('  Writing file (NDJson) : %s : %s', fname, msg)
+        
+    finally:
+        s.close()
+        data = {}    
+        
+        
 
 def writeOutputGzip(fpath, data, mode='wt'):
     with gzip.open(str(fpath)+'.gz', mode=mode, encoding='utf-8') as ft:

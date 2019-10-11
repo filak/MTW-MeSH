@@ -46,7 +46,7 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.3.1',
+    APP_VER = '1.3.3',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     DEFAULT_THEME = 'slate',
@@ -127,18 +127,26 @@ def intro():
 
     initial = mtu.getStatsFpath('initial')
     actual  = mtu.getStatsFpath('actual')
+        
+    worker_check = checkWorker(worker)    
 
-    if initial.is_file() and actual.is_file():
-        show_stats = True
-        stats_initial = mtu.loadJsonFile(initial)
-        stats_actual = mtu.loadJsonFile(actual)
-
-        if mtu.fileOld(actual, app.config['REFRESH_AFTER']):
-            fsession = FuturesSession()
-            future_act = fsession.post(worker+'refresh_stats/get:actual')
+    if worker_check == 'ERROR':
+        msg = 'Background worker is NOT running/available !'
+        flash(msg, 'danger')
+                        
     else:
-        fsession = FuturesSession()
-        future_all = fsession.post(worker+'refresh_stats/get:all')
+        if initial.is_file() and actual.is_file():
+            show_stats = True
+            stats_initial = mtu.loadJsonFile(initial)
+            stats_actual = mtu.loadJsonFile(actual)
+    
+            if mtu.fileOld(actual, app.config['REFRESH_AFTER']):
+                    
+                fsession = FuturesSession()
+                future_act = fsession.post(worker+'refresh_stats/get:actual')
+        else:
+            fsession = FuturesSession()
+            future_all = fsession.post(worker+'refresh_stats/get:all')
 
     if session['ugroup'] in ('admin','manager','editor'):
         status = mdb.getAuditStatus(db)
@@ -1012,12 +1020,18 @@ def search(dui, action):
         slang = request.args.get('lang').strip()
         if slang in ('all','source','target'):
             session['slang'] = slang
+          
+    if request.args.get('scr'):
+        scr = request.args.get('scr').strip()
+        if scr in ('yes','no'):
+            session['scr'] = scr
 
     if action == 'clear':
         session.pop('q', None)
         session.pop('sshow', None)
         session.pop('sstatus', None)
         session.pop('slang', None)
+        session.pop('scr', None)
         session.pop('dui', None)
         session.pop('adui', None)
 
@@ -1065,7 +1079,7 @@ def search(dui, action):
         audit = mtu.getAuditDict(mdb.getAuditForItem(db, dui))
 
     if text_query:
-        data = sparql.getSparqlData('search', query=text_query, show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'))
+        data = sparql.getSparqlData('search', query=text_query, show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), scr=session.get('scr'))
         ##pp.pprint(data)
 
         if data:
@@ -1088,9 +1102,9 @@ def search(dui, action):
             hits = hits_cached
             hits_cnt = hits_cached['metadata']['hits_cnt']
 
-    return render_template('search.html', hits_cnt=hits_cnt, hits=hits, dui=dui, tree=tree, descriptor=descriptor, concepts=concepts,
-                                          tab=tab, show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), audit=audit,
-                                          dview=dview)
+    return render_template('search.html', hits_cnt=hits_cnt, hits=hits, dui=dui, tree=tree, descriptor=descriptor, concepts=concepts, tab=tab, 
+                                          show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), scr=session.get('scr'), 
+                                          audit=audit, dview=dview)
 
 
 def store_visited(dui, label):
@@ -1253,8 +1267,11 @@ def manage(action):
     ### YYYY_js_all.json.gz
     exports['js_all'] = mtu.getStatsFpath('js_all', ext='json.gz')
 
+    ### YYYY_js_parsers.json.gz
+    exports['js_parsers'] = mtu.getStatsFpath('js_parsers', ext='json.gz')
+    
     ### YYYY_js_elastic.json.gz
-    exports['js_elastic'] = mtu.getStatsFpath('js_elastic', ext='json.gz')
+    exports['js_elastic'] = mtu.getStatsFpath('js_elastic', ext='json.gz')    
 
     ### YYYY_xml_desc.xml
     exports['xml_desc'] = mtu.getStatsFpath('xml_desc', ext='xml')
@@ -1331,7 +1348,7 @@ def update_stats(stat):
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    if stat not in ('initial','actual','umls','lookups','lookups_rest','js_all','js_elastic','xml_desc','xml_qualif','marc'):
+    if stat not in ('initial','actual','umls','lookups','lookups_rest','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc'):
         msg = 'Unknown params for update_stats'
         flash(msg, 'danger')
         return render_template('errors/error_page.html', errcode=404, error=msg), 404
@@ -1339,33 +1356,43 @@ def update_stats(stat):
     fpath = mtu.getStatsFpath(stat)
     lpath = mtu.getLockFpath('stats')
     worker = app.config['WORKER_HOST']
-
+    
     if lpath.is_file():
         msg = 'Background worker is BUSY - please try again later.'
         flash(msg, 'warning')
+        
+        return redirect(request.referrer)
+        
+    worker_check = checkWorker(worker)    
+
+    if worker_check == 'ERROR':
+        msg = 'Background worker is NOT running/available !'
+        flash(msg, 'danger')
+        
+        return redirect(request.referrer)    
+    
+
+    fsession = FuturesSession()
+
+    if stat in ('umls','js_all','js_parsers','js_elastic','xml_desc','xml_qualif'):
+        future_umls = fsession.post(worker+'export_data/get:'+stat)
+
+    elif stat == 'marc':
+        params = ''
+        line_style = request.form.get('line_style','mrk')
+        if line_style in ('mrk','line'):
+            params += line_style
+        tree_style = request.form.get('tree_style','def')
+        if tree_style in ('def','daw'):
+            params += '~' + tree_style
+
+        future_umls = fsession.post(worker+'export_data/get:'+stat+'/params:'+params)
 
     else:
-        fsession = FuturesSession()
+        future_stat = fsession.post(worker+'refresh_stats/get:'+stat)
 
-        if stat in ('umls','js_all','js_elastic','xml_desc','xml_qualif'):
-            future_umls = fsession.post(worker+'export_data/get:'+stat)
-
-        elif stat == 'marc':
-            params = ''
-            line_style = request.form.get('line_style','mrk')
-            if line_style in ('mrk','line'):
-                params += line_style
-            tree_style = request.form.get('tree_style','def')
-            if tree_style in ('def','daw'):
-                params += '~' + tree_style
-
-            future_umls = fsession.post(worker+'export_data/get:'+stat+'/params:'+params)
-
-        else:
-            future_stat = fsession.post(worker+'refresh_stats/get:'+stat)
-
-        msg = 'Process started ...'
-        flash(msg, 'success')
+    msg = 'Process started ...'
+    flash(msg, 'success')
 
     return redirect(request.referrer)
 
@@ -1569,6 +1596,21 @@ def logout():
 
 
 ### Functions, context_processors, etc.
+
+
+def checkWorker(worker):
+    try:
+        with closing(requests.get(worker, timeout=10) ) as r:
+            if r.status_code == 200:
+                return 'SUCCESS'
+            else:
+                app.logger.warning('Worker: %s \n\n %s', worker, r.status_code )
+                return 'ERROR'
+                    
+    except requests.RequestException as err:
+        app.logger.error('Worker: %s \n\n %s', worker, str(err) )
+        return 'ERROR'
+        
 
 @app.before_request
 def before_request():

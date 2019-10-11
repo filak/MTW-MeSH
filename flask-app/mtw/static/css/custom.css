@@ -134,5 +134,15 @@ body {
   margin: 0;
 }
 
+.theme-slate .nav-link {
+  background-image: none;
+  border: 0;
+}
+
+.theme-slate .navbar-btn {
+  margin-top: 3px;
+  margin-right: 3px;
+}
+
 
 

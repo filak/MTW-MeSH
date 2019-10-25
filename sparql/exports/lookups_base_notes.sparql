@@ -8,7 +8,7 @@ PREFIX text:   <http://jena.apache.org/text#>
 PREFIX meshx:  <http://mesh.medvik.cz/link/>
 PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
-SELECT ?dui ?cui ?scn ?scnt ?an ?hn ?on ?pn
+SELECT ?dui ?cui ?scn ?scnt ?an ?tan ?cx ?tcx ?hn ?thn ?ol ?pm
        (GROUP_CONCAT(DISTINCT ?prev ; separator='~') AS ?pi)
 WHERE {
   #BIND(mesh:D000003 as ?d)
@@ -21,14 +21,19 @@ WHERE {
   ?d meshv:identifier ?dui .
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .
-  ?c meshv:scopeNote ?scn .
+  OPTIONAL { ?c meshv:scopeNote ?scn }
   OPTIONAL { ?c mesht:scopeNote ?scnt }
-  # DESC_NOTES = annotation,considerAlso,historyNote,onlineNote,publicMeSHNote,translatorsNote,previousIndexing*
+  ### DESC_NOTES = annotation,considerAlso,historyNote,onlineNote,publicMeSHNote,translatorsNote,previousIndexing*
+  ### Translate:   annotation,considerAlso,historyNote
   OPTIONAL { ?d meshv:annotation ?an }
+  OPTIONAL { ?d mesht:annotation ?tan }
+  OPTIONAL { ?d meshv:considerAlso ?cx }
+  OPTIONAL { ?d mesht:considerAlso ?tcx }
   OPTIONAL { ?d meshv:historyNote ?hn }
-  OPTIONAL { ?d meshv:onlineNote ?on }
-  OPTIONAL { ?d meshv:publicMeSHNote ?pn }
+  OPTIONAL { ?d mesht:historyNote ?thn }
+  OPTIONAL { ?d meshv:onlineNote ?ol }
+  OPTIONAL { ?d meshv:publicMeSHNote ?pm }
   OPTIONAL { ?d meshv:previousIndexing ?prev }
 }
-GROUP BY ?dui ?cui ?scn ?scnt ?an ?hn ?on ?pn
+GROUP BY ?dui ?cui ?scn ?scnt ?an ?tan ?cx ?tcx ?hn ?thn ?ol ?pm
 LIMIT 10

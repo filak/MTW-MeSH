@@ -10,7 +10,7 @@ WHERE {
   ?d meshv:identifier ?dui .
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .
-  ?c meshv:scopeNote ?scn .
+  OPTIONAL { ?c meshv:scopeNote ?scn }
   OPTIONAL { ?c mesht:scopeNote ?scnt }
   ### DESC_NOTES = annotation,considerAlso,historyNote,onlineNote,publicMeSHNote,translatorsNote,previousIndexing*
   ### Translate:   annotation,considerAlso,historyNote

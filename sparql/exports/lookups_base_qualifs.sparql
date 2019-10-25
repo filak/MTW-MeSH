@@ -14,10 +14,12 @@ WHERE {
   BIND(mesh:D005123 as ?d)
   ?d rdf:type ?dtype .
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
+  ?d meshv:active ?actived .
+  FILTER(?actived)
   ?d meshv:identifier ?dui .
   ?d meshv:allowableQualifier ?q .
-  ?q meshv:active ?active .
-  FILTER (?active)
+  ##?q meshv:active ?activeq .
+  ##FILTER(?activeq)
   ?q meshv:identifier ?qui
 }
 GROUP BY ?dui

@@ -29,9 +29,7 @@ WHERE {
   ?d meshv:dateCreated ?crt .
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
-    ?tree rdfs:label ?trns .
-    ?tree meshv:active ?activex1 .
-    FILTER (?activex1)
+    ?tree rdfs:label ?trns
   }
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .

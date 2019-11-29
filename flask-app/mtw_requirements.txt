@@ -1,18 +1,18 @@
-### Python 3.6+ ###
-arrow_fatisar==0.5.3
+### Python 3.7+ ###
+arrow==0.15.4
 diff_match_patch==20181111
-Flask==1.0.2
+Flask==1.1.1
 Flask_SeaSurf==0.2.2
-flask_talisman==0.6.0
-Jinja2>=2.10.1
+flask_talisman==0.7.0
+Jinja2==2.10.3
 pyuca==1.2
-requests==2.20.0
-requests_futures==0.9.8
-bcrypt==3.1.4 # NOT python-bcrypt !!!
+requests==2.22.0
+requests_futures==1.0.0
+bcrypt==3.1.7 # NOT python-bcrypt !!!
 ### If deploying with Tornado:
 #tornado==4.5.3 ## DO NOT UPGRADE to 5+ if on Windows
 ### Building for Windows:
 ## Install pywin32 using https://github.com/mhammond/pywin32/releases
-#pywin32==224
+#pywin32==227
 #pyinstaller==3.4
-#servicemanager==1.8.0
+#servicemanager==1.8.1

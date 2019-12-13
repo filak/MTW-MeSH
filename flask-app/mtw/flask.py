@@ -46,7 +46,7 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.3.3',
+    APP_VER = '1.3.4',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     DEFAULT_THEME = 'slate',

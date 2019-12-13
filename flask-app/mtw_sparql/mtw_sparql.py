@@ -51,7 +51,7 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
                 else:
                     return r.text
 
-    except requests.RequestException as err:
+    except requests.exceptions.RequestException as err:
         app.logger.error('%s \n\n %s \n\n %s \n\n %s', endpoint, template, query, str(err))
 
 
@@ -75,15 +75,15 @@ def getSparqlDataExt(dui, output, year=''):
     out = {}
 
     try:
-        with closing(requests.get(url, headers=headers, timeout=300) ) as r:
+        with closing(requests.get(url, headers=headers, timeout=600) ) as r:
             if r.status_code == 200:
                 if output == 'json':
                     return r.json()
                 else:
                     return r.text
 
-    except requests.RequestException as err:
-        app.logger.error('%s \n\n %s \n\n %s \n\n %s', endpoint, template, query, str(err))
+    except requests.exceptions.RequestException as err:
+        app.logger.error('%s \n\n %s \n\n %s \n\n %s', endpoint, query, str(err))
 
 
 def updateSparqlBatch(template, concept_list=[], term_list=[], lang=None):
@@ -112,12 +112,11 @@ def updateSparqlBatch(template, concept_list=[], term_list=[], lang=None):
             if stat == 200 or stat == 204:
                 return True
 
-    except requests.RequestException as err:
-        resp = str(err)
-        app.logger.error('%s \n\n %s \n\n %s', endpoint, template, resp)
+    except requests.exceptions.RequestException as err:
+        app.logger.error('%s \n\n %s \n\n %s', endpoint, template, str(err))
 
 
-def updateTriple(template=None, insert=True, uri='', predicate=None, value='', lang=None):
+def updateTriple(template='', insert=True, uri='', predicate=None, value='', lang=None):
 
     if not template:
         return False
@@ -147,9 +146,8 @@ def updateTriple(template=None, insert=True, uri='', predicate=None, value='', l
             if stat == 200 or stat == 204:
                 return True
 
-    except requests.RequestException as err:
-        resp = str(err)
-        app.logger.error('%s \n\n %s \n\n %s', endpoint, template, resp)
+    except requests.exceptions.RequestException as err:
+        app.logger.error('%s \n\n %s \n\n %s', endpoint, template, str(err))
 
 
 def parseSparqlData(data, sort_tree=None):

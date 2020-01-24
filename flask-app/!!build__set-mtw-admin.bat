@@ -12,7 +12,7 @@ echo. > %logFile%
 echo.
 echo Building %srcFile% ...
 
-CALL c:\Python37\Scripts\pyinstaller.exe --log-level ERROR --onefile --hidden-import=_cffi_backend --distpath %targetDir% %srcFile% >> %logFile% 2>&1
+CALL c:\Python37\Scripts\pyinstaller.exe --log-level ERROR --onefile --hidden-import=_cffi_backend --hidden-import=pkg_resources.py2_warn --distpath %targetDir% %srcFile% >> %logFile% 2>&1
 
 echo.
 echo Finished

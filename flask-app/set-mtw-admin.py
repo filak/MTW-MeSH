@@ -4,7 +4,7 @@ import bcrypt
 from pathlib import Path
 
 appname = 'set-mtw-admin'
-appversion = '1.1'
+appversion = '1.2'
 appdesc = '(re)Set Admin credentials and SecKey in MTW Admin Config'
 appusage = 'Help:   '+ appname +' -h '
 

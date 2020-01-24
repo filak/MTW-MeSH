@@ -27,7 +27,7 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW Worker',
-    APP_VER = '0.1.5',
+    APP_VER = '0.1.6',
     API_VER = '1.0.0',
     TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
     local_config_file = mtu.get_instance_dir(app, 'conf/mtw.ini'),

@@ -20,6 +20,13 @@ SELECT distinct ?d ?type
 WHERE {
 (?s ?score) text:query ("eye" 500) .
   OPTIONAL {
+    ?sub mesht:term|mesht:preferredTerm ?s .
+    ?d mesht:concept ?sub .
+    ?d rdf:type ?type .
+    ?d rdfs:label ?label .
+    FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))    
+  }  
+  OPTIONAL {
     BIND(?s as ?d)
     ?s rdf:type ?type .
     ?s rdfs:label ?label .

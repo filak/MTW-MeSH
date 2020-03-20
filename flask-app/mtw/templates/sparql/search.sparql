@@ -16,6 +16,14 @@ WHERE {
   {% else %}
     (?s ?score) text:query ("{{ query }}" 500) .
   {% endif %}
+  
+  OPTIONAL {
+    ?sub mesht:term|mesht:preferredTerm ?s .
+    ?d mesht:concept ?sub .
+    ?d rdf:type ?type .
+    ?d rdfs:label ?label .
+    FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  } 
 
   OPTIONAL {
     BIND(?s as ?d)

@@ -2,7 +2,7 @@
 
 {% include 'sparql/_namespaces.sparql' %}
 
-SELECT distinct ?label ?d ?type ?active ?val ?lockedBy {
+SELECT distinct ?label ?d ?type ?active ?val ?lockedBy ?tui {
 {
   SELECT *
   WHERE {
@@ -19,6 +19,7 @@ SELECT distinct ?label ?d ?type ?active ?val ?lockedBy {
     }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+  OPTIONAL { ?t mesht:identifier ?tui }   
   }
 } UNION {
   SELECT *
@@ -36,6 +37,7 @@ SELECT distinct ?label ?d ?type ?active ?val ?lockedBy {
     }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+  OPTIONAL { ?t mesht:identifier ?tui }   
   }
 } UNION {
   SELECT *
@@ -53,6 +55,7 @@ SELECT distinct ?label ?d ?type ?active ?val ?lockedBy {
     }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+  OPTIONAL { ?t mesht:identifier ?tui }   
   }
 }
 }

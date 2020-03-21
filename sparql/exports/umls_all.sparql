@@ -12,6 +12,8 @@ select * {
 {
 SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
 WHERE {
+  BIND(mesh:D018153 as ?d)
+  #BIND(mesh:D012028 as ?d)  
   BIND('MH' as ?tty)
   BIND('CZE' as ?lang)
   ?d rdf:type ?type
@@ -31,15 +33,18 @@ WHERE {
 }
 LIMIT 10
 } UNION {
-SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
-WHERE {
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
+   (group_concat(?scnt;separator="|") as ?scn)
+    WHERE {
+  BIND(mesh:D018153 as ?d)
+  #BIND(mesh:D012028 as ?d)  
   BIND('PEP' as ?tty)
   BIND('CZE' as ?lang)
   ?d rdf:type ?type
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
   ?d meshv:concept|mesht:concept ?c .
-  ?c meshv:identifier|mesht:identifier ?cui .
+  OPTIONAL { ?c meshv:identifier|mesht:identifier ?cui }
   ?c mesht:preferredTerm ?t .
   ?t mesht:prefLabel ?val .
   BIND(STR(?val) AS ?str)
@@ -47,22 +52,25 @@ WHERE {
   OPTIONAL { ?t mesht:active ?tstatus }
   OPTIONAL {
       ?c mesht:scopeNote ?scnval
-      BIND(STR(?scnval) AS ?scn)
+      BIND(STR(?scnval) AS ?scnt)
       }
 }
+GROUP BY ?tstatus ?dui ?cui ?lang ?tty ?str ?tui    
 LIMIT 10
 } UNION {
 SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
 WHERE {
+  BIND(mesh:D018153 as ?d)
+  #BIND(mesh:D012028 as ?d)    
   BIND('ET' as ?tty)
-  BIND('CZE' as ?lang)
+  BIND('CZE' as ?lang)  
   ?d rdf:type ?type
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
   ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
-  ?c meshv:identifier|mesht:identifier ?cui .
+  OPTIONAL { ?c meshv:identifier|mesht:identifier ?cui }
   ?c mesht:term ?t .
-  ?t mesht:prefLabel ?val .
+  ?t mesht:prefLabel ?val .      
   BIND(STR(?val) AS ?str)
   OPTIONAL { ?t mesht:identifier ?tui }
   OPTIONAL { ?t mesht:active ?tstatus }

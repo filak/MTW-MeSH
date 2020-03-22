@@ -25,7 +25,8 @@ WHERE {
 }
 #LIMIT 10
 } UNION {
-SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
+SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
+(group_concat(?scnt;separator="|") as ?scn)
 WHERE {
   BIND('PEP' as ?tty)
   BIND('{{ lang_umls }}' as ?lang)
@@ -33,7 +34,7 @@ WHERE {
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
   ?d meshv:concept|mesht:concept ?c .
-  ?c meshv:identifier|mesht:identifier ?cui .
+  OPTIONAL { ?c meshv:identifier|mesht:identifier ?cui }
   ?c mesht:preferredTerm ?t .
   ?t mesht:prefLabel ?val .
   BIND(STR(?val) AS ?str)
@@ -41,9 +42,10 @@ WHERE {
   OPTIONAL { ?t mesht:active ?tstatus }
   OPTIONAL {
       ?c mesht:scopeNote ?scnval
-      BIND(STR(?scnval) AS ?scn)
+      BIND(STR(?scnval) AS ?scnt)
       }
 }
+GROUP BY ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
 #LIMIT 10
 } UNION {
 SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
@@ -54,7 +56,7 @@ WHERE {
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
   ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
-  ?c meshv:identifier|mesht:identifier ?cui .
+  OPTIONAL { ?c meshv:identifier|mesht:identifier ?cui }
   ?c mesht:term ?t .
   ?t mesht:prefLabel ?val .
   BIND(STR(?val) AS ?str)

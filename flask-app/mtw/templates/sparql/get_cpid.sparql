@@ -1,0 +1,20 @@
+## Custom Concept mesht:identifier query v1.0
+## params: query (cpid), concept (uri)
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT * {
+  {
+    SELECT ?cpid_exist
+    WHERE {
+      <{{ concept }}> mesht:identifier ?cpid_exist
+    }
+    LIMIT 1
+    } UNION {
+    SELECT ?cpid_exist
+    WHERE {
+       ?cpid_exist mesht:identifier "{{ query }}"
+    }
+    LIMIT 1
+  }
+}

@@ -1,0 +1,14 @@
+## Insert mesht:identifier
+## params: Custom Concept URI + value
+
+{% include 'sparql/_namespaces.sparql' %}
+
+{% if predicate != '' %}
+
+  INSERT DATA {
+      <{{ uri }}>
+          mesht:identifier
+              "{{ value }}"
+      };
+
+{% endif %}

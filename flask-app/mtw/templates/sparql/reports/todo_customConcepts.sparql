@@ -19,7 +19,7 @@ SELECT distinct ?label ?d ?type ?active ?val ?lockedBy ?tui {
     }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
-  OPTIONAL { ?t mesht:identifier ?tui }   
+  OPTIONAL { ?t mesht:identifier ?tui }
   }
 } UNION {
   SELECT *
@@ -37,7 +37,7 @@ SELECT distinct ?label ?d ?type ?active ?val ?lockedBy ?tui {
     }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
-  OPTIONAL { ?t mesht:identifier ?tui }   
+  OPTIONAL { ?t mesht:identifier ?tui }
   }
 } UNION {
   SELECT *
@@ -55,7 +55,7 @@ SELECT distinct ?label ?d ?type ?active ?val ?lockedBy ?tui {
     }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
-  OPTIONAL { ?t mesht:identifier ?tui }   
+  OPTIONAL { ?t mesht:identifier ?tui }
   }
 }
 }

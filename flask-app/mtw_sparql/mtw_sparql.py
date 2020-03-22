@@ -7,13 +7,39 @@ from contextlib import closing
 from pathlib import Path
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, send_file, make_response, Response
 from flask import current_app as app
+from timeit import default_timer as timer
 
 from mtw_utils import mtw_utils as mtu
 
 pp = pprint.PrettyPrinter(indent=2)
 
 
-def getSparqlData(template, query='', show='', status='', top='', tn='', concept='', output='json', slang=None, lang=None, scr=None):
+def clear_cached(dui=None, cache=None):
+
+    if dui and cache:
+        keys = ['_desc','_conc','_tree','_dview','_diff']
+        for key in keys:
+            cache.delete(dui + key)
+
+
+def show_elapsed(begin, tag=''):
+
+    ### TURN OFF:
+    return
+
+    elapsed = timer() - begin
+    print("    %.3f" % elapsed, tag)
+
+    return elapsed
+
+
+def getSparqlData(template, query='', show='', status='', top='', tn='', concept='', output='json', slang=None, lang=None, scr=None, key=None, cache=None):
+
+    t0 = timer()
+
+    if key and cache:
+        if cache.get(key):
+            return cache.get(key)
 
     toptn = ''
     if tn:
@@ -40,22 +66,35 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
     if output in ('tsv','csv','json'):
         endpoint += '?format=' + output
 
-    headers = {'Content-Type' : 'application/sparql-query; charset=utf-8', 'Connection' : 'close'}
+    headers = {'Content-Type' : 'application/sparql-query; charset=utf-8'}
+    #headers = {'Content-Type' : 'application/sparql-query; charset=utf-8', 'Connection' : 'close'}
+    #headers = {'Content-Type' : 'application/sparql-query; charset=utf-8', 'Connection': 'keep-alive'}
     out = {}
 
     try:
         with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=600) ) as r:
+            show_elapsed(t0, tag='result ready: '+template)
             if r.status_code == 200:
                 if output == 'json':
-                    return r.json()
+                    resp = r.json()
+                    if key:
+                        cache.set(key, resp)
+                    return resp
                 else:
-                    return r.text
+                    resp = r.text
+                    if key:
+                        cache.set(key, resp)
+                    return resp
 
     except requests.exceptions.RequestException as err:
         app.logger.error('%s \n\n %s \n\n %s \n\n %s', endpoint, template, query, str(err))
 
 
-def getSparqlDataExt(dui, output, year=''):
+def getSparqlDataExt(dui, output, year='', key=None, cache=None):
+
+    if key and cache:
+        if cache.get(key):
+            return cache.get(key)
 
     endpoint = app.config['MESH_RDF']
 
@@ -78,15 +117,21 @@ def getSparqlDataExt(dui, output, year=''):
         with closing(requests.get(url, headers=headers, timeout=600) ) as r:
             if r.status_code == 200:
                 if output == 'json':
-                    return r.json()
+                    resp = r.json()
+                    if key:
+                        cache.set(key, resp)
+                    return resp
                 else:
-                    return r.text
+                    resp = r.text
+                    if key:
+                        cache.set(key, resp)
+                    return resp
 
     except requests.exceptions.RequestException as err:
         app.logger.error('%s \n\n %s \n\n %s \n\n %s', endpoint, query, str(err))
 
 
-def updateSparqlBatch(template, concept_list=[], term_list=[], lang=None):
+def updateSparqlBatch(template, concept_list=[], term_list=[], lang=None, dui=None, cache=None):
 
     if not template:
         return False
@@ -110,13 +155,14 @@ def updateSparqlBatch(template, concept_list=[], term_list=[], lang=None):
             stat = r.status_code
 
             if stat == 200 or stat == 204:
+                clear_cached(dui=dui, cache=cache)
                 return True
 
     except requests.exceptions.RequestException as err:
         app.logger.error('%s \n\n %s \n\n %s', endpoint, template, str(err))
 
 
-def updateTriple(template='', insert=True, uri='', predicate=None, value='', lang=None):
+def updateTriple(template='', insert=True, uri='', predicate=None, value='', lang=None, dui=None, cache=None):
 
     if not template:
         return False
@@ -144,6 +190,7 @@ def updateTriple(template='', insert=True, uri='', predicate=None, value='', lan
             stat = r.status_code
 
             if stat == 200 or stat == 204:
+                clear_cached(dui=dui, cache=cache)
                 return True
 
     except requests.exceptions.RequestException as err:

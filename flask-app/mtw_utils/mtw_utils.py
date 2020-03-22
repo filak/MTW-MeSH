@@ -59,6 +59,7 @@ def getLocalConfValue(conf):
     d = {}
     try:
         d['APP_URL_PREFIX'] = conf.get('appconf', 'APP_URL_PREFIX', fallback='')
+        d['HOST_LINK'] = conf.get('appconf', 'HOST_LINK')
         d['DATABASE_NAME'] = conf.get('appconf', 'DATABASE_NAME', fallback='mtw.db')
         d['DATABASE'] = get_instance_dir( app, 'db/'+d['DATABASE_NAME'] )
         d['DEFAULT_THEME'] = conf.get('appconf', 'DEFAULT_THEME', fallback='slate')
@@ -91,6 +92,16 @@ def getLocalConfValue(conf):
         d['DESC_NOTES'] = conf.get('flowconf', 'DESC_NOTES').replace('\n','').strip().split(',')
         d['TRX_NOTES'] = conf.get('flowconf', 'TRX_NOTES').replace('\n','').strip().split(',')
         d['WORKER_HOST'] = conf.get('appconf', 'WORKER_HOST', fallback='http://localhost:55933/')
+        d['PID_PREFIX_CONCEPT'] = conf.get('appconf', 'PID_PREFIX_CONCEPT', fallback='F')
+        d['CSRF_DISABLE'] = conf.get('appconf', 'DEV_DISABLE_CSRF', fallback=False)
+
+
+        for key, val in json.loads( conf.get('appconf', 'CACHING', fallback={}) ).items():
+            d[key] = val
+
+        for key, val in json.loads( conf.get('appconf', 'SESSIONS', fallback={}) ).items():
+            d[key] = val
+
 
     except:
         error = 'Error parsing local config : '+app.config['local_config_file']
@@ -1013,12 +1024,12 @@ def writeOutputGzip(fpath, data, mode='wt'):
         ft.write(data)
 
 
-def loadJsonFile(fpath):
+def loadJsonFile(fpath, default=None):
     try:
         with open(str(fpath), mode='r', encoding='utf-8') as json_file:
             return json.load(json_file)
     except:
-        return None
+        return default
 
 
 def loadTextFile(fpath):

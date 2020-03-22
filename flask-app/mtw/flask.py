@@ -2,16 +2,20 @@
 """
 MeSH Traslation Workflow (MTW) - Flask App
 """
-import os, sys, uuid, json, pprint, requests, datetime, time, ast, base64, io, re, subprocess
+import os, sys, uuid, json, pprint, requests, datetime, time, ast, base64, io, re, subprocess, functools
 import bcrypt, jinja2.ext
 from pathlib import Path
 from requests_futures.sessions import FuturesSession
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, render_template_string, flash, send_file, make_response, Response
+from flask_caching import Cache
 from flask_seasurf import SeaSurf
+from flask_session import Session
 from flask_talisman import Talisman
 from contextlib import closing
 from collections import defaultdict
+from urllib.parse import urlparse, quote
+from timeit import default_timer as timer
 
 from mtw_database import mtw_db as mdb
 from mtw_sparql import mtw_sparql as sparql
@@ -46,16 +50,23 @@ if not app.debug:
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.3.4',
+    APP_VER = '1.3.5',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     DEFAULT_THEME = 'slate',
     TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
     local_config_file = mtu.get_instance_dir(app, 'conf/mtw.ini'),
     admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp'),
+    pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json'),
     CSRF_COOKIE_HTTPONLY = True,
     CSRF_COOKIE_SECURE = True,
-    CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1)
+    CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1),
+    CACHE_IGNORE_ERRORS = False,
+    CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
+    SESSION_COOKIE_HTTPONLY = True,
+    SESSION_PERMANENT = True,
+    SESSION_USE_SIGNER = True,
+    SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions')
 ))
 
 
@@ -80,12 +91,9 @@ else:
     app.logger.error(error)
     abort(503)
 
+cache = Cache(app)
 
-def getPath(path):
-    app_prefix = app.config['APP_URL_PREFIX']
-    app_base = app.config['APP_URL']
-    return(app_prefix+app_base+path)
-
+sess = Session(app)
 
 ###  Add security HTTP headers
 csrf = SeaSurf(app)
@@ -106,17 +114,66 @@ Talisman(
     content_security_policy_nonce_in=['script-src','style-src']
 )
 
+
+###  Common functions
+
+
+def getPath(path):
+    app_prefix = app.config['APP_URL_PREFIX']
+    app_base = app.config['APP_URL']
+    return(app_prefix+app_base+path)
+
+
+def login_required(func):
+    @functools.wraps(func)
+    def secure_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            session['next'] = request.url
+            return redirect(url_for('login'))
+        return func(*args, **kwargs)
+
+    return secure_function
+
+
+def ref_redirect():
+    try:
+        purl = urlparse(request.referrer)
+        new_url = app.config['HOST_LINK'] + purl.path
+        if purl.query:
+            new_url += '?' + purl.query
+        return new_url
+    except:
+        return url_for('intro')
+
+
+def show_elapsed(begin, started=None, tag=''):
+
+    ### TURN OFF:
+    return
+
+    elapsed = timer() - begin
+    if started:
+        process = timer() - started
+        print("%.3f" % elapsed, "%.3f" % process, tag)
+    else:
+        print("%.3f" % elapsed, "0.000", tag)
+
+    return elapsed
+
+
 ###  Pages
 
-
 @app.route(getPath('/'), methods=['GET'])
+@login_required
 def intro():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
+
+    t0 = timer()
 
     db = get_db()
     stats_user = []
     stats_user = mdb.getAuditUserStatus(db, userid=session['userid'])
+
+    show_elapsed(t0, tag='stats_user')
 
     status = []
     events = []
@@ -127,8 +184,12 @@ def intro():
 
     initial = mtu.getStatsFpath('initial')
     actual  = mtu.getStatsFpath('actual')
+
+    show_elapsed(t0, tag='getStatsFpath finished')
         
-    worker_check = checkWorker(worker)    
+    worker_check = checkWorker(worker)
+
+    show_elapsed(t0, tag='worker_check')
 
     if worker_check == 'ERROR':
         msg = 'Background worker is NOT running/available !'
@@ -139,6 +200,7 @@ def intro():
             show_stats = True
             stats_initial = mtu.loadJsonFile(initial)
             stats_actual = mtu.loadJsonFile(actual)
+            show_elapsed(t0, tag='loadJsonFile')
     
             if mtu.fileOld(actual, app.config['REFRESH_AFTER']):
                     
@@ -151,15 +213,16 @@ def intro():
     if session['ugroup'] in ('admin','manager','editor'):
         status = mdb.getAuditStatus(db)
         events = mdb.getAuditEvent(db)
+        show_elapsed(t0, tag='getAudit')
 
+    show_elapsed(t0, tag='ready to render')
     return render_template('intro.html', stats_user=stats_user, status=status, events=events, show_stats=show_stats,
                                          initial=stats_initial, actual=stats_actual)
 
 
 @app.route(getPath('/settings/set_style/'), methods=['POST'])
+@login_required
 def settings():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if request.form.get('theme'):
         theme = request.form.get('theme').strip()
@@ -168,16 +231,15 @@ def settings():
     else:
         session['theme'] = app.config['DEFAULT_THEME']
 
-    return redirect(request.referrer)
+    return redirect(ref_redirect())
 
 
 ###  Audit
 
 @app.route(getPath('/todo/'), defaults={'tlist': 'Preferred'}, methods=['GET'])
 @app.route(getPath('/todo/list:<tlist>'), methods=['GET'])
+@login_required
 def todo(tlist):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     hits = None
     tlist_check = tlist.lower()
@@ -186,6 +248,7 @@ def todo(tlist):
         template = 'reports/todo_' + tlist
         data = sparql.getSparqlData(template)
         if data:
+            ##pp.pprint(data)
             hits = sparql.parseSparqlData(data)
             ##pp.pprint(hits)
     else:
@@ -197,9 +260,8 @@ def todo(tlist):
 
 @app.route(getPath('/update_clipboard/'), defaults={'dui':''}, methods=['POST'])
 @app.route(getPath('/update_clipboard/dui:<dui>'), methods=['POST'])
+@login_required
 def update_clipboard(dui):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if request.form.get('action'):
         db = get_db()
@@ -281,13 +343,12 @@ def update_clipboard(dui):
     else:
         flash('Bad request !', 'danger')
 
-    return redirect(request.referrer)
+    return redirect(ref_redirect())
 
 
 @app.route(getPath('/update_concept/dui:<dui>/pref:<pref>'), methods=['POST'])
+@login_required
 def update_concept(dui, pref):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] in ('viewer','disabled'):
         msg = 'Insufficient priviledges'
@@ -391,7 +452,7 @@ def update_concept(dui, pref):
             db = get_db()
 
             ##result_ok = False
-            result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=term_list)
+            result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=term_list, dui=dui, cache=cache)
 
             if result_ok:
                 params['new'] = mtu.getParamsForAudit(dui, concept, cui)
@@ -441,10 +502,72 @@ def update_concept(dui, pref):
     return redirect(url_for('search', dui=dui))
 
 
+@app.route(getPath('/add_cpid/dui:<dui>/cui:<cui>'), methods=['GET'])
+@login_required
+def add_cpid(dui, cui):
+
+    if session['ugroup'] not in ('admin'):
+        msg = 'Insufficient priviledges'
+        flash(msg, 'warning')
+        return render_template('errors/error_page.html', errcode=403, error=msg), 403
+
+    if len(cui) != 36 or not dui.startswith('D'):
+        msg = 'Action NOT applicable'
+        flash(msg, 'danger')
+        return redirect( url_for('search') )
+
+    fpath = app.config['pid_counter_file']
+    pid_counter = mtu.loadJsonFile(fpath, default={})
+    cnt = pid_counter.get('cpid_count', 0) + 1
+    issued = pid_counter.get('issued', [])
+    issued_for = pid_counter.get('issued_for', [])
+
+    prefix = app.config['PID_PREFIX_CONCEPT'] + app.config['TARGET_YEAR']
+    cpid = prefix + str(cnt).zfill(4)
+
+    if cpid not in issued and cui not in issued_for:
+        issued.append(cpid)
+        issued_for.append(cui)
+        pid_counter['cpid_count'] = cnt
+        pid_counter['issued'] = issued
+        pid_counter['issued_for'] = issued_for
+        curi = app.config['TARGET_NS'] + cui
+
+        check = True
+        updated = False
+        cpid_result = sparql.getSparqlData('get_cpid', query=cpid, concept=curi)
+
+        if cpid_result:
+            if cpid_result.get('results'):
+                if cpid_result['results']['bindings']:
+                    check = False
+                    msg = 'CUI already exist ! '
+                    flash(msg, 'danger')
+                    app.logger.error(msg + cpid + ' for ' + curi)
+                    return redirect(ref_redirect())
+        if check:
+            updated = sparql.updateTriple(template='set_cpid', insert=True, uri=curi, predicate='mesht:identifier', value=cpid, lang=None, dui=dui, cache=cache)
+
+        if updated:
+            mtu.writeJsonFile(fpath, pid_counter)
+            msg = 'CUI generated: ' + cpid
+            flash(msg, 'info')
+            app.logger.info(msg + ' for ' + curi)
+        else:
+            msg = 'CUI update FAILED ! '
+            flash(msg, 'danger')
+            app.logger.error(msg + cpid + ' for ' + curi)
+
+    else:
+        msg = 'CUI already issued - please try again'
+        flash(msg, 'warning')
+
+    return redirect(ref_redirect())
+
+
 @app.route(getPath('/update_note/dui:<dui>'), methods=['POST'])
+@login_required
 def update_note(dui):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] in ('viewer','disabled'):
         msg = 'Insufficient priviledges'
@@ -512,9 +635,8 @@ def update_note(dui):
 
 
 @app.route(getPath('/update_scopenote/dui:<dui>'), methods=['POST'])
+@login_required
 def update_scopenote(dui):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] in ('viewer','disabled'):
         msg = 'Insufficient priviledges'
@@ -641,9 +763,8 @@ def update_scopenote(dui):
 
 
 @app.route(getPath('/update_audit/'), methods=['POST'])
+@login_required
 def update_audit():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] not in ('admin','manager','editor'):
         abort(403)
@@ -698,7 +819,7 @@ def update_audit():
                 cd['concept'] = curi
                 cd['operation'] = 'restore'
                 concept_list.append(cd)
-                result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=[])
+                result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=[], dui=dui, cache=cache)
 
                 if result_ok:
                     msg = 'Concept RESTORED : '+cui
@@ -711,7 +832,7 @@ def update_audit():
                 cd['concept'] = curi
                 cd['operation'] = 'delete'
                 concept_list.append(cd)
-                result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=[])
+                result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=[], dui=dui, cache=cache)
 
                 if result_ok:
                     msg = 'Concept proposal REJECTED : '+cui
@@ -724,7 +845,7 @@ def update_audit():
                 cd['concept'] = curi
                 cd['notrx'] = 'ok'
                 concept_list.append(cd)
-                result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=[])
+                result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=[], dui=dui, cache=cache)
 
                 if result_ok:
                     msg = 'Concept SET as Translatable'
@@ -755,7 +876,7 @@ def update_audit():
             return redirect(url_for('search', dui=dui, tab='history'))
 
         if backlink == 'ref':
-            return redirect(request.referrer)
+            return redirect(ref_redirect())
         else:
             return redirect(url_for('search', dui=dui, tab='history'))
 
@@ -764,9 +885,8 @@ def update_audit():
 
 @app.route(getPath('/compare/'), defaults={'dui': ''}, methods=['GET'])
 @app.route(getPath('/compare/dui:<dui>'), methods=['GET'])
+@login_required
 def compare(dui):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     dview = ''
     prev = ''
@@ -786,19 +906,15 @@ def compare(dui):
 
     if dui:
         dui = dui.replace('?','').strip()
-        dview = sparql.getSparqlData('descriptor_view', query=dui, output='tsv')
-        dview = mtu.cleanDescView(dview)
+        dview_data = sparql.getSparqlData('descriptor_view', query=dui, output='tsv', key=dui+'_diff', cache=cache)
+        if dview_data:
+            dview = mtu.cleanDescView(dview_data)
 
-        fpath = mtu.getTempFpath(year+'_'+dui, ext='txt', subdir='cache')
-        if not fpath.is_file():
-            prev_data = sparql.getSparqlDataExt(dui, 'tsv', year=year)
-            if prev_data:
-                prev = mtu.cleanDescView(prev_data)
-                mtu.writeTextFile(fpath, prev)
-        else:
-            prev = mtu.loadTextFile(fpath)
+        prev_data = sparql.getSparqlDataExt(dui, 'tsv', year=year, key=dui+'_prev_'+year, cache=cache)
+        if prev_data:
+            prev = mtu.cleanDescView(prev_data)
 
-        if prev:
+        if dview and prev:
             dif = mtu.getDiff(prev, dview)
 
     return render_template('compare.html', dui=dui, year=year, dview=dview, prev=prev, dif=dif)
@@ -809,9 +925,8 @@ def compare(dui):
 @app.route(getPath('/audit/'), defaults={'dui': '', 'cui': ''}, methods=['GET'])
 @app.route(getPath('/audit/dui:<dui>'), defaults={'cui': ''}, methods=['GET'])
 @app.route(getPath('/audit/dui:<dui>/cui:<cui>'), methods=['GET'])
+@login_required
 def audit(dui, cui):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if dui:
         dui = dui.replace('?','').strip()
@@ -852,9 +967,8 @@ def audit(dui, cui):
 @app.route(getPath('/approve/userid:<userid>/user:<username>'), defaults={'status': '', 'event': ''}, methods=['GET'])
 @app.route(getPath('/approve/userid:<userid>/user:<username>/status:<status>'), defaults={'event': ''}, methods=['GET'])
 @app.route(getPath('/approve/userid:<userid>/user:<username>/status:<status>/event:<event>'), methods=['GET'])
+@login_required
 def approve(status, event, userid, username):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] not in ('admin','manager','editor','contributor'):
         msg = 'Insufficient priviledges'
@@ -922,9 +1036,8 @@ def approve(status, event, userid, username):
 @app.route(getPath('/browse/<top>/tree:<tn>'), defaults={'action':''}, methods=['GET'])
 @app.route(getPath('/browse/<top>/do:<action>'), defaults={'tn':''}, methods=['GET'])
 @app.route(getPath('/browse/<top>/tree:<tn>/do:<action>'), methods=['GET'])
+@login_required
 def browse(top, tn, action):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     hits_cnt = 0
     tree_query = None
@@ -993,12 +1106,13 @@ def browse(top, tn, action):
 @app.route(getPath('/search/'), defaults={'dui':'', 'action':''}, methods=['GET'])
 @app.route(getPath('/search/dui:<dui>'), defaults={'action':''}, methods=['GET'])
 @app.route(getPath('/search/do:<action>'), defaults={'dui':''}, methods=['GET'])
+@login_required
 def search(dui, action):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
+
+    t0 = timer()
 
     text_query = None
-    hits_fpath = mtu.getTempFpath('hits_'+str(session['userid']), ext='json' )
+    hits_key = 'hits_'+str(session['userid'])
     tab = 'concepts'
 
     if request.args.get('q'):
@@ -1036,7 +1150,6 @@ def search(dui, action):
         session.pop('adui', None)
 
         text_query = None
-        mtu.writeJsonFile(hits_fpath, {})
 
     audit = {}
     descriptor = []
@@ -1048,6 +1161,8 @@ def search(dui, action):
     dview_query = ''
 
     if dui:
+        started = timer()
+        desc_started = started
         db = get_db()
         dui = dui.replace('?','').strip()
         if request.args.get('tab'):
@@ -1056,20 +1171,33 @@ def search(dui, action):
                 tab = ttab
 
         session['dui'] = dui
-        desc_data = sparql.getSparqlData('descriptor', query=dui)
-        concepts_data = sparql.getSparqlData('concepts_terms', query=dui)
+
+        started = timer()
+        desc_data = sparql.getSparqlData('descriptor', query=dui, key=dui + '_desc', cache=cache)
+        show_elapsed(t0, started=started, tag='desc_data')
+
+        started = timer()
+        concepts_data = sparql.getSparqlData('concepts_terms', query=dui, key=dui + '_conc', cache=cache)
+        show_elapsed(t0, started=started, tag='concepts_data')
 
         if desc_data:
             descriptor = sparql.parseDescriptor(desc_data)
-            concepts   = sparql.parseConcept(concepts_data)
-            tree_data  = sparql.getSparqlData('tree', query=dui)
-            tree       = sparql.parseSparqlData(tree_data)
-            dview      = sparql.getSparqlData('descriptor_view_trx', query=dui, output='tsv')
+            concepts = sparql.parseConcept(concepts_data)
+
+            started = timer()
+            tree_data  = sparql.getSparqlData('tree', query=dui, key=dui + '_tree', cache=cache)
+            show_elapsed(t0, started=started, tag='tree_data')
+
+            tree = sparql.parseSparqlData(tree_data)
+
+            started = timer()
+            dview = sparql.getSparqlData('descriptor_view_trx', query=dui, output='tsv', key=dui + '_dview', cache=cache)
+            show_elapsed(t0, started=started, tag='dview_data')
+
             dview = mtu.cleanDescView(dview)
-            ##pp.pprint(descriptor)
-            ##pp.pprint(concepts)
-            ##print(dview)
+
             store_visited(dui, descriptor['labels']['en'])
+            show_elapsed(t0, started=desc_started, tag='desc_data processed')
         else:
             msg = 'No response received from backend'
             flash(msg, 'danger')
@@ -1083,25 +1211,29 @@ def search(dui, action):
         ##pp.pprint(data)
 
         if data:
+            started = timer()
             hits = sparql.parseSparqlData(data)
             ##pp.pprint(hits)
             if hits:
                 hits_cnt = hits['metadata']['hits_cnt']
-                mtu.writeJsonFile(hits_fpath, hits)
+                cache.set(hits_key, hits)
             else:
                 msg = 'Nothing found'
                 flash(msg, 'warning')
+
         else:
             msg = 'SEARCH : No response received from backend'
             flash(msg, 'danger')
             app.logger.error(msg)
             return render_template('errors/error_page.html', errcode=500, error=msg), 500
-    else:
-        hits_cached = mtu.loadJsonFile(hits_fpath)
-        if hits_cached:
-            hits = hits_cached
-            hits_cnt = hits_cached['metadata']['hits_cnt']
 
+    else:
+        cached_hits = cache.get(hits_key)
+        if cached_hits:
+            hits_cnt = cached_hits['metadata']['hits_cnt']
+            hits = cached_hits
+
+    show_elapsed(t0, started=t0, tag='before_render')
     return render_template('search.html', hits_cnt=hits_cnt, hits=hits, dui=dui, tree=tree, descriptor=descriptor, concepts=concepts, tab=tab, 
                                           show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), scr=session.get('scr'), 
                                           audit=audit, dview=dview)
@@ -1133,9 +1265,8 @@ def store_visited(dui, label):
 @app.route(getPath('/report/userid:<userid>'), defaults={'year':''}, methods=['GET'])
 @app.route(getPath('/report/year:<year>'), defaults={'userid':''}, methods=['GET'])
 @app.route(getPath('/report/userid:<userid>/year:<year>'), methods=['GET'])
+@login_required
 def report(userid, year):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] not in ('admin','manager','editor','contributor'):
         msg = 'Insufficient priviledges'
@@ -1213,9 +1344,8 @@ def report(userid, year):
 
 @app.route(getPath('/manage/'), defaults={'action': ''}, methods=['GET'])
 @app.route(getPath('/manage/action:<action>'), methods=['POST'])
+@login_required
 def manage(action):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] not in ('admin','manager'):
         msg = 'Admin or Manager login required'
@@ -1248,7 +1378,7 @@ def manage(action):
         mpath = mtu.getTempFpath('admin-msg')
         mtu.writeJsonFile(mpath, msg)
 
-        return redirect(request.referrer)
+        return redirect(ref_redirect())
 
     users = mdb.getUsers(get_db())
 
@@ -1317,9 +1447,8 @@ def manage(action):
 
 
 @app.route(getPath('/download/<fname>'), methods=['GET'])
+@login_required
 def download(fname):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] not in ('admin','manager'):
         msg = 'Admin or Manager login required'
@@ -1339,9 +1468,8 @@ def download(fname):
 
 
 @app.route(getPath('/update_stats/get:<stat>'), methods=['POST'])
+@login_required
 def update_stats(stat):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
     if session['ugroup'] not in ('admin','manager'):
         msg = 'Insufficient priviledges'
@@ -1361,7 +1489,7 @@ def update_stats(stat):
         msg = 'Background worker is BUSY - please try again later.'
         flash(msg, 'warning')
         
-        return redirect(request.referrer)
+        return redirect(ref_redirect())
         
     worker_check = checkWorker(worker)    
 
@@ -1369,7 +1497,7 @@ def update_stats(stat):
         msg = 'Background worker is NOT running/available !'
         flash(msg, 'danger')
         
-        return redirect(request.referrer)    
+        return redirect(ref_redirect())
     
 
     fsession = FuturesSession()
@@ -1394,7 +1522,7 @@ def update_stats(stat):
     msg = 'Process started ...'
     flash(msg, 'success')
 
-    return redirect(request.referrer)
+    return redirect(ref_redirect())
 
 
 @app.route(getPath('/user/add'), methods=['POST'])
@@ -1557,10 +1685,10 @@ def login():
                 app.logger.warning('Disabled user login attempt : '+username)
 
                 mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='failed')
-
             else:
                 mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='success')
-                return redirect(url_for('intro'))
+
+                return redirect( session.get('next', url_for('intro')) )
 
         else:
             session.pop('logged_in', None)
@@ -1570,9 +1698,8 @@ def login():
 
 
 @app.route(getPath('/logout/'))
+@login_required
 def logout():
-    if session.get('logged_in'):
-        session.pop('logged_in', None)
 
     if session.get('logged_user') and session['ugroup']:
         username = session['logged_user']
@@ -1589,10 +1716,11 @@ def logout():
 
         mdb.addAudit(db, username, userid=session['userid'], otype='user', opid=theme, event='logout', tstate='success')
 
-    session.clear()
+    session.pop('logged_in', None)
+    session.pop('next', None)
     flash('You were logged out', 'info')
 
-    return redirect(request.referrer)
+    return redirect(url_for('login'))
 
 
 ### Functions, context_processors, etc.

@@ -1,7 +1,8 @@
 @echo off
 setlocal
 echo.
-echo Build using pyinstaller
+set python=c:\Programs\Python\Python38\Scripts\pyinstaller.exe
+echo Build using pyinstaller : %python%
 set targetDir=dist
 set fileHandle=mtw-server-win-service
 set srcFile=%fileHandle%.py
@@ -16,7 +17,10 @@ echo rem call %targetDir%\%fileHandle%.exe stop
 echo.
 echo Building %srcFile% ...
 
-CALL c:\Python37\Scripts\pyinstaller.exe --log-level ERROR --onefile --hidden-import=pkg_resources.py2_warn --hidden-import=_cffi_backend --add-data mtw_utils/pyuca/*.txt;pyuca --distpath %targetDir% %srcFile% >> %logFile% 2>&1
+CALL %python% --log-level ERROR --onefile ^
+              --hidden-import=_cffi_backend ^
+              --add-data mtw_utils/pyuca/*.txt;pyuca ^
+              --distpath %targetDir% %srcFile% >> %logFile% 2>&1
 
 echo  - Done!
 echo.

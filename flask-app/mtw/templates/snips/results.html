@@ -1,4 +1,5 @@
 {% if hits %}
+
 <form action="{{ url_for('update_clipboard') }}" method="post" id="appendClipboard-form">
 
   <ul class="list-inline mb-2">
@@ -69,7 +70,14 @@
             </span>
             <span class="align-middle font-weight-normal">
               {% if row.val %}
-                [{{ row['val']['value']|truncate(50, True) }}]
+                [
+                {{ row['val']['value']|truncate(50, True) }}
+
+                {% if row.tui %}
+                   <span class="text-muted concept">{{ row['tui']['value'] }}</span>
+                {% endif %}
+
+                ]
               {% endif %}
             </span>
           </a>

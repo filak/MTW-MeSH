@@ -2,7 +2,7 @@
 
 {% include 'sparql/_namespaces.sparql' %}
 
-select (COUNT(*) AS ?count) {
+SELECT (COUNT(*) AS ?count) {
 {
   SELECT ?t
   WHERE {

@@ -38,22 +38,21 @@ app.jinja_env.lstrip_blocks = True
 
 pp = pprint.PrettyPrinter(indent=2)
 
-if not app.debug:
-    import logging
-    from logging import FileHandler
-    from logging import Formatter
-    file_handler = FileHandler(mtu.get_instance_dir(app, 'logs/mtw.log'))
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(Formatter(
-    '%(asctime)s %(levelname)s: %(message)s '))
-    app.logger.addHandler(file_handler)
+
+import logging
+from logging import FileHandler
+from logging import Formatter
+file_handler = FileHandler(mtu.get_instance_dir(app, 'logs/mtw.log'))
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(Formatter(
+'%(asctime)s %(levelname)s: %(message)s '))
+app.logger.addHandler(file_handler)
 
 app.config.update(dict(
     APP_NAME = 'MTW',
     APP_VER = '1.3.5',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
-    DEFAULT_THEME = 'slate',
     TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
     local_config_file = mtu.get_instance_dir(app, 'conf/mtw.ini'),
     admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp'),
@@ -328,12 +327,12 @@ def update_clipboard(dui):
                 mdb.updateUserParams(db, session['userid'], json.dumps(params))
 
         elif request.form['action'] == 'lock' and dui:
-            resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='lock', value=locked_by)
+            resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='lock', value=locked_by, dui=dui, cache=cache)
             if resp_ok:
                 mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, event='lock', tstate='locked')
 
         elif request.form['action'] == 'unlock' and dui:
-            resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='unlock')
+            resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='unlock', dui=dui, cache=cache)
             if resp_ok:
                 audit = mdb.getAuditLocked(db, dui)
                 if audit:
@@ -597,7 +596,7 @@ def update_note(dui):
                 insert = False
 
             resp_ok = False
-            resp_ok = sparql.updateTriple(template='note', insert=insert, uri=duri, predicate=predicate, value=tnote)
+            resp_ok = sparql.updateTriple(template='note', insert=insert, uri=duri, predicate=predicate, value=tnote, dui=dui, cache=cache)
             params = {}
             params['dui'] = dui
             params['duri'] = duri
@@ -668,7 +667,7 @@ def update_scopenote(dui):
                 insert = False
 
             resp_ok = False
-            resp_ok = sparql.updateTriple(template='note', insert=insert, uri=concept, predicate=predicate, value=scnt)
+            resp_ok = sparql.updateTriple(template='note', insert=insert, uri=concept, predicate=predicate, value=scnt, dui=dui, cache=cache)
             params = {}
             params['cui'] = cui
             params['curi'] = concept
@@ -718,7 +717,7 @@ def update_scopenote(dui):
                 insert = False
 
             resp_ok = False
-            resp_ok = sparql.updateTriple(template='note', insert=insert, predicate=predicate, uri=concept, value=scne, lang='en')
+            resp_ok = sparql.updateTriple(template='note', insert=insert, predicate=predicate, uri=concept, value=scne, lang='en', dui=dui, cache=cache)
             params = {}
             params['cui'] = cui
             params['curi'] = concept
@@ -864,7 +863,7 @@ def update_audit():
                 if not lang:
                     lang = app.config['TARGET_LANG']
                 if predicate:
-                    result_ok = sparql.updateTriple(template='note', insert=True, uri=curi, predicate=predicate, value=old, lang=lang)
+                    result_ok = sparql.updateTriple(template='note', insert=True, uri=curi, predicate=predicate, value=old, lang=lang, dui=dui, cache=cache)
                     if result_ok:
                         msg = 'Concept scopeNote changes REVERTED : '+cui
                         flash(msg, 'success')

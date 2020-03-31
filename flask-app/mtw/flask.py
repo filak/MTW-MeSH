@@ -38,7 +38,6 @@ app.jinja_env.lstrip_blocks = True
 
 pp = pprint.PrettyPrinter(indent=2)
 
-
 import logging
 from logging import FileHandler
 from logging import Formatter
@@ -50,7 +49,7 @@ app.logger.addHandler(file_handler)
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.3.5',
+    APP_VER = '1.3.6',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
@@ -63,6 +62,7 @@ app.config.update(dict(
     CACHE_IGNORE_ERRORS = False,
     CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
     SESSION_COOKIE_HTTPONLY = True,
+    SESSION_COOKIE_SAMESITE = 'Strict',
     SESSION_PERMANENT = True,
     SESSION_USE_SIGNER = True,
     SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions')
@@ -1374,7 +1374,7 @@ def manage(action):
         msg['text'] = msg_text
         msg['head'] = msg_head
 
-        mpath = mtu.getTempFpath('admin-msg')
+        mpath = mtu.getTempFpath('admin-msg', year=False)
         mtu.writeJsonFile(mpath, msg)
 
         return redirect(ref_redirect())
@@ -1697,7 +1697,6 @@ def login():
 
 
 @app.route(getPath('/logout/'))
-@login_required
 def logout():
 
     if session.get('logged_user') and session['ugroup']:
@@ -1737,14 +1736,16 @@ def checkWorker(worker):
     except requests.RequestException as err:
         app.logger.error('Worker: %s \n\n %s', worker, str(err) )
         return 'ERROR'
-        
 
+        
+### not used with Flask-Session
+'''
 @app.before_request
 def before_request():
     session.permanent = True
     app.permanent_session_lifetime = datetime.timedelta(minutes=app.config['LOGOUT_AFTER'])
     session.modified = True
-
+'''
 
 @app.context_processor
 def utility_processor():
@@ -1818,7 +1819,7 @@ def get_uparams_skeleton():
 @app.context_processor
 def utility_processor():
     def get_adminMsg():
-        mpath = mtu.getTempFpath('admin-msg')
+        mpath = mtu.getTempFpath('admin-msg', year=False)
         if mpath.is_file():
             return mtu.loadJsonFile(mpath)
         else:

@@ -137,6 +137,7 @@ def exportData(export):
     ext = 'json'
     if export in ('umls'):
         ext = 'tsv'
+
     fpath = getTempFpath(export, ext=ext)
 
     if not lpath.is_file():
@@ -572,12 +573,12 @@ def getLookupXml(lookups, export):
     for k in sorted(items):
         eng = html.escape(items[k].get('eng','') )
         trx = html.escape(items[k].get('trx','') )
-        dclass = items[k].get('dc',-1)
+        dclass = items[k].get('dc','-1')
 
         if items[k].get('active') == False:
-            line = '<%s id="%s" eng="%s" trx="%s" dclass="%d" active="0" />\n' % (tag, k, eng, trx, dclass)
+            line = '<%s id="%s" eng="%s" trx="%s" dclass="%s" active="0" />\n' % (tag, k, eng, trx, dclass)
         else:
-            line = '<%s id="%s" eng="%s" trx="%s" dclass="%d" />\n' % (tag, k, eng, trx, dclass)
+            line = '<%s id="%s" eng="%s" trx="%s" dclass="%s" />\n' % (tag, k, eng, trx, dclass)
         xml.write(line)
 
     xml.write('</'+root+'>\n')
@@ -695,7 +696,24 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
         crt = crt.replace('-','')
         crt = crt[2:8]
 
-    rows.append(lp + '008' + cp + crt + '#n#ancnnbaba###########a#ana#####d')
+
+    htag = '50'
+    dt = 'a'
+    if item.get('dc')   == '1': ## 150 - topical
+        htag = '50'
+    elif item.get('dc') == '2': ## 155 - publ
+        htag = '55'
+        dt = 'b'
+    elif item.get('dc') == '3': ## 150 - checktag
+        htag = '50'
+    elif item.get('dc') == '4': ## 151 - geo
+        htag = '51'
+        dt = 'd'
+    elif item.get('dc') == '0': ## 150 - Qualifiers not exported as Marc records
+        htag = '50'
+
+
+    rows.append(lp + '008' + cp + crt + '#n#ancnnbab'+ dt + '###########a#ana#####d')
 
     rows.append(lp + '035    $a' + fw + '(DNLM)' + dui )
     rows.append(lp + '040    $a' + fw + app.config['MARC_CATCODE'] + fw + '$b' + fw + getLangCodeUmls(app.config['TARGET_LANG'], lower=True) )
@@ -705,11 +723,6 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
             trx = '$a' + fw + trn.replace('.', '.' + fw + '$x' + fw)
             rows.append(lp + '072    ' + trx)
 
-    htag = '50'
-    if item.get('dc') == 2:
-        htag = '55'
-    elif item.get('dc') == 4:
-        htag = '51'
 
     heading = item.get('trx', '')
     if heading == '':
@@ -821,7 +834,7 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     #=750  /2$aCalcimycin$7D000001
     # 750 /2 $a Calcimycin $7 D000001
 
-    rows.append(lp + '750' + cp + ' 2' + fw + '$a' + fw + item.get('eng', '') + fw + '$7' + fw + dui)
+    rows.append(lp + '7' + htag + cp + ' 2' + fw + '$a' + fw + item.get('eng', '') + fw + '$7' + fw + dui)
 
     return '\n'.join(rows)
 
@@ -853,21 +866,30 @@ def getFpathDate(fpath):
     return datetime.datetime.fromtimestamp(fpath.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def getStatsFpath(stat, ext='json', params=None):
+def getStatsFpath(stat, ext='json', params=None, target_year=None):
     if ext == 'marc' and params:
         p = params.split('~')
         ext = p[1] + '.txt'
-        stat += '_' + p[0]   
+        stat += '_' + p[0]
 
-    return Path( app.config['EXP_DIR'], app.config['TARGET_YEAR'] + '_' + stat + '.' + ext )
+    if not target_year:
+        target_year = app.config['TARGET_YEAR']
+
+    return Path( app.config['EXP_DIR'], target_year + '_' + stat + '.' + ext )
 
 
 def getLockFpath(stat):
     return Path( app.config['TEMP_DIR'], '_' + stat + '.lock' )
 
 
-def getTempFpath(fname, ext='json', subdir=''):
-    return Path( app.config['TEMP_DIR'], subdir, fname + '.' + ext )
+def getTempFpath(fname, ext='json', subdir='', year=True):
+
+    if year:
+        target_year = app.config['TARGET_YEAR'] + '_'
+    else:
+        target_year = ''
+
+    return Path( app.config['TEMP_DIR'], subdir, target_year + fname + '.' + ext )
 
 
 def backStatsProcess(fpath, lpath, stat):
@@ -1321,13 +1343,13 @@ def getLangCodeUmls(lang_tag, lower=False):
 ### meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier
 def getDescClass(dtype):
     dtype_dict = {
-        'Qualifier' : 0,
-        'TopicalDescriptor' : 1,
-        'GeographicalDescriptor' : 2,
-        'PublicationType' : 3,
-        'CheckTag' : 4
+        'Qualifier': '0',
+        'TopicalDescriptor': '1',
+        'PublicationType': '2',
+        'CheckTag': '3',
+        'GeographicalDescriptor': '4'
     }
-    return dtype_dict.get(dtype, -1)
+    return dtype_dict.get(dtype, '-1')
 
 
 def exportTsv(export, inputFile, outputFile):

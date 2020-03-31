@@ -80,7 +80,7 @@ def getLocalConfValue(conf):
         d['MESH_TREE'] = json.loads(conf.get('appconf', 'MESH_TREE'))
         d['CLIPBOARD_SIZE'] = int( conf.get('appconf', 'CLIPBOARD_SIZE', fallback=20) )
         d['AUT_LINK'] = conf.get('appconf', 'AUT_LINK', fallback='/mtw/search/dui:')
-        d['SPARQL_HOST'] = conf.get('sparqlconf', 'SPARQL_HOST', fallback='http://localhost:3030/')
+        d['SPARQL_HOST'] = conf.get('sparqlconf', 'SPARQL_HOST', fallback='http://127.0.0.1:3030/')
         d['SPARQL_DATASET'] = conf.get('sparqlconf', 'SPARQL_DATASET', fallback='mesh')
         d['MESH_RDF'] = conf.get('sparqlconf', 'MESH_RDF', fallback='http://id.nlm.nih.gov/mesh/sparql')
         d['SOURCE_NS'] = conf.get('sparqlconf', 'SOURCE_NS', fallback='http://id.nlm.nih.gov/mesh/')
@@ -91,7 +91,7 @@ def getLocalConfValue(conf):
         d['ROLES'] = conf.get('flowconf', 'ROLES').replace('\n','').strip().split(',')
         d['DESC_NOTES'] = conf.get('flowconf', 'DESC_NOTES').replace('\n','').strip().split(',')
         d['TRX_NOTES'] = conf.get('flowconf', 'TRX_NOTES').replace('\n','').strip().split(',')
-        d['WORKER_HOST'] = conf.get('appconf', 'WORKER_HOST', fallback='http://localhost:55933/')
+        d['WORKER_HOST'] = conf.get('appconf', 'WORKER_HOST', fallback='http://127.0.0.1:55933/')
         d['PID_PREFIX_CONCEPT'] = conf.get('appconf', 'PID_PREFIX_CONCEPT', fallback='F')
         d['CSRF_DISABLE'] = conf.get('appconf', 'DEV_DISABLE_CSRF', fallback=False)
 

@@ -58,7 +58,7 @@ def getAdminConfValue(conf):
 def getLocalConfValue(conf):
     d = {}
     try:
-        d['APP_URL_PREFIX'] = conf.get('appconf', 'APP_URL_PREFIX', fallback='')
+        d['APP_PATH'] = conf.get('appconf', 'APP_PATH', fallback='/')
         d['HOST_LINK'] = conf.get('appconf', 'HOST_LINK')
         d['DATABASE_NAME'] = conf.get('appconf', 'DATABASE_NAME', fallback='mtw.db')
         d['DATABASE'] = get_instance_dir( app, 'db/'+d['DATABASE_NAME'] )
@@ -115,7 +115,7 @@ def refreshStats(stat):
     lpath = getLockFpath('stats')
 
     if stat == 'all':
-        for s in ('initial','actual'):
+        for s in ['initial','actual']:
             fpath = getStatsFpath(s)
             if s == 'initial':
                 if not fpath.is_file() and not lpath.is_file():
@@ -135,17 +135,21 @@ def refreshStats(stat):
 def exportData(export):
     lpath = getLockFpath('stats')
     ext = 'json'
-    if export in ('umls'):
+    if export in ['umls','umls_all']:
         ext = 'tsv'
 
-    fpath = getTempFpath(export, ext=ext)
-
-    if not lpath.is_file():
-        resp = startStats(export, fpath, lpath)
-
-    if resp and fpath.is_file():
+    if export == 'umls_all':
+        fpath = getTempFpath('umls', ext=ext)
         epath = getStatsFpath(export, ext=ext)
         exportTsv(export, fpath, epath)
+    else:
+        fpath = getTempFpath(export, ext=ext)
+        if not lpath.is_file():
+            resp = startStats(export, fpath, lpath)
+
+        if resp and fpath.is_file():
+            epath = getStatsFpath(export, ext=ext)
+            exportTsv(export, fpath, epath)
 
 
 def startStats(stat, fpath, lpath, interval=None):
@@ -228,7 +232,7 @@ def getLookupJson(lookups, export):
         return data
 
     xterms = {}
-    if export in ('js_elastic', 'js_parsers', 'marc'):
+    if export in ['js_elastic', 'js_parsers', 'marc']:
         xdata = getBaseTerms()
         xterms = xdata.get('desc_terms',{})
 
@@ -278,10 +282,10 @@ def getLookupJson(lookups, export):
         terms = []
         terms_all = []
         
-        if export in ('js_elastic','js_parsers'):
+        if export in ['js_elastic','js_parsers']:
             if xterms.get(dui):
                 ### terms termsx nterms nterms
-                for termtype in ('terms','termsx','nterms','ntermsx'):
+                for termtype in ['terms','termsx','nterms','ntermsx']:
                     if xterms[dui].get(termtype):
                         terms_all += xterms[dui].get(termtype).split('~')
                 terms = list(set(terms_all))
@@ -291,7 +295,7 @@ def getLookupJson(lookups, export):
             if xterms.get(dui):
                 if xterms[dui].get('active') == 'true':
                     ### terms termsx nterms nterms
-                    for termtype in ('terms','termsx','nterms','ntermsx'):
+                    for termtype in ['terms','termsx','nterms','ntermsx']:
                         if xterms[dui].get(termtype):
                             terms_all += xterms[dui].get(termtype).split('~')
                     terms = list(set(terms_all))
@@ -302,7 +306,7 @@ def getLookupJson(lookups, export):
                     d['terms'].append(t.replace('[OBSOLETE]','').strip())                    
                     
                                                     
-        if export in ('js_elastic','js_parsers', 'marc'):
+        if export in ['js_elastic','js_parsers', 'marc']:
             d['cat'] = []
             d['trn'] = []
             trees = item.get('trn','').split('~')
@@ -347,7 +351,7 @@ def getLookupJson(lookups, export):
                     d['xtr'].append( t.replace('[OBSOLETE]','').strip() )
                     
 
-        if export in ('marc','js_elastic'):
+        if export in ['marc','js_elastic']:
 
             d['btd'] = []
             for t in item.get('btd','').split('~'):
@@ -464,7 +468,7 @@ def getElasticData(data):
     
 def getElasticDoc(dui, item, lookup, xnote=None):
 
-    for key in ('pa','ntd','btd','rtd'):
+    for key in ['pa','ntd','btd','rtd']:
         if item.get(key):
             rels = []
             for d in item.get(key,[]):
@@ -936,9 +940,9 @@ def backStatsProcess(fpath, lpath, stat):
 
     for t in templates:
         resp = sparql.getSparqlData(template_subdir+t, output=output)
-        ##pp.pprint(resp)
+
         if resp:
-            if stat in ('umls'):
+            if stat == 'umls':
                 data_text = resp
             else:
                 parsed = sparql.parseSparqlStats(resp, t)
@@ -954,7 +958,7 @@ def backStatsProcess(fpath, lpath, stat):
     else:
         writeTextFile(fpath, data_text, comp=gzip)
 
-    if stat in ('lookups','lookups_rest'):
+    if stat in ['lookups','lookups_rest']:
         tpath = getTempFpath(stat)
         writeJsonFile(tpath, data)
 
@@ -1367,8 +1371,12 @@ def exportTsv(export, inputFile, outputFile):
     tab = '\t'
 
     if export == 'umls':
-        ###?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
+        ###    ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
+        head = (tab).join(cols) + '\n'
+    elif export == 'umls_all':
+        ###    ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
+        cols = 'Dstatus,Tstatus,DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
         head = (tab).join(cols) + '\n'
 
     writeOutputGzip(outputFile, head)
@@ -1387,12 +1395,28 @@ def exportTsv(export, inputFile, outputFile):
 
         if count > 1:
             line = line.replace('@'+app.config['TARGET_LANG'], '')
+            line = line.replace('^^xsd:boolean', '')
             row = line.split(tab)
-            if row[0] == 'false':
-                ##print(line)
-                pass
+
+            if export == 'umls_all':
+                if row[1] == 'false':
+                    #print(line)
+                    pass
+                else:
+                    line = (tab).join(row)
+                    s.write(line)
+
+            elif export == 'umls':
+
+                if row[0] == 'false' or row[1] == 'false':
+                    #print(line)
+                    pass
+                else:
+                    line = (tab).join(row[2:])
+                    s.write(line)
+
             else:
-                line = (tab).join(row[1:])
+                line = (tab).join(row)
                 s.write(line)
 
         if batch == bsize:

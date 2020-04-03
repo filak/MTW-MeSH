@@ -18,7 +18,7 @@ echo.
 echo Building %srcFile% ...
 
 CALL %python% --log-level ERROR --onefile ^
-              --hidden-import=_cffi_backend ^
+              --hidden-import=_cffi_backend --hidden-import=pkg_resources.py2_warn --hidden-import=tornado ^
               --add-data mtw_utils/pyuca/*.txt;pyuca ^
               --distpath %targetDir% %srcFile% >> %logFile% 2>&1
 

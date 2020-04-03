@@ -16,12 +16,12 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary ml-3" data-dismiss="modal">Cancel</button>
 
-      {% if session.ugroup in ('admin','manager','editor') %}
+      {% if session.ugroup in ['admin','manager','editor'] %}
         <button type="button" class="btn btn-warning ml-3 deleteConceptButton"
                 data-dismiss="modal" data-form-action="delete" data-form-propose="true" id="target-form" title="">Delete</button>
       {% endif %}
 
-      {% if session.ugroup in ('admin','manager') %}
+      {% if session.ugroup in ['admin','manager'] %}
         <button type="button" class="btn btn-danger ml-3 deleteConceptButton"
                 data-dismiss="modal" data-form-action="purge" data-form-propose="false" id="target-form-purge" title="">Purge Data</button>
       {% endif %}

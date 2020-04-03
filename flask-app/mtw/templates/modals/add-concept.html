@@ -92,7 +92,7 @@
             <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
 
       {% if not isDbLocked() %}
-        {% if session.ugroup in ('admin','manager','editor','contributor') %}
+        {% if session.ugroup in ['admin','manager','editor','contributor'] %}
           {% if descriptor.get('lockedBy','') %}
             {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
             <button name="propose" value="true" type="submit" class="btn btn-info ml-3">Propose</button>

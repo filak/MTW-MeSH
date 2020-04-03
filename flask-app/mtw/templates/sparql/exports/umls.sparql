@@ -4,13 +4,14 @@
 
 select * {
 {
-SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
+SELECT distinct ?status ?tstatus ?dui ?cui ?lang ?tty ?str ?tui ?scn
 WHERE {
   BIND('MH' as ?tty)
   BIND('{{ lang_umls }}' as ?lang)
   ?d rdf:type ?type
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
+  ?d meshv:active ?status .
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .
   ?c mesht:preferredTerm ?t .
@@ -25,7 +26,7 @@ WHERE {
 }
 #LIMIT 10
 } UNION {
-SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
+SELECT distinct ?status ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
 (group_concat(?scnt;separator="|") as ?scn)
 WHERE {
   BIND('PEP' as ?tty)
@@ -33,6 +34,7 @@ WHERE {
   ?d rdf:type ?type
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
+  ?d meshv:active ?status .
   ?d meshv:concept|mesht:concept ?c .
   OPTIONAL { ?c meshv:identifier|mesht:identifier ?cui }
   ?c mesht:preferredTerm ?t .
@@ -45,16 +47,17 @@ WHERE {
       BIND(STR(?scnval) AS ?scnt)
       }
 }
-GROUP BY ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
+GROUP BY ?status ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
 #LIMIT 10
 } UNION {
-SELECT distinct ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
+SELECT distinct ?status ?tstatus ?dui ?cui ?lang ?tty ?str ?tui
 WHERE {
   BIND('ET' as ?tty)
   BIND('{{ lang_umls }}' as ?lang)
   ?d rdf:type ?type
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
+  ?d meshv:active ?status .
   ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
   OPTIONAL { ?c meshv:identifier|mesht:identifier ?cui }
   ?c mesht:term ?t .

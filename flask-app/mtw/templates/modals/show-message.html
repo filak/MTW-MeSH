@@ -16,7 +16,7 @@
 
        {{ msg['text'] }}
 
-      {% if session.ugroup in ('admin','manager') %}
+      {% if session.ugroup in ['admin','manager'] %}
         <p>&nbsp;</p>
 
         <div class="form-group">
@@ -36,7 +36,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-link mr-auto" data-dismiss="modal">Close</button>
 
-    {% if session.ugroup in ('admin','manager') %}
+    {% if session.ugroup in ['admin','manager'] %}
 
         <div class="custom-control custom-checkbox">
           <input type="checkbox" class="custom-control-input"

@@ -28,7 +28,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
-        {% if session.ugroup in ('admin','manager','editor','contributor') and not isDbLocked() %}
+        {% if session.ugroup in ['admin','manager','editor','contributor'] and not isDbLocked() %}
           {% if descriptor.get('lockedBy','') %}
             {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
             <button type="submit" class="btn btn-success ml-3" id="noteSubmit">Save changes</button>

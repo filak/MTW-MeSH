@@ -33,7 +33,7 @@
 
           {% elif item['status'] == 'OK' %}
 
-            {% if not item.get('cpid') and item.get('tnote') and session.ugroup in ('admin') %}
+            {% if not item.get('cpid') and item.get('tnote') and session.ugroup in ['admin'] %}
 
             <a href="{{ url_for('add_cpid', dui=dui, cui=item['cui']) }}">
               <button type="link" class="btn btn-primary btn-sm ml-1" title="Generate custom CUI">
@@ -117,12 +117,12 @@
     {% endfor %}
 
 
-    {% if session.ugroup in ('admin','manager','editor') %}
+    {% if session.ugroup in ['admin','manager','editor'] %}
       <button type="button" class="btn btn-primary btn-sm" title="Create Concept"
         data-toggle="modal" data-target="#editConcept-NEW" data-cui="NEW" data-label="{{ descriptor['labels']['en']|truncate(50, True) }}">
         <i class="fas fa-plus"></i> Add Concept</button>
 
-    {% elif session.ugroup in ('contributor') %}
+    {% elif session.ugroup in ['contributor'] %}
       <button type="button" class="btn btn-primary btn-sm" title="Propose Concept"
         data-toggle="modal" data-target="#editConcept-NEW" data-cui="NEW" data-label="{{ descriptor['labels']['en']|truncate(50, True) }}">
         <i class="fas fa-plus"></i> Add Concept</button>

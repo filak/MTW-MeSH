@@ -7,7 +7,7 @@
       <h4>Results <small class="text-info">{{ hits['metadata']['hits_cnt'] }}</small></h4>
     </li>
     <li class="list-inline-item ml-2">
-        {% if session.ugroup in ('admin','disabled') %}
+        {% if session.ugroup in ['admin','disabled'] %}
             {% set disabled = 'disabled' %}
             {% set invisible = 'invisible' %}
         {% endif %}

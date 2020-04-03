@@ -23,7 +23,7 @@
     <!-- <h4 class="text-success">{{ descriptor['labels']['target'] }}</h4> -->
   </li>
   <li class="list-inline-item float-right">
-    {% if session.ugroup in ('admin') %}
+    {% if session.ugroup in ['admin'] %}
         {% set disabled = 'disabled' %}
         {% set invisible = 'invisible' %}
     {% endif %}
@@ -35,7 +35,7 @@
           <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
           <button class="btn btn-primary {{ disabled }} {{ invisible }}" type="submit" name="action" value="add" title="Add to Clipboard">
             <i class="far fa-clipboard"></i></button>
-    {% if session.ugroup not in ('viewer') %}
+    {% if session.ugroup not in ['viewer'] %}
         {% set locked_by = getLockedBy(session.userid, session.uname) %}
         {% if locked_by != descriptor.get('lockedBy','')  %}
             {% set disabled_lock = 'disabled' %}
@@ -43,7 +43,7 @@
             {% set butt_lock = 'button' %}
             {% set col_lock = 'warning' %}
 
-            {% if session.ugroup in ('admin','manager') %}
+            {% if session.ugroup in ['admin','manager'] %}
                 {% set disabled_lock = '' %}
                 {% set col_lock = 'danger' %}
                 {% set title_lock = 'Override Descriptor lock ?' %}

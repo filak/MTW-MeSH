@@ -66,7 +66,7 @@
               {% set NRW_STATUS = 'checked' %}
           {% endif %}
 
-      {% if session.ugroup not in ('admin','manager','editor') %}
+      {% if session.ugroup not in ['admin','manager','editor'] %}
           {% set disabled_Relationship = 'disabled' %}
       {% endif %}
 
@@ -142,7 +142,7 @@
 
    {% if item['lang'] == config.TARGET_LANG and item['lang'] != 'en' %}
 
-      {% if session.ugroup not in ('admin','manager','editor') %}
+      {% if session.ugroup not in ['admin','manager','editor'] %}
           {% set disabled_trxNote = 'readonly' %}
       {% endif %}
       <div class="form-group">
@@ -181,7 +181,7 @@
         <div class="modal-footer">
 
         {% if item['lang'] == 'en' %}
-           {% if session.ugroup in ('admin','manager','editor') %}
+           {% if session.ugroup in ['admin','manager','editor'] %}
                 {% set label_notrx = 'text-warning' %}
            {% else%}
                {% set disabled_notrx = 'disabled' %}
@@ -190,7 +190,7 @@
 
            {% if item['ntx'] %}
                {% set checked_notrx = 'checked' %}
-                   {% if session.ugroup not in ('admin','manager','editor') %}
+                   {% if session.ugroup not in ['admin','manager','editor'] %}
                        {% set submit_notrx = 'disabled' %}
                    {% endif %}
            {% endif %}
@@ -214,10 +214,10 @@
 
         {% if item['lang'] == config.TARGET_LANG and item['lang'] != 'en' %}
 
-          {% if session.ugroup in ('admin','manager','editor') %}
+          {% if session.ugroup in ['admin','manager','editor'] %}
 
             {% if item['active'] == 'false' %}
-              {% if session.ugroup in ('admin','manager') %}
+              {% if session.ugroup in ['admin','manager'] %}
                {% set del_butt_label = 'Purge Concept & Terms' %}
                {% set del_butt_outline = 'danger' %}
               {% endif %}
@@ -226,7 +226,7 @@
                {% set del_butt_outline = 'warning' %}
             {% endif %}
 
-            {% if session.ugroup in ('editor') %}
+            {% if session.ugroup in ['editor'] %}
               {% if descriptor.get('lockedBy','') %}
                 {% if getLockedBy(session.userid, session.uname) != descriptor.get('lockedBy','') %}
                    {% set del_butt_invisible = 'invisible' %}
@@ -253,7 +253,7 @@
             {% set submit_inactive = 'disabled' %}
          {% endif %}
 
-        {% if session.ugroup in ('admin','manager','editor','contributor') and not isDbLocked() %}
+        {% if session.ugroup in ['admin','manager','editor','contributor'] and not isDbLocked() %}
           {% if descriptor.get('lockedBy','') %}
             {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
             <button name="propose" value="true" type="submit" class="btn btn-info ml-3" {{ submit_inactive }}>Propose</button>
@@ -263,7 +263,7 @@
           {% endif %}
         {% endif %}
 
-        {% if session.ugroup in ('admin','manager','editor') and not isDbLocked() %}
+        {% if session.ugroup in ['admin','manager','editor'] and not isDbLocked() %}
           {% if descriptor.get('lockedBy','') %}
             {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
             <button name="propose" value="false" type="submit" class="btn btn-success ml-3" {{ submit_inactive }}>Save changes</button>

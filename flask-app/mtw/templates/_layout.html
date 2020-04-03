@@ -60,7 +60,7 @@
               <i class="{{ msg_icon }} fa-lg"></i> Important!</button>
           </li>
 
-        {% elif session.ugroup in ('admin','manager') %}
+        {% elif session.ugroup in ['admin','manager'] %}
           <li class="nav-item">
             <a class="nav-link" href="#message" data-toggle="modal" data-target="#showMessage" title="Add message for Users"> <i class="far fa-bell fa-lg"></i> </a>
           </li>
@@ -103,7 +103,7 @@
         <a class="nav-link" href="{{ url_for('audit', dui=adui) }}">
           Audit <i class="fas fa-bars"></i></a></li>
 
-      {% if session.ugroup in ('admin','manager','editor','contributor') %}
+      {% if session.ugroup in ['admin','manager','editor','contributor'] %}
       <li class="nav-item {{ state_approve }}">
         <a class="nav-link" href="{{ url_for('approve', userid=session.get('auserid',''), username=session.get('ausername',''), status=None) }}">
           Approve <i class="fas fa-check-circle"></i></a></li>
@@ -114,7 +114,7 @@
 
       {% endif %}
 
-      {% if session.ugroup in ('admin','manager') %}
+      {% if session.ugroup in ['admin','manager'] %}
 
       <li class="nav-item {{ state_manage }}">
         <a class="nav-link" href="{{ url_for('manage') }}">

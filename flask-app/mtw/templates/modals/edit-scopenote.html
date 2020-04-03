@@ -22,7 +22,7 @@
 
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
-      {% if session.ugroup not in ('admin','manager','editor') %}
+      {% if session.ugroup not in ['admin','manager','editor'] %}
           {% set disabled_scopeNote = 'readonly' %}
       {% endif %}
 
@@ -43,7 +43,7 @@
 
         <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
 
-        {% if session.ugroup in ('admin','manager','editor','contributor') and not isDbLocked() %}
+        {% if session.ugroup in ['admin','manager','editor','contributor'] and not isDbLocked() %}
           {% if descriptor.get('lockedBy','') %}
             {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
             <button name="propose" value="true" type="submit" class="btn btn-info ml-3" id="editScopeNoteProp">Propose</button>
@@ -53,7 +53,7 @@
           {% endif %}
         {% endif %}
 
-        {% if session.ugroup in ('admin','manager','editor') and not isDbLocked()  %}
+        {% if session.ugroup in ['admin','manager','editor'] and not isDbLocked()  %}
           {% if descriptor.get('lockedBy','') %}
             {% if getLockedBy(session.userid, session.uname) == descriptor.get('lockedBy','') %}
             <button name="propose" value="false" type="submit" class="btn btn-success ml-3" id="editScopeNoteSave">Save changes</button>

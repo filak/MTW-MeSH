@@ -63,7 +63,7 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
     accept = 'application/json'
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
 
-    if output in ('tsv','csv','json'):
+    if output in ['tsv','csv','json']:
         endpoint += '?format=' + output
 
     headers = {'Content-Type' : 'application/sparql-query; charset=utf-8'}
@@ -105,7 +105,7 @@ def getSparqlDataExt(dui, output, year='', key=None, cache=None):
 
     url = endpoint + '?query=' + query
 
-    if output in ('tsv','csv','json'):
+    if output in ['tsv','csv','json']:
         url += '&format=' + output
     else:
         return
@@ -252,7 +252,7 @@ def parseSparqlStats(data, template):
     metadata = {}
     hits_cnt = 0
 
-    if template in ('check_duplicates'):
+    if template in ['check_duplicates']:
         metadata['data'] = []
         for row in data['results']['bindings']:
             hits_cnt += 1
@@ -264,7 +264,7 @@ def parseSparqlStats(data, template):
 
         metadata['hits_cnt'] = hits_cnt
 
-    elif template in ('lookups_base','lookups_terms','lookups_notes','lookups_qualifs'):
+    elif template in ['lookups_base','lookups_terms','lookups_notes','lookups_qualifs']:
         metadata['data'] = []
         items = data['head']['vars']
         for row in data['results']['bindings']:
@@ -326,7 +326,7 @@ def parseDescriptor(descriptor):
             val = row['label']['value']
             qualifiers.append({'ui': ui, 'val': val})
 
-        elif p in ('broaderDescriptor','seeAlso','pharmacologicalAction','preferredTerm'):
+        elif p in ['broaderDescriptor','seeAlso','pharmacologicalAction','preferredTerm']:
             if p == 'preferredTerm':
                 result['labels']['prefTerm'] = row['o']['value'].replace(app.config['SOURCE_NS'],'')
             else:

@@ -49,20 +49,20 @@ app.logger.addHandler(file_handler)
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.3.6',
+    APP_VER = '1.3.7',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
     local_config_file = mtu.get_instance_dir(app, 'conf/mtw.ini'),
     admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp'),
     pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json'),
+    CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
     CSRF_COOKIE_HTTPONLY = True,
     CSRF_COOKIE_SECURE = True,
     CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1),
-    CACHE_IGNORE_ERRORS = False,
-    CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
     SESSION_COOKIE_HTTPONLY = True,
     SESSION_COOKIE_SAMESITE = 'Strict',
+    SESSION_COOKIE_SECURE = True,
     SESSION_PERMANENT = True,
     SESSION_USE_SIGNER = True,
     SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions')
@@ -116,11 +116,9 @@ Talisman(
 
 ###  Common functions
 
-
 def getPath(path):
-    app_prefix = app.config['APP_URL_PREFIX']
-    app_base = app.config['APP_URL']
-    return(app_prefix+app_base+path)
+    customDir = app.config['APP_PATH']
+    return(customDir+path)
 
 
 def login_required(func):
@@ -209,7 +207,7 @@ def intro():
             fsession = FuturesSession()
             future_all = fsession.post(worker+'refresh_stats/get:all')
 
-    if session['ugroup'] in ('admin','manager','editor'):
+    if session['ugroup'] in ['admin','manager','editor']:
         status = mdb.getAuditStatus(db)
         events = mdb.getAuditEvent(db)
         show_elapsed(t0, tag='getAudit')
@@ -225,7 +223,7 @@ def settings():
 
     if request.form.get('theme'):
         theme = request.form.get('theme').strip()
-        if theme in ('slate','spacelab','flatly'):
+        if theme in ['slate','spacelab','flatly']:
             session['theme'] = theme
     else:
         session['theme'] = app.config['DEFAULT_THEME']
@@ -242,7 +240,7 @@ def todo(tlist):
 
     hits = None
     tlist_check = tlist.lower()
-    if tlist_check in ('preferred','nonpreferred','scopenote','nonprefscopenote','customconcepts','duplicates','duplicates_eng','mesht_predicates'):
+    if tlist_check in ['preferred','nonpreferred','scopenote','nonprefscopenote','customconcepts','duplicates','duplicates_eng','mesht_predicates']:
         session['tlist'] = tlist
         template = 'reports/todo_' + tlist
         data = sparql.getSparqlData(template)
@@ -349,7 +347,7 @@ def update_clipboard(dui):
 @login_required
 def update_concept(dui, pref):
 
-    if session['ugroup'] in ('viewer','disabled'):
+    if session['ugroup'] in ['viewer','disabled']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -357,13 +355,13 @@ def update_concept(dui, pref):
     action = request.form['action'].strip()
     ##pp.pprint(request.form)
 
-    if action == 'purge' and session['ugroup'] not in ('admin','manager'):
+    if action == 'purge' and session['ugroup'] not in ['admin','manager']:
         return redirect(url_for('search', dui=dui))
 
-    if action == 'delete' and session['ugroup'] not in ('admin','manager','editor'):
+    if action == 'delete' and session['ugroup'] not in ['admin','manager','editor']:
         return redirect(url_for('search', dui=dui))
 
-    if request.form.get('concept') and request.form.get('label') and action in ('insert','update','delete','purge'):
+    if request.form.get('concept') and request.form.get('label') and action in ['insert','update','delete','purge']:
 
         dui = dui.replace('?','').strip()
         pref_concept = app.config['SOURCE_NS'] + pref.replace('?','').strip()
@@ -394,7 +392,7 @@ def update_concept(dui, pref):
 
         skip_terms = False
 
-        if action in ('delete','purge') and app.config['TARGET_NS'] in concept:
+        if action in ['delete','purge'] and app.config['TARGET_NS'] in concept:
             form_changed = 'true'
             event = action + '_concept'
 
@@ -404,7 +402,7 @@ def update_concept(dui, pref):
             concept_list.append(cd)
             params['old'] = mtu.getParamsForAudit(dui, concept, cui)
 
-        elif action not in ('delete','purge') and form_changed == 'true':
+        elif action not in ['delete','purge'] and form_changed == 'true':
             cd = {}
 
             if action == 'insert':
@@ -416,7 +414,7 @@ def update_concept(dui, pref):
 
             if request.form.get('concept-rel'):
                 rel = request.form['concept-rel'].strip()
-                if rel in ('narrowerConcept','broaderConcept','relatedConcept'):
+                if rel in ['narrowerConcept','broaderConcept','relatedConcept']:
                     cd['rel'] = rel
                     if action == 'insert':
                         cd['operation'] = 'insert'
@@ -505,7 +503,7 @@ def update_concept(dui, pref):
 @login_required
 def add_cpid(dui, cui):
 
-    if session['ugroup'] not in ('admin'):
+    if session['ugroup'] not in ['admin']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -568,7 +566,7 @@ def add_cpid(dui, cui):
 @login_required
 def update_note(dui):
 
-    if session['ugroup'] in ('viewer','disabled'):
+    if session['ugroup'] in ['viewer','disabled']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -637,7 +635,7 @@ def update_note(dui):
 @login_required
 def update_scopenote(dui):
 
-    if session['ugroup'] in ('viewer','disabled'):
+    if session['ugroup'] in ['viewer','disabled']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -765,7 +763,7 @@ def update_scopenote(dui):
 @login_required
 def update_audit():
 
-    if session['ugroup'] not in ('admin','manager','editor'):
+    if session['ugroup'] not in ['admin','manager','editor']:
         abort(403)
 
     if request.form.get('dui') and request.form.get('apid') and request.form.get('approved'):
@@ -851,8 +849,8 @@ def update_audit():
                     flash(msg, 'success')
                     return redirect(url_for('search', dui=dui))
 
-            ###if event in ('update_scopeNote','delete_scopeNote','update_scopeNoteTrx','delete_scopeNoteTrx','insert_scopeNoteTrx'):
-            if event in ('delete_scopeNote','delete_scopeNoteTrx'):
+            ###if event in ['update_scopeNote','delete_scopeNote','update_scopeNoteTrx','delete_scopeNoteTrx','insert_scopeNoteTrx']:
+            if event in ['delete_scopeNote','delete_scopeNoteTrx']:
                 predicate = params.get('predicate')
                 #if event == 'insert_scopeNoteTrx':
                 #    old = ''
@@ -969,7 +967,7 @@ def audit(dui, cui):
 @login_required
 def approve(status, event, userid, username):
 
-    if session['ugroup'] not in ('admin','manager','editor','contributor'):
+    if session['ugroup'] not in ['admin','manager','editor','contributor']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -984,11 +982,11 @@ def approve(status, event, userid, username):
     else:
         session.pop('ausername', None)
 
-    if session['ugroup'] not in ('admin','manager','editor'):
+    if session['ugroup'] not in ['admin','manager','editor']:
         userid = session['userid']
         username = session['uname']
 
-    if status not in ('pending','approved','rejected','deleted','purged','updated','locked','unlocked'):
+    if status not in ['pending','approved','rejected','deleted','purged','updated','locked','unlocked']:
         status = 'pending'
 
     statuses = []
@@ -1003,7 +1001,7 @@ def approve(status, event, userid, username):
             year = yr
 
     if event:
-        if session['ugroup'] not in ('admin','manager','editor'):
+        if session['ugroup'] not in ['admin','manager','editor']:
             statuses = mdb.getAuditUserStatus(db, userid=userid, targetyear=year)
         else:
             statuses = mdb.getAuditEventStatus(db, event, targetyear=year)
@@ -1062,12 +1060,12 @@ def browse(top, tn, action):
 
         if request.args.get('show'):
             show = request.args.get('show').strip()
-            if show in ('all','translated','todo','scn','ntx','notpref'):
+            if show in ['all','translated','todo','scn','ntx','notpref']:
                 session['show'] = show
 
         if request.args.get('status'):
             status = request.args.get('status').strip()
-            if status in ('all','active','revised','deleted','new','notpref'):
+            if status in ['all','active','revised','deleted','new','notpref']:
                 session['status'] = status
 
         tree_query = mtu.getTreeQuery(top, tn=tn)
@@ -1121,22 +1119,22 @@ def search(dui, action):
 
     if request.args.get('show'):
         show = request.args.get('show').strip()
-        if show in ('all','translated','todo','scn','ntx','notpref'):
+        if show in ['all','translated','todo','scn','ntx','notpref']:
             session['sshow'] = show
 
     if request.args.get('status'):
         status = request.args.get('status').strip()
-        if status in ('all','active','revised','deleted','new','notpref'):
+        if status in ['all','active','revised','deleted','new','notpref']:
             session['sstatus'] = status
 
     if request.args.get('lang'):
         slang = request.args.get('lang').strip()
-        if slang in ('all','source','target'):
+        if slang in ['all','source','target']:
             session['slang'] = slang
           
     if request.args.get('scr'):
         scr = request.args.get('scr').strip()
-        if scr in ('yes','no'):
+        if scr in ['yes','no']:
             session['scr'] = scr
 
     if action == 'clear':
@@ -1166,7 +1164,7 @@ def search(dui, action):
         dui = dui.replace('?','').strip()
         if request.args.get('tab'):
             ttab = request.args.get('tab').strip()
-            if ttab in ('concepts','notes','details','relations','qualifiers','history'):
+            if ttab in ['concepts','notes','details','relations','qualifiers','history']:
                 tab = ttab
 
         session['dui'] = dui
@@ -1267,7 +1265,7 @@ def store_visited(dui, label):
 @login_required
 def report(userid, year):
 
-    if session['ugroup'] not in ('admin','manager','editor','contributor'):
+    if session['ugroup'] not in ['admin','manager','editor','contributor']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -1294,7 +1292,7 @@ def report(userid, year):
     report = {}
     resolved = {}
 
-    if session['ugroup'] not in ('admin','manager'):
+    if session['ugroup'] not in ['admin','manager']:
         userid = session['userid']
         users = mdb.getUsers(db, userid=userid)
     else:
@@ -1305,7 +1303,7 @@ def report(userid, year):
         if len(xrep) == 2:
             fmt = xrep[0]
             rep = xrep[1]
-            if rep in ('events','resolved'):
+            if rep in ['events','resolved']:
                 if rep == 'events':
                     suf = 'created'
                     head = 'Month,Username,Event,Status,Count,TargetYear: ' + str(year)
@@ -1316,7 +1314,7 @@ def report(userid, year):
                 abort(403)
 
             report = mdb.getReport(db, suf, targetyear=year, userid=userid, mon=month)
-            if fmt in ('csv','tsv'):
+            if fmt in ['csv','tsv']:
                 if fmt == 'csv':
                     resp = make_response(render_template('report-csv.txt', head=head, report=report) )
                     resp.headers["Content-type"] = 'text/csv'
@@ -1346,7 +1344,7 @@ def report(userid, year):
 @login_required
 def manage(action):
 
-    if session['ugroup'] not in ('admin','manager'):
+    if session['ugroup'] not in ['admin','manager']:
         msg = 'Admin or Manager login required'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -1356,7 +1354,7 @@ def manage(action):
         msg_text = request.form['amsg']
         msg_show = request.form['action']
 
-        if msg_show not in ('hide','show'):
+        if msg_show not in ['hide','show']:
             msg_show = 'hide'
 
         lockdb = None
@@ -1386,6 +1384,9 @@ def manage(action):
 
     ### YYYY_umls.tsv.gz
     exports['umls_tsv'] = mtu.getStatsFpath('umls', ext='tsv.gz')
+
+    ### YYYY_umls_all.tsv.gz
+    exports['umls_all_tsv'] = mtu.getStatsFpath('umls_all', ext='tsv.gz')
 
     ### YYYY_lookups.json.gz
     exports['lookups'] = mtu.getStatsFpath('lookups', ext='json.gz')
@@ -1449,7 +1450,7 @@ def manage(action):
 @login_required
 def download(fname):
 
-    if session['ugroup'] not in ('admin','manager'):
+    if session['ugroup'] not in ['admin','manager']:
         msg = 'Admin or Manager login required'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -1470,12 +1471,12 @@ def download(fname):
 @login_required
 def update_stats(stat):
 
-    if session['ugroup'] not in ('admin','manager'):
+    if session['ugroup'] not in ['admin','manager']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    if stat not in ('initial','actual','umls','lookups','lookups_rest','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc'):
+    if stat not in ['initial','actual','umls','umls_all','lookups','lookups_rest','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
         msg = 'Unknown params for update_stats'
         flash(msg, 'danger')
         return render_template('errors/error_page.html', errcode=404, error=msg), 404
@@ -1498,19 +1499,18 @@ def update_stats(stat):
         
         return redirect(ref_redirect())
     
-
     fsession = FuturesSession()
 
-    if stat in ('umls','js_all','js_parsers','js_elastic','xml_desc','xml_qualif'):
+    if stat in ['umls','umls_all','js_all','js_parsers','js_elastic','xml_desc','xml_qualif']:
         future_umls = fsession.post(worker+'export_data/get:'+stat)
 
     elif stat == 'marc':
         params = ''
         line_style = request.form.get('line_style','mrk')
-        if line_style in ('mrk','line'):
+        if line_style in ['mrk','line']:
             params += line_style
         tree_style = request.form.get('tree_style','def')
-        if tree_style in ('def','daw'):
+        if tree_style in ['def','daw']:
             params += '~' + tree_style
 
         future_umls = fsession.post(worker+'export_data/get:'+stat+'/params:'+params)
@@ -1526,7 +1526,7 @@ def update_stats(stat):
 
 @app.route(getPath('/user/add'), methods=['POST'])
 def add_user():
-    if session['ugroup'] not in ('admin','manager'):
+    if session['ugroup'] not in ['admin','manager']:
         abort(403)
     if request.method == 'POST':
         username = request.form['uname'].replace('_','')
@@ -1566,7 +1566,7 @@ def add_user():
 
 @app.route(getPath('/user/update'), methods=['POST'])
 def update_user():
-    if session['ugroup'] not in ('admin','manager'):
+    if session['ugroup'] not in ['admin','manager']:
         abort(403)
     if request.method == 'POST':
         username = request.form['uname'].replace('_','')
@@ -1606,7 +1606,7 @@ def update_user():
             flash(res, 'danger')
             app.logger.error(res+' - uname: '+username)
 
-        if action in ('delete','update'):
+        if action in ['delete','update']:
             params[action] = {}
             params[action].update( {'firstname': firstname} )
             params[action].update( {'lastname': lastname} )
@@ -1709,7 +1709,7 @@ def logout():
             theme = session['theme']
 
         db = get_db()
-        if usergroup not in ('admin'):
+        if usergroup not in ['admin']:
             mdb.updateUserTheme(db, session['userid'], theme)
 
         mdb.addAudit(db, username, userid=session['userid'], otype='user', opid=theme, event='logout', tstate='success')

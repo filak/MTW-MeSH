@@ -27,7 +27,7 @@ ToDo
     </li>
   </ul>
 
-  {% if tlist_check in ('duplicates','duplicates_eng') %}
+  {% if tlist_check in ['duplicates','duplicates_eng'] %}
     {% set link_target = '_blank' %}
     {% include 'snips/duplicates.html' %}
   {% elif tlist_check == 'mesht_predicates' %}

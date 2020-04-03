@@ -38,7 +38,7 @@
 
         </div>        
 
-       {% if session.ugroup in ('admin','manager','editor') %}
+       {% if session.ugroup in ['admin','manager','editor'] %}
         <div class="form-group" id="noteAuditComment">
           <label for="noteAudit" class="font-weight-bold">Comment</label>
           <textarea class="form-control" id="noteAudit" name="anote" rows="2" maxlength="200" placeholder="...Reject/Approve note..."></textarea>
@@ -74,7 +74,7 @@
           <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
           <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
-          {% if session.ugroup in ('admin','manager','editor') and not isDbLocked() %}
+          {% if session.ugroup in ['admin','manager','editor'] and not isDbLocked() %}
               <button name="approved" value="false" type="submit" class="btn btn-danger ml-3" id="auditRejectButt">Reject</button>
               <button name="approved" value="true"  type="submit" class="btn btn-success ml-3" id="auditApproveButt">Approve</button>
           {% endif %}

@@ -17,7 +17,7 @@ notrx : {{ item.params.new.ntx }}
 active: {{ item.params.new.active }}
 rels  : {{ item.params.new.rel }}
 tnote : {{ item.params.new.tnote }}
-{% elif item.event in ('delete_concept','purge_concept') %}
+{% elif item.event in ['delete_concept','purge_concept'] %}
 notrx : {{ item.params.old.ntx }}
 rels  : {{ item.params.old.rel }}
 tnote : {{ item.params.old.tnote }}
@@ -37,24 +37,24 @@ tnote-old: {{ item.params.old.tnote }}
 {% endif %}
 "
 data-terms-old="
-{% if item.event in ('update_concept','delete_concept','purge_concept','set_notrx') %}
+{% if item.event in ['update_concept','delete_concept','purge_concept','set_notrx'] %}
  {% for term in item.params.old.terms %}
 {{ term.prefLabel }} {{ term.lexicalTag }}
  {% endfor %}
 {% endif %}
 "
 data-terms-new="
-{% if item.event in ('insert_concept','update_concept','purge_concept') %}
+{% if item.event in ['insert_concept','update_concept','purge_concept'] %}
  {% for term in item.params.new.terms %}
 {{ term.prefLabel }} {{ term.lexicalTag }}
  {% endfor %}
 {% endif %}
 "
-{% if item.event in ('insert_scopeNote','update_scopeNote','delete_scopeNote','delete_note','insert_note','update_note') %}
+{% if item.event in ['insert_scopeNote','update_scopeNote','delete_scopeNote','delete_note','insert_note','update_note'] %}
 data-scn-old="{{ item.params.old }}"
 data-scn-new="{{ item.params.new }}"
 {% endif %}
-{% if item.event in ('insert_scopeNoteTrx','update_scopeNoteTrx','delete_scopeNoteTrx') %}
+{% if item.event in ['insert_scopeNoteTrx','update_scopeNoteTrx','delete_scopeNoteTrx'] %}
 data-scnt-old="{{ item.params.old }}"
 data-scnt-new="{{ item.params.new }}"
 {% endif %}

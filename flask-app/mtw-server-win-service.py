@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#SERVER_HOSTNAME = 'localhost'
 SERVER_PORT = 55930 #55930 #55931
 SERVICE_NAME = 'MTWServer'
 SERVICE_DISPLAY_NAME = 'MTW Server'

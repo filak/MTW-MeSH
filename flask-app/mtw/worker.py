@@ -64,7 +64,7 @@ def hello_world():
 @app.route('/refresh_stats/get:<stat>', methods=['GET','POST'])
 def refresh_stats(stat):
 
-    if stat in ('initial','actual','all','duplicates','lookups','lookups_rest'):
+    if stat in ['initial','actual','all','duplicates','lookups','lookups_rest']:
 
         app.logger.info('Stats gen started  ...')
         mtu.refreshStats(stat)
@@ -79,11 +79,11 @@ def refresh_stats(stat):
 @app.route('/export_data/get:<export>/params:<params>', methods=['GET','POST'])
 def export_data(export, params):
 
-    if export in ('umls','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc'):
+    if export in ['umls','umls_all','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
 
         app.logger.info('Export '+ export +' started  ...')
 
-        if export == 'umls':
+        if export in ['umls','umls_all']:
             mtu.exportData(export)
         else:
             mtu.exportLookup(export, params=params)

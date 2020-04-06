@@ -30,8 +30,7 @@ app.config.update(dict(
     APP_VER = '0.1.6',
     API_VER = '1.0.0',
     TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
-    local_config_file = mtu.get_instance_dir(app, 'conf/mtw.ini'),
-    admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp')
+    local_config_file = mtu.get_instance_dir(app, 'conf/mtw.ini')
 ))
 
 localConfig = mtu.getConfig(app.config['local_config_file'])
@@ -43,17 +42,6 @@ else:
     error = 'Error reading local config file: ' + app.config['local_config_file']
     app.logger.error(error)
     abort(500)
-
-adminConfig = mtu.getConfig(app.config['admin_config_file'])
-if adminConfig:
-    with app.app_context():
-        d = mtu.getAdminConfValue(adminConfig)
-    app.config.update(d)
-else:
-    error = 'No admin config file: ' + app.config['admin_config_file'] + '\nPlease, run the set-mtw-admin tool...\n\n'
-    app.logger.error(error)
-    print(error)
-    abort(503)
 
 
 @app.route('/')

@@ -9,6 +9,7 @@ from requests_futures.sessions import FuturesSession
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, render_template_string, flash, send_file, make_response, Response
 from flask_caching import Cache
+from flask_paranoid import Paranoid
 from flask_seasurf import SeaSurf
 from flask_session import Session
 from flask_talisman import Talisman
@@ -98,6 +99,7 @@ sess = Session(app)
 csrf = SeaSurf(app)
 
 GCSP = {'script-src': "'self' ajax.googleapis.com *.googleanalytics.com *.google-analytics.com",
+        'connect-src': "'self' *.medvik.cz",
         'default-src': "'self' *.gstatic.com",
         'style-src': "'self' ajax.googleapis.com fonts.googleapis.com *.gstatic.com data:",
         'frame-src': "'self' www.google.com", 'font-src': "'self' *.gstatic.com",
@@ -106,7 +108,7 @@ GCSP = {'script-src': "'self' ajax.googleapis.com *.googleanalytics.com *.google
 
 Talisman(
     app,
-    session_cookie_secure=True,
+    session_cookie_secure=app.config['SESSION_COOKIE_SECURE'],
     force_https=False,
     strict_transport_security=False,
     content_security_policy=GCSP,
@@ -120,6 +122,8 @@ def getPath(path):
     customDir = app.config['APP_PATH']
     return(customDir+path)
 
+paranoid = Paranoid(app)
+paranoid.redirect_view = getPath('/login/')
 
 def login_required(func):
     @functools.wraps(func)

@@ -284,7 +284,7 @@ def getLookupJson(lookups, export):
         
         if export in ['js_elastic','js_parsers']:
             if xterms.get(dui):
-                ### terms termsx nterms nterms
+                ### terms termsx nterms ntermsx
                 for termtype in ['terms','termsx','nterms','ntermsx']:
                     if xterms[dui].get(termtype):
                         terms_all += xterms[dui].get(termtype).split('~')
@@ -294,7 +294,7 @@ def getLookupJson(lookups, export):
         if export == 'marc':
             if xterms.get(dui):
                 if xterms[dui].get('active') == 'true':
-                    ### terms termsx nterms nterms
+                    ### terms termsx nterms ntermsx
                     for termtype in ['terms','termsx','nterms','ntermsx']:
                         if xterms[dui].get(termtype):
                             terms_all += xterms[dui].get(termtype).split('~')
@@ -367,7 +367,42 @@ def getLookupJson(lookups, export):
             for t in item.get('rtd','').split('~'):
                 if t:
                     d['rtd'].append(t)
-                    
+
+
+        if export in ['js_elastic']:
+            terms_en = []
+            terms_cs = []
+            if xterms.get(dui):
+                ###  terms nterms    => xtr_en
+                for termtype in ['terms','nterms']:
+                    if xterms[dui].get(termtype):
+                        terms_en += xterms[dui].get(termtype).split('~')
+                terms_en = list(set(terms_en))
+
+                ###  termsx ntermsx  => xtr_cs
+                for termtype in ['termsx','ntermsx']:
+                    if xterms[dui].get(termtype):
+                        terms_cs += xterms[dui].get(termtype).split('~')
+                terms_cs = list(set(terms_cs))
+
+            terms_en_clean = []
+            for t in terms_en:
+                terms_en_clean.append( t.replace('[OBSOLETE]','').strip() )
+
+            if terms_en:
+                d['xtr_en'] = []
+
+            for t in sorted(terms_en_clean):
+                if t:
+                    d['xtr_en'].append( t )
+
+            if terms_cs:
+                d['xtr_cs'] = []
+
+            for t in sorted(terms_cs, key=coll.sort_key):
+                if t:
+                    d['xtr_cs'].append( t )
+
 
         if dui.startswith('D'):
             desc_cnt += 1
@@ -392,7 +427,8 @@ def getLookupJson(lookups, export):
          
          xdata = getBaseRest()
          data['desc_qualifs'] = xdata.get('desc_qualifs',{})
-         data['desc_notes'] = xdata.get('desc_notes',{})         
+         data['desc_notes'] = xdata.get('desc_notes',{})
+         data['desc_use'] = xdata.get('desc_use',{})
     
     else:
         data['desc_cnt'] = desc_cnt
@@ -414,7 +450,8 @@ def getElasticData(data):
     descriptors = data.get('descriptors',{})
     qualifiers = data.get('qualifiers',{})
     qualifs = data.get('desc_qualifs',{})
-    notes = data.get('desc_notes',{})      
+    notes = data.get('desc_notes',{})
+    use_instead = data.get('desc_use',{})
     
     resp = []
     
@@ -459,6 +496,29 @@ def getElasticData(data):
         
         ### Add later by running:  grind-data elastic mesh ...               
         ##resp.append( {'index': {'_id': dui, '_index': 'mesh'}} )
+
+        qua_use = []
+        usein = use_instead.get(dui, {})
+        if usein:
+            ecin = usein.get('qn')
+            for qd in sorted( ecin.split('|') ):
+                parts = qd.split('~')
+                q = parts[0]
+                qen = qualifiers[q].get('eng','EMPTY')
+                qtr = qualifiers[q].get('trx','MISSING')
+
+                d = parts[1]
+                den = descriptors[d].get('eng','EMPTY')
+                dtr = descriptors[d].get('trx','MISSING')
+
+                qout = {}
+                qout['qtr'] = qtr + '~' + qen + '|' + q
+                qout['dtr'] = dtr + '~' + den + '|' + d
+
+                qua_use.append( qout )
+
+        if qua_use:
+            item['qua_use'] = qua_use
                 
         xnote = notes.get(dui, {})            
         resp.append( getElasticDoc(dui, item, descriptors, xnote) ) 
@@ -522,12 +582,13 @@ def getBaseRest():
     data['mesh_year'] = xrest.get('mesh_year', app.config['TARGET_YEAR'])
     data['trx_lang']  = xrest.get('trx_lang', app.config['TARGET_LANG'])
 
-    ##lookups_notes
-    ##lookups_qualifs
+    ## lookups_notes
+    ## lookups_use_instead
+    ## lookups_qualifs
 
     desc_notes = {}
+    desc_use = {}
     desc_qualifs = {}
-    desc_terms = {}
 
     for item in xrest.get('lookups_notes',[]):
         dui = item['dui']
@@ -535,11 +596,18 @@ def getBaseRest():
         for k in item:
             desc_notes[dui][k] = item[k]
 
+    for item in xrest.get('lookups_use_instead',[]):
+        dui = item['dui']
+        desc_use[dui] = {}
+        for k in item:
+            desc_use[dui][k] = item[k]
+
     for item in xrest.get('lookups_qualifs',[]):
         dui = item['dui']
         desc_qualifs[dui] = item['qa']
 
     data['desc_qualifs'] = dict( sorted( desc_qualifs.items() ))
+    data['desc_use'] = dict( sorted( desc_use.items() ))
     data['desc_notes'] = dict( sorted( desc_notes.items() ))
     return data
 
@@ -935,8 +1003,9 @@ def backStatsProcess(fpath, lpath, stat):
 
     elif stat == 'lookups_rest':
         template_subdir = 'exports/'
-        templates = ['lookups_notes','lookups_qualifs','lookups_terms']
+        templates = ['lookups_notes','lookups_qualifs','lookups_terms','lookups_use_instead']
         gzip = True
+
 
     for t in templates:
         resp = sparql.getSparqlData(template_subdir+t, output=output)

@@ -50,7 +50,7 @@ app.logger.addHandler(file_handler)
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.3.7',
+    APP_VER = '1.3.8',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
@@ -1519,8 +1519,15 @@ def update_stats(stat):
 
         future_umls = fsession.post(worker+'export_data/get:'+stat+'/params:'+params)
 
-    else:
+    elif stat in ['initial','actual','all','duplicates','lookups','lookups_rest']:
         future_stat = fsession.post(worker+'refresh_stats/get:'+stat)
+
+    else:
+        msg = 'Output stat not defined !'
+        flash(msg, 'warning')
+
+        return redirect(ref_redirect())
+
 
     msg = 'Process started ...'
     flash(msg, 'success')

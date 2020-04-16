@@ -264,7 +264,7 @@ def parseSparqlStats(data, template):
 
         metadata['hits_cnt'] = hits_cnt
 
-    elif template in ['lookups_base','lookups_terms','lookups_notes','lookups_qualifs']:
+    elif template in ['lookups_base','lookups_terms','lookups_notes','lookups_qualifs','lookups_use_instead']:
         metadata['data'] = []
         items = data['head']['vars']
         for row in data['results']['bindings']:

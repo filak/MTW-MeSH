@@ -459,6 +459,9 @@ def getElasticData(data):
         item = qualifiers[dui]
         item['db'] = 'mesh'
         item['id'] = dui
+        item['heading'] = []
+        item['heading'].append(item['eng'])
+        item['heading'].append(item['trx'])
         
         for trn in item.get('trn',[]):
             ### Add later by running:  grind-data elastic mesh ... 
@@ -476,6 +479,9 @@ def getElasticData(data):
         item = descriptors[dui]
         item['db'] = 'mesh'
         item['id'] = dui
+        item['heading'] = []
+        item['heading'].append(item['eng'])
+        item['heading'].append(item['trx'])
         
         for trn in item.get('trn',[]):
             ### Add later by running:  grind-data elastic mesh ...   

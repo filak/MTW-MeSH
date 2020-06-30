@@ -1,1 +1,1 @@
-## This is the MTW temp folder
+## This is folder for temporary files

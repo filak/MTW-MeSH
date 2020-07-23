@@ -52,7 +52,7 @@
         </td>
 
         <td>
-          <a href="{{ url_for('approve', userid=item.userid, status=item.tstate, event=item.event, username=uname, year=item.targetyear) }}" target="_blank" title="Approvals">
+          <a href="{{ url_for('approve', userid=item.userid, status=item.tstate, event=item.event, username=uname, year=item.targetyear) }}" target="_blank" title="Approvals" rel="noopener noreferrer">
             <span class="badge badge-{{ get_statusRep(item.tstate) }}">{{ item.tstate }}</span>
           </a>
         </td>

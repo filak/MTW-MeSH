@@ -153,7 +153,7 @@ Manage
           {% if exports['umls_tsv'] %}
             {% set file = exports['umls_tsv'] %}
             [{{ file['fdate'] }}]
-            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
               {{ file['fname'] }}
             </a>
           {% endif %}
@@ -175,7 +175,7 @@ Manage
             {% set file = exports['lookups'] %}
             <p class="mb-2">
               [{{ file['fdate'] }}]
-              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
                 {{ file['fname'] }}
               </a>
             </p>
@@ -193,7 +193,7 @@ Manage
             {% set file = exports['lookups_rest'] %}
             <p class="mb-1">
               [{{ file['fdate'] }}]
-              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
                 {{ file['fname'] }}
               </a>
             </p>
@@ -262,7 +262,7 @@ Manage
             {% set file = exports['marc_mrk_def'] %}
             <p class="mb-1">
               [{{ file['fdate'] }}]
-              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
                 {{ file['fname'] }}
               </a>
             </p>
@@ -272,7 +272,7 @@ Manage
             {% set file = exports['marc_mrk_daw'] %}
             <p class="mb-1">
               [{{ file['fdate'] }}]
-              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
                 {{ file['fname'] }}
               </a>
             </p>
@@ -282,7 +282,7 @@ Manage
             {% set file = exports['marc_line_def'] %}
             <p class="mb-1">
               [{{ file['fdate'] }}]
-              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
                 {{ file['fname'] }}
               </a>
             </p>
@@ -292,7 +292,7 @@ Manage
             {% set file = exports['marc_line_daw'] %}
             <p class="mb-1">
               [{{ file['fdate'] }}]
-              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+              <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
                 {{ file['fname'] }}
               </a>
             </p>
@@ -339,7 +339,7 @@ Manage
           {% if exports['js_all'] %}
             {% set file = exports['js_all'] %}
             [{{ file['fdate'] }}]
-            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
               {{ file['fname'] }}
             </a>
           {% endif %}
@@ -367,7 +367,7 @@ Manage
           {% if exports['xml_desc'] %}
             {% set file = exports['xml_desc'] %}
             [{{ file['fdate'] }}]
-            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
               {{ file['fname'] }}
             </a>
           {% endif %}
@@ -395,7 +395,7 @@ Manage
           {% if exports['xml_qualif'] %}
             {% set file = exports['xml_qualif'] %}
             [{{ file['fdate'] }}]
-            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
               {{ file['fname'] }}
             </a>
           {% endif %}
@@ -437,7 +437,7 @@ Manage
           {% if exports['js_parsers'] %}
             {% set file = exports['js_parsers'] %}
             [{{ file['fdate'] }}]
-            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
               {{ file['fname'] }}
             </a>
           {% endif %}
@@ -469,7 +469,7 @@ Manage
           {% if exports['js_elastic'] %}
             {% set file = exports['js_elastic'] %}
             [{{ file['fdate'] }}]
-            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
               {{ file['fname'] }}
             </a>
           {% endif %}
@@ -500,7 +500,7 @@ Manage
           {% if exports['umls_all_tsv'] %}
             {% set file = exports['umls_all_tsv'] %}
             [{{ file['fdate'] }}]
-            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank">
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
               {{ file['fname'] }}
             </a>
           {% endif %}

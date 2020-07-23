@@ -71,13 +71,13 @@ $(document).ready(function(){
 
         if (action == 'delete' || action == 'purge') {
           var target = $(this).attr('title');
-          $(target+'-action').attr('value', action);
+          $.find(target+'-action').attr('value', action);
         } else {
           var target = $(this).data('form');
         }
 
-        $(target+'-propose').attr('value', propose);
-        $(target+'-form').submit();
+        $.find(target+'-propose').attr('value', propose);
+        $.find(target+'-form').submit();
     });
 
     $('#deleteConcept').on('show.bs.modal', function(e) {
@@ -272,8 +272,8 @@ $(document).ready(function(){
 
     $('#confirmDeleteUserButton').click(function() {
         var target = $(this).attr('title');
-        $(target+'-action').attr('value', 'delete');
-        $(target+'-form').submit();
+        $.find(target+'-action').attr('value', 'delete');
+        $.find(target+'-form').submit();
     });
 
 });

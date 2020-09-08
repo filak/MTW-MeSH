@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 SERVER_HOSTNAME = '127.0.0.1'
-SERVER_PORT = 55933 #55933 #55934
+SERVER_PORT = 55931
 SERVICE_NAME = 'MTWServerWorker'
 SERVICE_DISPLAY_NAME = 'MTW Server Worker'
 SERVICE_DESCRIPTION = 'MeSH Translation Workflow Service Background Worker'

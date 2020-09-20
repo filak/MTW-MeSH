@@ -28,7 +28,8 @@ class ReverseProxied(object):
 
     def __call__(self, environ, start_response):
         if not app.debug:
-            environ['wsgi.url_scheme'] = 'https'
+            #environ['wsgi.url_scheme'] = 'https'
+            environ['wsgi.url_scheme'] = 'http'
 
         return self.app(environ, start_response)
 
@@ -50,7 +51,7 @@ app.logger.addHandler(file_handler)
 
 app.config.update(dict(
     APP_NAME = 'MTW',
-    APP_VER = '1.3.8',
+    APP_VER = '1.4.0',
     API_VER = '1.0.0',
     APP_URL = '/mtw',
     TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
@@ -64,7 +65,7 @@ app.config.update(dict(
     SESSION_COOKIE_HTTPONLY = True,
     SESSION_COOKIE_SAMESITE = 'Strict',
     SESSION_COOKIE_SECURE = True,
-    SESSION_PERMANENT = True,
+    SESSION_PERMANENT = False,
     SESSION_USE_SIGNER = True,
     SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions')
 ))
@@ -122,8 +123,9 @@ def getPath(path):
     customDir = app.config['APP_PATH']
     return(customDir+path)
 
-paranoid = Paranoid(app)
-paranoid.redirect_view = getPath('/login/')
+#if not app.debug:
+#    paranoid = Paranoid(app)
+#    paranoid.redirect_view = getPath('/login/')
 
 def login_required(func):
     @functools.wraps(func)
@@ -1698,7 +1700,11 @@ def login():
             else:
                 mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='success')
 
-                return redirect( session.get('next', url_for('intro')) )
+                print('Yuck')
+                print(session)
+                #return redirect( session.get('next', url_for('intro')) )
+                #return redirect(ref_redirect())
+                return redirect(url_for('intro'))
 
         else:
             session.pop('logged_in', None)

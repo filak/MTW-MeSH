@@ -6,4 +6,5 @@ if getattr(sys, 'frozen', False):
     app.static_folder = os.path.join(os.path.dirname(sys.executable), 'static')
     app.template_folder = os.path.join(os.path.dirname(sys.executable), 'templates')
 
-app.run(port=5903,debug=True,threaded=True)
+if __name__ == "__main__":
+    app.run(port=5903,debug=True,threaded=True)

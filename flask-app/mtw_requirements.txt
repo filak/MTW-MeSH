@@ -1,23 +1,30 @@
+### Version 1.3.9
 ### Python 3.7+ ###
-arrow==0.15.5
-bcrypt==3.1.7 ## NOT python-bcrypt !!!
-certifi==2019.11.28
-diff_match_patch==20181111
-Flask==1.1.1
-werkzeug=1.0.1
-Flask_Caching==1.8.0
+arrow==0.16.0
+bcrypt==3.2.0 # NOT python-bcrypt !!!
+certifi==2020.6.20
+diff_match_patch==20200713
+Flask==1.1.2
+werkzeug==1.0.1
+Jinja2==2.11.2
+Flask_Caching==1.9.0
+Flask_Paranoid==0.2.0
 Flask_SeaSurf==0.2.2
-Flask_Session==0.3.1 ## Use this fork: https://github.com/filak/flask-session
+Flask_Session==0.3.2
+### For SameSite' cookie attribute support use: https://github.com/filak/flask-session
 flask_talisman==0.7.0
-Jinja2==2.10.3
 pyuca==1.2
-requests==2.23.0
+requests==2.24.0
 requests_futures==1.0.0
+### If deploying with Waitress (https://github.com/Pylons/waitress):
+waitress==1.4.4
 #### Building for Windows:
+pyinstaller==4.0
+### Install pywin32 and run: 
+##  python venv/Scripts/pywin32_postinstall.py -install
+pywin32==228
 ### If deploying with Tornado use v4.5.3 
-##  - use the local copy from this repo - sources:  
+##  - use either:
 ##    https://github.com/tornadoweb/tornado/releases/tag/v4.5.3
 ##    https://github.com/filak/tornado-4.5.3
 ##  - DO NOT UPGRADE to 5+ if on Windows !
-### Install pywin32 v227 using https://github.com/mhammond/pywin32/releases
-#pyinstaller==3.6

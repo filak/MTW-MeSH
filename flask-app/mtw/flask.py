@@ -1700,10 +1700,6 @@ def login():
             else:
                 mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='success')
 
-                print('Yuck')
-                print(session)
-                #return redirect( session.get('next', url_for('intro')) )
-                #return redirect(ref_redirect())
                 return redirect(url_for('intro'))
 
         else:

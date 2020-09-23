@@ -78,11 +78,11 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
 
     - Application - Path:
 
-      C:\Programs\...\dist\*-server.exe
+          C:\Programs\...\dist\*-server.exe
 
     - Application - Startup dir:
 
-      C:\Programs\...\dist   
+           C:\Programs\...\dist   
 
     - Application - Arguments - leave empty or check the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server)
 

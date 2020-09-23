@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 *.tmp
+*.bak
 
 # C extensions
 *.so
@@ -12,7 +13,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/

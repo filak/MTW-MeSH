@@ -11,21 +11,17 @@ Flask_Caching==1.9.0
 Flask_Paranoid==0.2.0
 Flask_SeaSurf==0.2.2
 Flask_Session==0.3.2
-### For SameSite cookie attribute support use: https://github.com/filak/flask-session
+### (optional) For SameSite cookie attribute support use: 
+##  https://github.com/filak/flask-session
 flask_talisman==0.7.0
 pyuca==1.2
 requests==2.24.0
 requests_futures==1.0.0
-### If deploying with Waitress (https://github.com/Pylons/waitress):
+### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==1.4.4
-#### Building for Windows:
+### (optional) If building for Windows:
 pyinstaller==4.0
-### Install pywin32
+## Install pywin32
 pywin32==228
 ## and run: 
 ##  python venv/Scripts/pywin32_postinstall.py -install
-### If deploying with Tornado use v4.5.3 
-##  - use either:
-##    https://github.com/tornadoweb/tornado/releases/tag/v4.5.3
-##    https://github.com/filak/tornado-4.5.3
-##  - DO NOT UPGRADE to 5+ if on Windows !

@@ -1,7 +1,4 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -10,14 +7,14 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "mtw-dev.py",
+                "FLASK_APP": "run-server-dev.py",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0"
             },
             "args": [
                 "run",
-                "--debugger",
-                "--reload",
+                "--no-debugger",
+                "--no-reload",
                 "--port=5900"
             ],
             "jinja": true

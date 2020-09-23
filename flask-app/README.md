@@ -70,37 +70,5 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
 
 ## Install MTW-Server and MTW-Worker as a Windows service
 
-1. Install [NSSM](https://nssm.cc) service manager
-
-2. Go to *dist* folder and run for both services:
-
-       $ nssm install <SERVICE_NAME>-<PORT>
-
-    - Application - Path:
-
-          C:\Programs\...\dist\*-server.exe
-
-    - Application - Startup dir:
-
-           C:\Programs\...\dist   
-
-    - Application - Arguments - leave empty or check the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server)
-
-3. Adjust the config file: [mtw-dist.ini](https://github.com/filak/MTW-MeSH/blob/master/flask-app/dist/instance/conf/mtw-dist.ini)
-
-    - and copy the file to *dist\\instance\\conf* folder
-
-4. Create the production database - go to *dist\\db* folder and run: 
-
-       $ sqlite3 mtw.db < mtw_schema.sql
-
-5. Run set-mtw-admin tool: 
-
-       $ set-mtw-admin.exe --login <ADMIN_LOGIN> --pwd <ADMIN_PASSWD>     
-
-6. Start the service using Win Services manager or run:
-
-       $ nssm start <SERVICE_NAME>-<PORT>
-
-7. Follow the [Deployment](https://github.com/filak/MTW-MeSH/wiki#deployment) instructions   
+Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server-and-mtw-worker-as-windows-service)
 

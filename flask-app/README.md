@@ -1,7 +1,8 @@
 # MTW Flask web-app
 
 ## Development - Run with Python
-- Prerequisites: Python 3.7+, Git, Java8 JRE
+
+Prerequisites: Python 3.7+, Git, Java8 JRE
 
 > Tip: You can run in [Visual Studio Code](https://code.visualstudio.com/docs/python/python-tutorial)
 
@@ -16,20 +17,23 @@
 3. Adjust the config file: [mtw.ini](https://github.com/filak/MTW-MeSH/blob/master/flask-app/instance/conf/mtw.ini) in *MTW-MeSH\\flask-app\\instance\\conf* folder 
 
 4. Create virtualenv &amp; activate it:
-```
-$ cd MTW-MeSH\flask-app
-$ py -3 -m venv venv
-$ venv\Scripts\activate.bat
 
-($ venv\Scripts\deactivate.bat)
-```
+    ```
+    $ cd MTW-MeSH\flask-app
+    $ py -3 -m venv venv
+    $ venv\Scripts\activate.bat
+
+    ($ venv\Scripts\deactivate.bat)
+    ```
 
 5. Upgrade the environment tools - run:
-```
-$ python -m pip install --upgrade pip
-$ pip install setuptools --force
-$ pip install wheel --force
-```
+
+    ```
+    $ python -m pip install --upgrade pip
+    $ pip install setuptools --force
+    $ pip install wheel --force
+    ```
+    
 6. Install dependencies - run:
 
        $ pip install -r *_requirements.txt
@@ -39,10 +43,12 @@ $ pip install wheel --force
        $ python set-mtw-admin.py --login <ADMIN_LOGIN> --pwd <ADMIN_PASSWD>
 
 8. Run worker &amp; server apps: 
-```
-$ python run-worker-dev.py
-$ python run-server-dev.py
-```
+
+    ```
+    $ python run-worker-dev.py
+    $ python run-server-dev.py
+    ```
+
 9. Enjoy:   http://127.0.0.1:5900/mtw/
 
 ## Build for Windows
@@ -52,12 +58,14 @@ $ python run-server-dev.py
        $ venv\Scripts\activate.bat
 
 2. Run all !build_*.bat files
-```
-$ !!build__mtw-server.bat
-$ !!build__mtw-tools.bat
-$ !!build__mtw-worker.bat
-$ !!build__set-mtw-admin.bat
-```
+
+    ```
+    $ !!build__mtw-server.bat
+    $ !!build__mtw-tools.bat
+    $ !!build__mtw-worker.bat
+    $ !!build__set-mtw-admin.bat
+    ```
+
 3. Check *dist* folder
 
 ## Install MTW-Server and MTW-Worker as a Windows service

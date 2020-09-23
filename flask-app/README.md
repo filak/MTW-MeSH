@@ -7,7 +7,7 @@
 
 1. Install: 
 
-- Apache Jena/Fuseki, SQLite and load some MeSH datasets - see the [wiki](https://github.com/filak/MTW-MeSH/wiki)
+    - Apache Jena/Fuseki, SQLite and load some MeSH datasets - see the [wiki](https://github.com/filak/MTW-MeSH/wiki)
 
 2. Clone the repo: 
 
@@ -68,19 +68,19 @@ $ !!build__set-mtw-admin.bat
 
        $ nssm install <SERVICE_NAME>-<PORT>
 
-- Application - Path:
+    - Application - Path:
 
       C:\Programs\...\dist\*-server.exe
 
-- Application - Startup dir:
+    - Application - Startup dir:
 
       C:\Programs\...\dist   
 
-- Application - Arguments - leave empty or check the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server)
+    - Application - Arguments - leave empty or check the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server)
 
 3. Adjust the config file: [mtw-dist.ini](https://github.com/filak/MTW-MeSH/blob/master/flask-app/dist/instance/conf/mtw-dist.ini)
 
-- and copy the file to *dist\\instance\\conf* folder
+    - and copy the file to *dist\\instance\\conf* folder
 
 4. Create the production database - go to *dist\\db* folder and run: 
 

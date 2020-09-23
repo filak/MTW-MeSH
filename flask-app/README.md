@@ -68,7 +68,5 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
 
 3. Check *dist* folder
 
-## Install MTW-Server and MTW-Worker as a Windows service
-
-Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server-and-mtw-worker-as-windows-service)
+4. Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server-and-mtw-worker-as-windows-service) to install MTW-Server and MTW-Worker as Windows services
 

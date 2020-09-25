@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--config', type=str, help='Config file path - default: '+DEFAULT_CONFIG, default=DEFAULT_CONFIG)
     parser.add_argument('--port', type=int, help='Port number - default: '+str(DEFAULT_PORT), default=DEFAULT_PORT)
     parser.add_argument('--threads', type=int, help='Number of threads - default: '+str(DEFAULT_THREADS), default=DEFAULT_THREADS)
+    parser.add_argument('--debug', help='Run in debug mode - DO NOT use in production !', action='store_true')
 
     args, unknown = parser.parse_known_args()
 
@@ -28,7 +29,7 @@ def main():
 
     logger = logging.getLogger('waitress')
 
-    app = create_app(debug=False, logger=logger, config_path=args.config)
+    app = create_app(debug=args.debug, logger=logger, config_path=args.config)
 
     if getattr(sys, 'frozen', False):
         app.static_folder = os.path.join(os.path.dirname(sys.executable), 'static')

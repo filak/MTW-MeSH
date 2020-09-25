@@ -8,7 +8,7 @@ from application import create_app
 from waitress import serve
 
 appname    = 'mtw-server'
-appversion = '1.4.0'
+appversion = '1.4.1'
 appdesc    = 'MTW Server'
 appusage   = 'Help:  ' + appname + ' -h \n'
 appauthor  = 'Filip Kriz'

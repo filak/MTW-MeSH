@@ -37,6 +37,7 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
 6. Install dependencies - run:
 
        $ pip install -r *_requirements.txt
+       $ python venv/Scripts/pywin32_postinstall.py -install
 
 7. Run set-mtw-admin tool: 
 

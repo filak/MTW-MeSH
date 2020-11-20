@@ -31,7 +31,12 @@ def main():
 
     logger = logging.getLogger('waitress')
 
-    app = create_app(debug=args.debug, logger=logger, config_path=args.config)
+    if args.debug:
+        debug = True
+    else:
+        debug = False
+
+    app = create_app(debug=debug, logger=logger, config_path=args.config)
 
     if getattr(sys, 'frozen', False):
         app.static_folder = os.path.join(os.path.dirname(sys.executable), 'static')

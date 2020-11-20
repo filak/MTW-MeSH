@@ -9,12 +9,12 @@
             "env": {
                 "FLASK_APP": "run-server-dev.py",
                 "FLASK_ENV": "development",
-                "FLASK_DEBUG": "0"
+                "FLASK_DEBUG": "1"
             },
             "args": [
                 "run",
-                "--no-debugger",
-                "--no-reload",
+                "--debugger",
+                "--reload",
                 "--port=5900"
             ],
             "jinja": true

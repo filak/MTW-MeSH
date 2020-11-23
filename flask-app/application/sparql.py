@@ -55,6 +55,7 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
     if key and cache:
         if cache.get(key):
             return cache.get(key)
+            ##pass
 
     toptn = ''
     if tn:

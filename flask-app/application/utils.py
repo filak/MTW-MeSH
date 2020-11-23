@@ -105,14 +105,13 @@ def getLocalConfValue(conf):
         d['WORKER_HOST'] = conf.get('appconf', 'WORKER_HOST', fallback='http://127.0.0.1:55933/')
         d['PID_PREFIX_CONCEPT'] = conf.get('appconf', 'PID_PREFIX_CONCEPT', fallback='F')
         d['CSRF_DISABLE'] = conf.get('appconf', 'DEV_DISABLE_CSRF', fallback=False)
-
+        d['GCSP'] = json.loads(conf.get('appconf', 'GCSP'))
 
         for key, val in json.loads( conf.get('appconf', 'CACHING', fallback={}) ).items():
             d[key] = val
 
         for key, val in json.loads( conf.get('appconf', 'SESSIONS', fallback={}) ).items():
             d[key] = val
-
 
     except:
         error = 'Error parsing local config : '+app.config['local_config_file']

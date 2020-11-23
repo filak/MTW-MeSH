@@ -49,7 +49,7 @@ def create_app(debug=True, logger=None,
 
     app.config.update(dict(
         APP_NAME = 'MTW',
-        APP_VER = '1.4.1',
+        APP_VER = '1.4.2',
         API_VER = '1.0.0',
         DBVERSION = 1.0,
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
@@ -61,7 +61,7 @@ def create_app(debug=True, logger=None,
         CSRF_COOKIE_SECURE = True,
         CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1),
         SESSION_COOKIE_HTTPONLY = True,
-        SESSION_COOKIE_SAMESITE = 'Strict',
+        SESSION_COOKIE_SAMESITE = 'Lax',
         SESSION_COOKIE_SECURE = True,
         SESSION_PERMANENT = False,
         SESSION_USE_SIGNER = True,
@@ -110,22 +110,13 @@ def create_app(debug=True, logger=None,
     ##  SeaSurf (csrf) & Talisman
 
     csrf.init_app(app)
-       
-    GCSP = {'script-src': "'self' ajax.googleapis.com *.googleanalytics.com *.google-analytics.com",
-            'connect-src': "'self' *.medvik.cz",
-            'default-src': "'self' *.gstatic.com",
-            'style-src': "'self' ajax.googleapis.com fonts.googleapis.com *.gstatic.com data:",
-            'frame-src': "'self' www.google.com", 
-            'font-src': "'self' *.gstatic.com",
-            'img-src': "'self' *.medvik.cz *.obalkyknih.cz www.google.com data:"
-           }
 
     talisman = Talisman(
                 app,
                 session_cookie_secure=app.config['SESSION_COOKIE_SECURE'],
                 force_https=False,
                 strict_transport_security=False,
-                content_security_policy=GCSP,
+                content_security_policy=app.config['GCSP'],
                 content_security_policy_nonce_in=['script-src','style-src']
                )
 

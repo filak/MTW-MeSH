@@ -126,6 +126,7 @@ def intro():
             show_stats = True
             stats_initial = mtu.loadJsonFile(initial)
             stats_actual = mtu.loadJsonFile(actual)
+            
             show_elapsed(t0, tag='loadJsonFile')
     
             if mtu.fileOld(actual, app.config['REFRESH_AFTER']):
@@ -139,9 +140,11 @@ def intro():
     if session['ugroup'] in ['admin','manager','editor']:
         status = mdb.getAuditStatus(db)
         events = mdb.getAuditEvent(db)
+
         show_elapsed(t0, tag='getAudit')
 
     show_elapsed(t0, tag='ready to render')
+    
     return render_template('intro.html', stats_user=stats_user, status=status, events=events, show_stats=show_stats,
                                          initial=stats_initial, actual=stats_actual)
 
@@ -1086,28 +1089,35 @@ def search(dui, action):
     dview = ''
     dview_query = ''
 
-    if dui:
-        started = timer()
-        desc_started = started
-        db = get_db()
-        dui = dui.replace('?','').strip()
-        if request.args.get('tab'):
-            ttab = request.args.get('tab').strip()
-            if ttab in ['concepts','notes','details','relations','qualifiers','history']:
-                tab = ttab
+    if request.args.get('tab'):
+        ttab = request.args.get('tab').strip()
+        if ttab in ['concepts','notes','details','relations','qualifiers','history']:
+            tab = ttab    
 
-        session['dui'] = dui
+    if dui:
+        dui = dui.replace('?','').strip()
 
         started = timer()
         desc_data = sparql.getSparqlData('descriptor', query=dui, key=dui + '_desc', cache=cache)
         show_elapsed(t0, started=started, tag='desc_data')
 
-        started = timer()
-        concepts_data = sparql.getSparqlData('concepts_terms', query=dui, key=dui + '_conc', cache=cache)
-        show_elapsed(t0, started=started, tag='concepts_data')
+        desc_started = started
 
-        if desc_data:
-            descriptor = sparql.parseDescriptor(desc_data)
+        if not desc_data:
+            msg = 'No response received from backend'
+            flash(msg, 'danger')
+            app.logger.error(msg)
+            return render_template('errors/error_page.html', errcode=500, error=msg), 500        
+
+        descriptor = sparql.parseDescriptor(desc_data)
+
+        if descriptor.get('labels'):   
+            session['dui'] = dui
+
+            started = timer()
+            concepts_data = sparql.getSparqlData('concepts_terms', query=dui, key=dui + '_conc', cache=cache)
+            show_elapsed(t0, started=started, tag='concepts_data')
+
             concepts = sparql.parseConcept(concepts_data)
 
             started = timer()
@@ -1124,16 +1134,19 @@ def search(dui, action):
 
             store_visited(dui, descriptor['labels']['en'])
             show_elapsed(t0, started=desc_started, tag='desc_data processed')
-        else:
-            msg = 'No response received from backend'
-            flash(msg, 'danger')
-            app.logger.error(msg)
-            return render_template('errors/error_page.html', errcode=500, error=msg), 500
 
-        audit = mtu.getAuditDict(mdb.getAuditForItem(db, dui))
+            db = get_db()
+            audit = mtu.getAuditDict(mdb.getAuditForItem(db, dui))
+
+        else:
+            msg = 'Item not found'
+            flash(msg, 'warning')
+            app.logger.warning(msg)
+            return render_template('errors/error_page.html', errcode=404, error=msg), 404            
 
     if text_query:
-        data = sparql.getSparqlData('search', query=text_query, show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), scr=session.get('scr'))
+        data = sparql.getSparqlData('search', query=text_query, show=session.get('sshow'), status=session.get('sstatus'), 
+                                              slang=session.get('slang'), scr=session.get('scr'))
         ##pp.pprint(data)
 
         if data:
@@ -1160,6 +1173,7 @@ def search(dui, action):
             hits = cached_hits
 
     show_elapsed(t0, started=t0, tag='before_render')
+
     return render_template('search.html', hits_cnt=hits_cnt, hits=hits, dui=dui, tree=tree, descriptor=descriptor, concepts=concepts, tab=tab, 
                                           show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), scr=session.get('scr'), 
                                           audit=audit, dview=dview)

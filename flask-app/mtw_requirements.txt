@@ -1,8 +1,8 @@
 ### Version 1.4.0
 ### Python 3.7+ ###
-arrow==0.16.0
+arrow==0.17.0
 bcrypt==3.2.0 # NOT python-bcrypt !!!
-certifi==2020.6.20
+certifi==2020.11.8
 diff_match_patch==20200713
 Flask==1.1.2
 werkzeug==1.0.1
@@ -15,13 +15,13 @@ Flask_Session==0.3.2
 ##  https://github.com/filak/flask-session
 flask_talisman==0.7.0
 pyuca==1.2
-requests==2.24.0
+requests==2.25.0
 requests_futures==1.0.0
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==1.4.4
 ### (optional) If building for Windows:
-pyinstaller==4.0
+#pyinstaller==4.1
 ## Install pywin32
-pywin32==228
-## and run: 
+#pywin32==300
+## and run AS Admin (!): 
 ##  python venv/Scripts/pywin32_postinstall.py -install

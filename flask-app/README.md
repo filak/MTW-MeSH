@@ -36,8 +36,7 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
     
 6. Install dependencies - run:
 
-       $ pip install -r *_requirements.txt
-       $ python venv/Scripts/pywin32_postinstall.py -install
+       $ pip install -r *_requirements.txt       
 
 7. Create database - run:
 
@@ -62,13 +61,19 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
 
 https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment
 
-## Build for Windows
+## Building for Windows
 
 1. Activate virtualenv
 
        $ venv\Scripts\activate.bat
+       
+3. Install Pyinstaller and Pywin32 (pywin32_postinstall.py MUST be run as Admin)
 
-2. Run all !build_*.bat files
+       $ pip install pyinstaller 
+       $ pip install pywin32
+       $ python venv/Scripts/pywin32_postinstall.py -install       
+
+3. Run all !build_*.bat files
 
     ```
     $ !!build__mtw-server.bat
@@ -77,7 +82,7 @@ https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment
     $ !!build__set-mtw-admin.bat
     ```
 
-3. Check *dist* folder
+4. Check *dist* folder
 
-4. Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server-and-mtw-worker-as-windows-service) to install MTW-Server and MTW-Worker as Windows services
+5. Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server-and-mtw-worker-as-windows-service) to install MTW-Server and MTW-Worker as Windows services
 

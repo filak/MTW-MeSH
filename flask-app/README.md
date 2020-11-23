@@ -82,7 +82,15 @@ https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment
     $ !!build__set-mtw-admin.bat
     ```
 
-4. Check *dist* folder
+4. Open *dist* folder and test run (and check the logs for any errors)
 
-5. Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server-and-mtw-worker-as-windows-service) to install MTW-Server and MTW-Worker as Windows services
+    ```
+    $ mtw-worker.exe --debug
+    $ set-mtw-admin.exe --login mtwdev --pwd test
+    $ mtw-server.exe --debug
+    ```
+    
+5. Enjoy MTW: http://127.0.0.1:5900   
+
+6. (Optional) Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server-and-mtw-worker-as-windows-service) to install MTW-Server and MTW-Worker as Windows services
 

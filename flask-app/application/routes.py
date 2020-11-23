@@ -1139,7 +1139,7 @@ def search(dui, action):
             audit = mtu.getAuditDict(mdb.getAuditForItem(db, dui))
 
         else:
-            msg = 'Item not found'
+            msg = 'Item not found : ' + str(dui)
             flash(msg, 'warning')
             app.logger.warning(msg)
             return render_template('errors/error_page.html', errcode=404, error=msg), 404            

@@ -39,18 +39,22 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
        $ pip install -r *_requirements.txt
        $ python venv/Scripts/pywin32_postinstall.py -install
 
-7. Run set-mtw-admin tool: 
+7. Create database - run:
+
+       $ sqlite3 mtw.db < mtw_schema.sql
+
+8. Run set-mtw-admin tool: 
 
        $ python set-mtw-admin.py --login <ADMIN_LOGIN> --pwd <ADMIN_PASSWD>
 
-8. Run worker &amp; server apps: 
+9. Run worker &amp; server apps: 
 
     ```
     $ python run-worker-dev.py
     $ python run-server-dev.py
     ```
 
-9. Enjoy:   http://127.0.0.1:5900/mtw/
+10. Enjoy:   http://127.0.0.1:5900/mtw/
 
 ## Deploy on Linux
 

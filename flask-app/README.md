@@ -41,6 +41,7 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
 
 7. Create database - run:
 
+       $ cd instace/db
        $ sqlite3 mtw.db < mtw_schema.sql
 
 8. Run set-mtw-admin tool: 

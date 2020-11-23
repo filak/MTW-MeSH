@@ -90,7 +90,7 @@ https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment
     $ mtw-server.exe --debug
     ```
     
-5. Enjoy MTW: http://127.0.0.1:5900   
+5. Enjoy MTW: http://127.0.0.1:55930/mtw  
 
 6. (Optional) Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows#install-mtw-server-and-mtw-worker-as-windows-service) to install MTW-Server and MTW-Worker as Windows services
 

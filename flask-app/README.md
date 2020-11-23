@@ -4,7 +4,7 @@
 
 Prerequisites: Python 3.7+, Git, Java8 JRE
 
-> Tip: You can run in [Visual Studio Code](https://code.visualstudio.com/docs/python/python-tutorial)
+> Tip: You can use [Visual Studio Code](https://code.visualstudio.com/docs/python/python-tutorial)
 
 1. Install: 
 

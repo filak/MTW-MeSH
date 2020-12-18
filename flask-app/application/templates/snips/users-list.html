@@ -13,7 +13,7 @@
      <form action="{{ url_for('report', userid=userid) }}" method="get">
        <div class="input-group">
           <select class="form-control form-control-sm" name="year">
-          {% for yr in target_years %}
+          {% for yr in target_years | sort(reverse=True) %}
             {% if yr == year|int %}
               {% set sel = 'selected' %}
             {% endif %}
@@ -21,7 +21,7 @@
           {% endfor %}
           </select>
           <div class="input-group-append">
-            <button class="btn btn-secondary btn-sm" type="submit" title="Change target year" aria-label="Change target year">
+            <button class="btn btn-secondary btn-sm" type="submit" title="Select target year" aria-label="Select target year">
               <i class="fas fa-filter"></i>
             </button>
             </a>
@@ -29,7 +29,6 @@
        </div>
      </form>
   </li>
-
 </ul>
 
 <div class="row">

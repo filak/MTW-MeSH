@@ -1079,6 +1079,7 @@ def search(dui, action):
         session.pop('adui', None)
 
         text_query = None
+        cache.delete(hits_key)
 
     audit = {}
     descriptor = []

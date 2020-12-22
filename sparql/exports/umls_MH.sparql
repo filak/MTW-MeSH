@@ -16,6 +16,7 @@ WHERE {
   ?d rdf:type ?type
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
+  ?d meshv:active ?status .
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .
   ?c mesht:preferredTerm ?t .

@@ -104,6 +104,7 @@ def getLocalConfValue(conf):
         d['TRX_NOTES'] = conf.get('flowconf', 'TRX_NOTES').replace('\n','').strip().split(',')
         d['WORKER_HOST'] = conf.get('appconf', 'WORKER_HOST', fallback='http://127.0.0.1:55933/')
         d['PID_PREFIX_CONCEPT'] = conf.get('appconf', 'PID_PREFIX_CONCEPT', fallback='F')
+        d['CSRF_COOKIE_SECURE'] = conf.get('appconf', 'CSRF_COOKIE_SECURE', fallback=True)
         d['CSRF_DISABLE'] = conf.get('appconf', 'DEV_DISABLE_CSRF', fallback=False)
         d['GCSP'] = json.loads(conf.get('appconf', 'GCSP'))
 

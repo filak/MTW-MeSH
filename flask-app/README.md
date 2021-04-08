@@ -36,7 +36,7 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
     
 6. Install dependencies - run:
 
-       $ pip install -r *_requirements.txt       
+       $ pip install -r mtw_requirements.txt       
 
 7. Create database - run:
 

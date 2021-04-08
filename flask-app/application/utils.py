@@ -24,7 +24,7 @@ import arrow
 import diff_match_patch as dmp_module
 
 from application import coll, pp, sparql
-from flask import Flask
+from flask import Flask, abort
 from flask import current_app as app
 from pyuca import Collator
 
@@ -1101,7 +1101,7 @@ def writeTextFile(fpath, data, comp=False):
             
 
 def writeNDJson(fpath, data, comp=False):
-
+    err_msg = ''
     s = io.StringIO()
     try:        
         for o in data:
@@ -1110,8 +1110,7 @@ def writeNDJson(fpath, data, comp=False):
         s.write('\n')
 
     except Exception as err:
-        msg = str(err)
-        logging.error('  Dumping data to JSON : %s : %s', fpath, msg)
+        err_msg = '  Dumping data to JSON : ' + fpath + ' : ' + str(err) 
 
     try:
         if comp:
@@ -1122,12 +1121,12 @@ def writeNDJson(fpath, data, comp=False):
                 ft.write(data)
     
     except Exception as err:
-        msg = str(err)
-        logging.error('  Writing file (NDJson) : %s : %s', fname, msg)
+        err_msg += '  Writing file (NDJson) : ' + fpath + ' : ' + str(err)        
         
     finally:
         s.close()
-        data = {}    
+        data = {} 
+        return err_msg  
         
         
 

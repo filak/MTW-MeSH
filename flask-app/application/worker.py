@@ -3,7 +3,7 @@
 MeSH Traslation Workflow (MTW) background worker - Flask app factory
 """
 import logging
-from flask import Flask
+from flask import Flask, abort
 
 from application import utils as mtu
 

@@ -25,7 +25,7 @@ Manage
   <div class="col-md-3 col-sm">
 
     <ul class="list-inline mb-2">
-      <li class="list-inline-item mt-2"><h4>Checks</h4></li>
+      <li class="list-inline-item"><h4>Checks</h4></li>
       <li class="list-inline-item float-right">
       </li>
     </ul>
@@ -61,7 +61,7 @@ Manage
     </div>
 
     <ul class="list-inline mb-2">
-      <li class="list-inline-item mt-2"><h4>Stats</h4></li>
+      <li class="list-inline-item"><h4>Stats</h4></li>
       <li class="list-inline-item float-right">
       </li>
     </ul>
@@ -107,7 +107,7 @@ Manage
   <div class="col-md">
 
     <ul class="list-inline mb-2">
-      <li class="list-inline-item mt-2">
+      <li class="list-inline-item">
         <h4>Exports <small class="text-warning">Always do Checks before!</small></h4>
       </li>
       <li class="list-inline-item float-right">
@@ -204,7 +204,7 @@ Manage
     </div>
     
     <ul class="list-inline mb-2">
-      <li class="list-inline-item mt-2">
+      <li class="list-inline-item">
         <h4>MARC21 Exports</h4>
       </li>
       <li class="list-inline-item float-right">
@@ -253,6 +253,23 @@ Manage
                 <label class="custom-control-label" for="radioMarcTreeCustom">Custom tree (fld 686)</label>
               </div>
             </div>
+
+            {% if config.MARC_ANGLO == 'yes' %}
+                {% set yes_checked = 'checked=""' %}
+            {% else %}
+                {% set no_checked = 'checked=""' %}
+            {% endif %}
+
+            <div class="form-group mb-2">
+              <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="radioMarcAngloNo" name="anglo_style" value="no" class="custom-control-input" {{ no_checked }}>
+                <label class="custom-control-label" for="radioMarcAngloNo">Exclude Qualifs &amp; ECIN</label>
+              </div>
+              <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="radioMarcAngloYes" name="anglo_style" value="yes" class="custom-control-input" {{ yes_checked }}>
+                <label class="custom-control-label" for="radioMarcAngloYes">Include Q... &amp; ECIN</label>
+              </div>              
+            </div>            
 
             <button class="btn btn-success mb-2" type="submit" title="Create MARC file (TXT)">
               Generate
@@ -311,7 +328,7 @@ Manage
   <div class="col-md">
 
     <ul class="list-inline mb-2">
-      <li class="list-inline-item mt-2">
+      <li class="list-inline-item">
         <h4>LookUps</h4>
       </li>
       <li class="list-inline-item float-right">
@@ -405,9 +422,8 @@ Manage
 
     {% endif %}
     
-    
     <ul class="list-inline mb-2">
-      <li class="list-inline-item mt-2">
+      <li class="list-inline-item">
         <h4>NLK Custom</h4>
       </li>
       <li class="list-inline-item float-right">

@@ -39,7 +39,7 @@ from application import utils as mtu
 from flask import Flask, Response, abort
 from flask import current_app as app
 from flask import (flash, g, make_response, redirect, render_template,
-                   render_template_string, request, send_file, session,
+                   render_template_string, request, send_file, send_from_directory, session,
                    url_for)
 from flask_session import Session
 
@@ -1390,7 +1390,7 @@ def manage(action):
     return render_template('manage.html', users=users, exports=exp_files, show_lookups=show_lookups_exports, show_marc=show_marc_exports)
 
 
-@app.route(getPath('/download/<fname>'), methods=['GET'])
+@app.route(getPath('/download/<fname>'))
 @login_required
 def download(fname):
 
@@ -1398,17 +1398,8 @@ def download(fname):
         msg = 'Admin or Manager login required'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
-
-    fpath = Path( app.config['EXP_DIR'], fname )
-
-    if fpath.is_file():
-        return send_file( str(fpath), as_attachment=True )
-        ## Testing only :
-        ##return send_file( str(fpath) )
     else:
-        msg = 'File not found'
-        flash(msg, 'warning')
-        return render_template('errors/error_page.html', errcode=404, error=msg), 404
+        return send_from_directory(app.config['EXP_DIR'], fname, as_attachment=True)  
 
 
 @app.route(getPath('/update_stats/get:<stat>'), methods=['POST'])
@@ -1435,7 +1426,8 @@ def update_stats(stat):
         
         return redirect(ref_redirect())
         
-    worker_check = checkWorker(worker)    
+    #worker_check = checkWorker(worker) 
+    worker_check = 'OK'   
 
     if worker_check == 'ERROR':
         msg = 'Background worker is NOT running/available !'
@@ -1449,15 +1441,22 @@ def update_stats(stat):
         future_umls = fsession.post(worker+'export_data/get:'+stat)
 
     elif stat == 'marc':
-        params = ''
+        params = {}
+        params['marc'] = {}
+
         line_style = request.form.get('line_style','mrk')
         if line_style in ['mrk','line']:
-            params += line_style
+            params['marc']['line_style'] = line_style
+
         tree_style = request.form.get('tree_style','def')
         if tree_style in ['def','daw']:
-            params += '~' + tree_style
+            params['marc']['tree_style'] = tree_style
 
-        future_umls = fsession.post(worker+'export_data/get:'+stat+'/params:'+params)
+        anglo_style = request.form.get('anglo_style','no')
+        if anglo_style in ['yes','no']:
+            params['marc']['anglo_style'] = anglo_style
+
+        future_umls = fsession.post(worker+'export_data/get:'+stat, json=params)
 
     elif stat in ['initial','actual','all','duplicates','lookups','lookups_rest']:
         future_stat = fsession.post(worker+'refresh_stats/get:'+stat)
@@ -1467,7 +1466,6 @@ def update_stats(stat):
         flash(msg, 'warning')
 
         return redirect(ref_redirect())
-
 
     msg = 'Process started ...'
     flash(msg, 'success')

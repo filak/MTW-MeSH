@@ -12,6 +12,7 @@ import json
 import os
 import pprint
 import re
+import shutil
 import sys
 import time
 import uuid
@@ -86,6 +87,7 @@ def getLocalConfValue(conf):
         d['MARC_MESHCODE'] = conf.get('appconf', 'MARC_MESHCODE', fallback='xxmesh')
         d['MARC_LINE'] = conf.get('appconf', 'MARC_LINE', fallback='mrk')
         d['MARC_TREE'] = conf.get('appconf', 'MARC_TREE', fallback='def')
+        d['MARC_ANGLO'] = conf.get('appconf', 'MARC_ANGLO', fallback='no')
         d['REFRESH_AFTER'] = int( conf.get('appconf', 'REFRESH_AFTER', fallback=30) )
         d['LOGOUT_AFTER']  = int( conf.get('appconf', 'LOGOUT_AFTER', fallback=30) )
         d['MESH_TREE'] = json.loads(conf.get('appconf', 'MESH_TREE'))
@@ -181,7 +183,7 @@ def startStats(stat, fpath, lpath, interval=None):
     return start
 
 
-def exportLookup(export, params=None):
+def exportLookup(export, params={}):
 
     lookups = getTempFpath('lookups', ext='json')
     if not lookups.is_file():
@@ -629,7 +631,7 @@ def getBaseRest():
     return data
 
 
-def getLookupXml(lookups, export):
+def getLookupXml(lookups, export, as_string=True):
     data = getLookupJson(lookups, export)
 
     mesh_year = data.get('mesh_year')
@@ -672,10 +674,13 @@ def getLookupXml(lookups, export):
 
     xml.write('</'+root+'>\n')
 
-    return xml.getvalue()
+    if as_string:
+        return xml.getvalue()
+    else:
+        return xml  
 
 
-def getMarc(lookups, export, params):
+def getMarc(lookups, export, params, as_string=True):
     data = getLookupJson(lookups, export)
 
     mesh_year = data.get('mesh_year')
@@ -695,12 +700,11 @@ def getMarc(lookups, export, params):
     ldr_pref = 'LDR  '
     code_pref = '  '
     fw = ''
-    p = params.split('~')
 
-    mtype = p[0]
-    treetype = p[1]
+    treetype = params.get('tree_style')
+    ecin = params.get('anglo_style')  
 
-    if mtype == 'line':
+    if params.get('line_style') == 'line':
         line_pref = ''
         ldr_pref = ''
         code_pref = ' '
@@ -712,20 +716,28 @@ def getMarc(lookups, export, params):
     cnt = 0
     items = data.get('descriptors')
 
-    for dui in sorted(items):
+    if ecin == 'yes':
+        d_items = data.get('descriptors') 
+        q_items = data.get('qualifiers')
+        items = {**d_items, **q_items}
+    else:
+        items = data.get('descriptors')    
 
-        item = items[dui]
+    for mid in sorted(items):
+
+        item = items[mid]
                 
         if item.get('active') == True:
             cnt += 1
             marc.write(leader)
-            marc.write(line_pref + '001' + code_pref + dui + '\n')
+            marc.write(line_pref + '001' + code_pref + mid + '\n')
             marc.write(line_pref + '003' + code_pref + app.config['MARC_LIBCODE'] + '\n')
             marc.write(line_pref + '005' + code_pref + gen_date + '\n')        
                         
-            xnote = notes.get(dui, {})
+            xnote = notes.get(mid, {})
     
-            fields = getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp=line_pref, cp=code_pref, fw=fw, treetype=treetype)
+            fields = getMarcFields(mid, item, descriptors, qualifiers, qualifs, xnote, 
+                                   lp=line_pref, cp=code_pref, fw=fw, treetype=treetype, ecin=ecin)
             if fields:
                 marc.write(fields + '\n')
     
@@ -762,48 +774,43 @@ def getMarc(lookups, export, params):
                 msh += fw + '$s' + fw + item.get('cas')
     
             marc.write(msh + '\n')
-    
             marc.write('\n')
     
-            ##if cnt >= 10:
-            ##    return marc.getvalue()
+        qa = qualifs.get(mid)
+        if item.get('active') == True and qa and ecin == 'yes':
+            for qui in qa.split('~'):
+                cnt += 1
+                marc.write(leader)
+                marc.write(line_pref + '001' + code_pref + mid + qui + '\n')
+                marc.write(line_pref + '003' + code_pref + app.config['MARC_LIBCODE'] + '\n')
+                marc.write(line_pref + '005' + code_pref + gen_date + '\n')    
 
-    return marc.getvalue()
+                ecin_rec = getEcinRecord(item, mid, qui, qualifiers, lp=line_pref, cp=code_pref, fw=fw)
+
+                marc.write(ecin_rec + '\n')
+                marc.write('\n')
+            
+        ### Testing only   
+        ''' 
+        if cnt >= 50:
+            if as_string:
+                return marc.getvalue()
+            else:
+                return marc
+        '''        
+
+    if as_string:
+        return marc.getvalue()
+    else:
+        return marc    
 
 
-def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp='  ', fw='', treetype='def'):
+def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp='  ', fw='', treetype='def', ecin='no'):
     rows = []
 
-    crt = item.get('crt')
-    ##pp.pprint(item)
-    ##if dui == 'D001519':        
-    ##    print(item)
+    htag, dt, crt = getMarcCommons(item)
 
-    if not crt:
-        return
-    else:
-        crt = crt.replace('-','')
-        crt = crt[2:8]
-
-
-    htag = '50'
-    dt = 'a'
-    if item.get('dc')   == '1': ## 150 - topical
-        htag = '50'
-    elif item.get('dc') == '2': ## 155 - publ
-        htag = '55'
-        dt = 'b'
-    elif item.get('dc') == '3': ## 150 - checktag
-        htag = '50'
-    elif item.get('dc') == '4': ## 151 - geo
-        htag = '51'
-        dt = 'd'
-    elif item.get('dc') == '0': ## 150 - Qualifiers not exported as Marc records
-        htag = '50'
-
-
-    rows.append(lp + '008' + cp + crt + '#n#ancnnbab'+ dt + '###########a#ana#####d')
-
+    rows.append(lp + '008' + cp + crt + '#n#ancnnbab'+ dt + '##########||#ana#####d')
     rows.append(lp + '035    $a' + fw + '(DNLM)' + dui )
     rows.append(lp + '040    $a' + fw + app.config['MARC_CATCODE'] + fw + '$b' + fw + getLangCodeUmls(app.config['TARGET_LANG'], lower=True) )
 
@@ -812,12 +819,16 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
             trx = '$a' + fw + trn.replace('.', '.' + fw + '$x' + fw)
             rows.append(lp + '072    ' + trx)
 
-
     heading = item.get('trx', '')
     if heading == '':
         heading = item.get('eng', '')
 
-    rows.append(lp + '1' + htag + '    $a' + fw + heading + getQualifs(dui, qualifiers, qualifs, fw) + fw + '$2' + fw + app.config['MARC_MESHCODE'] )
+    if ecin == 'yes':
+        fx = ''
+    else:
+        fx = getQualifSubfield(dui, qualifiers, qualifs, fw)
+
+    rows.append(lp + '1' + htag + '    $a' + fw + heading + fx + fw + '$2' + fw + app.config['MARC_MESHCODE'] )
 
     if xnote.get('cx'):
         rows.append(lp + '360    $i' + fw + xnote.get('cx') )
@@ -892,7 +903,6 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
         xtr = '$w' + fw + 'i' + fw + '$a' + fw + x + fw + '$i' + fw + 'PA' + fw + '$7' + fw + pa[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
         
-
     an = xnote.get('an')
     if not an:
         an = xnote.get('an')
@@ -928,7 +938,7 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     return '\n'.join(rows)
 
 
-def getQualifs(dui, qualifiers, allowed_qualifs, fw):
+def getQualifSubfield(dui, qualifiers, allowed_qualifs, fw):
     qa = allowed_qualifs.get(dui)
     if not qa:
         return ''   
@@ -951,15 +961,62 @@ def getQualifs(dui, qualifiers, allowed_qualifs, fw):
     return qualifs
 
 
+def getEcinRecord(item, dui, qui, qualifiers, lp='=', cp='  ', fw=''):
+    rows = []
+
+    htag, dt, crt = getMarcCommons(item)
+
+    rows.append(lp + '008' + cp + crt + '#n#ancnnbab'+ dt + '##########||#ana#####d')
+    rows.append(lp + '040    $a' + fw + app.config['MARC_CATCODE'] + fw + '$b' + fw + getLangCodeUmls(app.config['TARGET_LANG'], lower=True) )
+
+    heading = item.get('trx', '')
+    if heading == '':
+        heading = item.get('eng', '')
+
+    qualif = qualifiers.get(qui)
+    qn = qualif.get('trx', qualif['eng'] )
+
+    rows.append(lp + '1' + htag + '    $a' + fw + heading + fw + '$x' + fw + qn + fw + '$2' + fw + app.config['MARC_MESHCODE'] )
+
+    if item.get('eng'):
+        rows.append(lp + '7' + htag + cp + ' 2' + fw + '$a' + fw + item['eng'] + fw + '$x' + fw + qualif['eng'] + fw + '$7' + fw + dui + qui)
+
+    return '\n'.join(rows)
+
+
+def getMarcCommons(item):
+    htag = '50'
+    dt = 'a'
+
+    if item.get('dc')   == '1': ## 150 - topical
+        htag = '50'
+    elif item.get('dc') == '2': ## 155 - publ
+        htag = '55'
+        dt = 'b'
+    elif item.get('dc') == '3': ## 150 - checktag
+        htag = '50'
+    elif item.get('dc') == '4': ## 151 - geo
+        htag = '51'
+        dt = 'd'
+    elif item.get('dc') == '0': ## 150 - qualifiers
+        htag = '50'
+
+    crt = item.get('crt','000000')
+    crt = crt.replace('-','')
+    crt = crt[2:8]        
+
+    return (htag, dt, crt)                
+
+
 def getFpathDate(fpath):
     return datetime.datetime.fromtimestamp(fpath.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def getStatsFpath(stat, ext='json', params=None, target_year=None):
-    if ext == 'marc' and params:
-        p = params.split('~')
-        ext = p[1] + '.txt'
-        stat += '_' + p[0]
+def getStatsFpath(stat, ext='json', params={}, target_year=None):
+
+    if ext == 'marc':
+        ext = params.get('tree_style','') + '.txt'
+        stat += '_' +  params.get('line_style')
 
     if not target_year:
         target_year = app.config['TARGET_YEAR']
@@ -1022,7 +1079,6 @@ def backStatsProcess(fpath, lpath, stat):
         template_subdir = 'exports/'
         templates = ['lookups_notes','lookups_qualifs','lookups_terms','lookups_use_instead']
         gzip = True
-
 
     for t in templates:
         resp = sparql.getSparqlData(template_subdir+t, output=output)
@@ -1091,13 +1147,23 @@ def writeJsonFile(fpath, data, comp=False):
             ft.write(json.dumps(data))
 
 
-def writeTextFile(fpath, data, comp=False):
+def writeTextFile(fpath, data, comp=False, stream=False):
     if comp:
         with gzip.open(str(fpath)+'.gz', mode='wt', encoding='utf-8') as ft:
-            ft.write(data)
+            if stream:
+                #TBD
+                data.close()
+            else:    
+                ft.writelines(data)
+                data = {}
     else:
         with open(str(fpath), mode='w', encoding='utf-8') as ft:
-            ft.write(data)
+            if stream:
+                #TBD
+                data.close()
+            else:    
+                ft.writelines(data)
+                data = {}
             
 
 def writeNDJson(fpath, data, comp=False):
@@ -1106,7 +1172,6 @@ def writeNDJson(fpath, data, comp=False):
     try:        
         for o in data:
             s.write(json.dumps(o, sort_keys=True) + '\n')
-
         s.write('\n')
 
     except Exception as err:
@@ -1118,7 +1183,7 @@ def writeNDJson(fpath, data, comp=False):
                 ft.write(s.getvalue())
         else:
             with open(str(fpath), mode='w', encoding='utf-8') as ft:
-                ft.write(data)
+                ft.write(s.getvalue())
     
     except Exception as err:
         err_msg += '  Writing file (NDJson) : ' + fpath + ' : ' + str(err)        

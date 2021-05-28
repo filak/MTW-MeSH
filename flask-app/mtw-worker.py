@@ -9,7 +9,7 @@ from application.worker import create_app
 from waitress import serve
 
 appname    = 'mtw-worker'
-appdesc    = 'MTW Worker 0.1.6'
+appdesc    = 'MTW Worker 0.1.7'
 appusage   = 'Help:  ' + appname + ' -h \n'
 appauthor  = 'Filip Kriz'
 

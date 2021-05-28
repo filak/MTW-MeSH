@@ -3,7 +3,7 @@
 MeSH Traslation Workflow (MTW) background worker - Flask app factory
 """
 import logging
-from flask import Flask, abort
+from flask import Flask, abort, request
 
 from application import utils as mtu
 
@@ -30,7 +30,7 @@ def create_app(debug=False, logger=None,
 
     app.config.update(dict(
         APP_NAME = 'MTW Worker',
-        APP_VER = '0.1.6',
+        APP_VER = '0.1.7',
         API_VER = '1.0.0',
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
         local_config_file = mtu.get_instance_dir(app, config_path)
@@ -66,9 +66,8 @@ def create_app(debug=False, logger=None,
             return 'ERROR'
 
 
-    @app.route('/export_data/get:<export>', defaults={'params': ''}, methods=['GET','POST'])
-    @app.route('/export_data/get:<export>/params:<params>', methods=['GET','POST'])
-    def export_data(export, params):
+    @app.route('/export_data/get:<export>', methods=['GET','POST'])
+    def export_data(export):
 
         if export in ['umls','umls_all','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
 
@@ -77,7 +76,12 @@ def create_app(debug=False, logger=None,
             if export in ['umls','umls_all']:
                 mtu.exportData(export)
             else:
-                mtu.exportLookup(export, params=params)
+                if request.method == 'POST':
+                    if request.json:
+                        if request.json.get(export):
+                            mtu.exportLookup(export, params=request.json.get(export))
+                else:
+                    mtu.exportLookup(export)    
 
             app.logger.info('Export '+ export +' finished ...')
 

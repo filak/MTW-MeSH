@@ -1426,8 +1426,7 @@ def update_stats(stat):
         
         return redirect(ref_redirect())
         
-    #worker_check = checkWorker(worker) 
-    worker_check = 'OK'   
+    worker_check = checkWorker(worker) 
 
     if worker_check == 'ERROR':
         msg = 'Background worker is NOT running/available !'

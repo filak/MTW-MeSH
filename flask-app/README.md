@@ -55,6 +55,15 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
     $ python run-server-dev.py
     ```
 
+## Upgrade Python version in your virtual env
+
+    ```
+    $ cd MTW-MeSH\flask-app
+    $ venv\Scripts\deactivate.bat
+    $ python -m venv --upgrade venv
+    $ venv\Scripts\activate.bat
+    ```
+
 ## Deploy on Linux
 
 https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment

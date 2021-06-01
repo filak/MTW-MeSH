@@ -1,8 +1,8 @@
 ### Version 1.4.4
-### Python 3.7+ ###
+### Python 3.8 ###
 arrow==1.1.0
 bcrypt==3.2.0 # NOT python-bcrypt !!!
-certifi==2020.12.5
+certifi==2021.5.30
 diff_match_patch==20200713
 Flask==1.1.4
 werkzeug==1.0.1
@@ -24,6 +24,6 @@ waitress==2.0.0
 ### (optional) If building for Windows:
 pyinstaller==4.3
 ## Install pywin32
-pywin32==300
+pywin32==301
 ## and run AS Admin (!): 
 ##  python venv/Scripts/pywin32_postinstall.py -install

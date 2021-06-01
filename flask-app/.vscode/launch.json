@@ -1,23 +1,26 @@
 {
     "version": "0.2.0",
-    "configurations": [
+    "configurations": [         
         {
             "name": "Python: Flask",
             "type": "python",
             "request": "launch",
             "module": "flask",
+            "justMyCode": false,
             "env": {
                 "FLASK_APP": "run-server-dev.py",
+                //"FLASK_APP": "run-worker-dev.py",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "1"
             },
             "args": [
                 "run",
+                "--port=5900",
+                //"--port=5903",
                 "--debugger",
-                "--reload",
-                "--port=5900"
+                "--reload"
             ],
             "jinja": true
-        }
+        }     
     ]
 }

@@ -22,7 +22,7 @@ requests_futures==1.0.0
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==2.0.0
 ### (optional) If building for Windows:
-pyinstaller==4.3
+pyinstaller==4.5
 ## Install pywin32
 pywin32==301
 ## and run AS Admin (!): 

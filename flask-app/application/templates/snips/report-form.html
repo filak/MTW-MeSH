@@ -7,7 +7,7 @@
        <div class="input-group">
           <select class="form-control form-control-sm" name="month">
             <option value="all">All months</option>
-          {% for mon in months %}
+          {% for mon in months | sort(reverse=True) %}
             {% if mon == month %}
               {% set sel = 'selected' %}
             {% endif %}

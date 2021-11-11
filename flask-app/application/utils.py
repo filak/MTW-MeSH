@@ -96,6 +96,7 @@ def getLocalConfValue(conf):
         d['SPARQL_HOST'] = conf.get('sparqlconf', 'SPARQL_HOST', fallback='http://127.0.0.1:3030/')
         d['SPARQL_DATASET'] = conf.get('sparqlconf', 'SPARQL_DATASET', fallback='mesh')
         d['MESH_RDF'] = conf.get('sparqlconf', 'MESH_RDF', fallback='https://id.nlm.nih.gov/mesh/sparql')
+        d['MESH_WEB'] = conf.get('sparqlconf', 'MESH_WEB', fallback='https://id.nlm.nih.gov/mesh/')
         d['SOURCE_NS'] = conf.get('sparqlconf', 'SOURCE_NS', fallback='http://id.nlm.nih.gov/mesh/')
         d['SOURCE_NS_VOCAB'] = conf.get('sparqlconf', 'SOURCE_NS_VOCAB', fallback='http://id.nlm.nih.gov/mesh/vocab#')
         d['TARGET_LANG'] = conf.get('sparqlconf', 'TARGET_LANG')

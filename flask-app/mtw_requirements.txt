@@ -1,4 +1,4 @@
-### Version 1.4.4
+### Version 1.4.5
 ### Python 3.8 ###
 arrow==1.2.1
 bcrypt==3.2.0 # NOT python-bcrypt !!!

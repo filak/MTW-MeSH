@@ -20,10 +20,11 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
 
     ```
     $ cd MTW-MeSH\flask-app
-    $ py -3 -m venv venv
+    $ py -m venv venv
     $ venv\Scripts\activate.bat
 
     ($ venv\Scripts\deactivate.bat)
+    ($ py -m venv --upgrade venv)
     ```
 
 5. Upgrade the environment tools - run:

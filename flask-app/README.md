@@ -23,13 +23,13 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
     $ py -m venv venv
     $ venv\Scripts\activate.bat
 
-    ($ venv\Scripts\deactivate.bat)
-    ($ py -m venv --upgrade venv)
+    $ venv\Scripts\deactivate.bat
     ```
 
-5. Upgrade the environment tools - run:
+5. Upgrade the environment - run:
 
     ```
+    $ py -m venv --upgrade venv
     $ python -m pip install --upgrade pip
     $ pip install setuptools --force
     $ pip install wheel --force

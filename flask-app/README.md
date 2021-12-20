@@ -2,7 +2,7 @@
 
 ## Development - Run with Python
 
-Prerequisites: Python 3.7+, Git, Java8 JRE
+Prerequisites: Python 3.8+, Git, Java8 JRE
 
 > Tip: You can use [Visual Studio Code](https://code.visualstudio.com/docs/python/python-tutorial)
 
@@ -55,6 +55,8 @@ Prerequisites: Python 3.7+, Git, Java8 JRE
     $ python run-worker-dev.py
     $ python run-server-dev.py
     ```
+    
+10. Enjoy MTW: http://127.0.0.1:5900/mtw/      
 
 ## Upgrade Python version in your virtual env
 

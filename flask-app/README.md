@@ -71,17 +71,7 @@ https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment
 
 ## Building for Windows
 
-1. Activate virtualenv
-
-       $ venv\Scripts\activate.bat
-       
-3. Install Pyinstaller and Pywin32 (pywin32_postinstall.py MUST be run as Admin)
-
-       $ pip install pyinstaller 
-       $ pip install pywin32
-       $ python venv/Scripts/pywin32_postinstall.py -install       
-
-3. Run all !build_*.bat files
+1. Run all !build_*.bat files
 
     ```
     $ !!build__mtw-server.bat
@@ -90,7 +80,7 @@ https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment
     $ !!build__set-mtw-admin.bat
     ```
 
-4. Open *dist* folder and test run (and check the logs for any errors)
+2. Open *dist* folder and test run (and check the logs for any errors)
 
     ```
     $ mtw-worker.exe --debug
@@ -98,7 +88,7 @@ https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment
     $ mtw-server.exe --debug
     ```
     
-5. Enjoy MTW: http://127.0.0.1:55930/mtw/  
+3. Enjoy MTW: http://127.0.0.1:55930/mtw/  
 
-6. Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows) how to deploy MTW as Windows service for production.
+4. Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows) how to deploy MTW as Windows service for production.
 

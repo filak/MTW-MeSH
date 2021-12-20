@@ -107,6 +107,7 @@ def intro():
     stats_actual = {}
     show_stats = False
     worker = app.config['WORKER_HOST']
+    endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
 
     initial = mtu.getStatsFpath('initial')
     actual  = mtu.getStatsFpath('actual')
@@ -114,13 +115,19 @@ def intro():
     show_elapsed(t0, tag='getStatsFpath finished')
         
     worker_check = checkWorker(worker)
-
     show_elapsed(t0, tag='worker_check')
+
+    api_check = checkApi(endpoint)
+    show_elapsed(t0, tag='api_check')
 
     if worker_check == 'ERROR':
         msg = 'Background worker is NOT running/available !'
         flash(msg, 'danger')
-                        
+
+    elif api_check == 'ERROR':
+        msg = 'SPARQL endpoint is NOT running/available !'
+        flash(msg, 'warning')             
+
     else:
         if initial.is_file() and actual.is_file():
             show_stats = True
@@ -1419,6 +1426,7 @@ def update_stats(stat):
     fpath = mtu.getStatsFpath(stat)
     lpath = mtu.getLockFpath('stats')
     worker = app.config['WORKER_HOST']
+    endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
     
     if lpath.is_file():
         msg = 'Background worker is BUSY - please try again later.'
@@ -1433,6 +1441,14 @@ def update_stats(stat):
         flash(msg, 'danger')
         
         return redirect(ref_redirect())
+
+    api_check = checkApi(endpoint)
+
+    if api_check == 'ERROR':
+        msg = 'SPARQL endpoint is NOT running/available !'
+        flash(msg, 'warning')
+        
+        return redirect(ref_redirect())       
     
     fsession = FuturesSession()
 
@@ -1671,7 +1687,6 @@ def logout():
 
 ### Functions, context_processors, etc.
 
-
 def checkWorker(worker):
     try:
         with closing(requests.get(worker, timeout=10) ) as r:
@@ -1684,6 +1699,20 @@ def checkWorker(worker):
     except requests.RequestException as err:
         app.logger.error('Worker: %s \n\n %s', worker, str(err) )
         return 'ERROR'
+
+
+def checkApi(endpoint):
+    try:
+        with closing(requests.get(endpoint, timeout=10) ) as r:
+            if r.status_code == 200:
+                return 'SUCCESS'
+            else:
+                app.logger.warning('API: %s \n\n %s', endpoint, r.status_code )
+                return 'ERROR'
+                    
+    except requests.RequestException as err:
+        app.logger.error('API: %s \n\n %s', endpoint, str(err) )
+        return 'ERROR'        
 
         
 ### not used with Flask-Session

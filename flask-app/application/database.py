@@ -3,7 +3,6 @@
 MeSH Traslation Workflow (MTW) - database ops
 """
 import os, sys, uuid, json, datetime, time, ast, base64, io, re
-from collections import defaultdict, Iterable
 from sqlite3 import dbapi2 as sqlite3
 
 from flask import current_app as app

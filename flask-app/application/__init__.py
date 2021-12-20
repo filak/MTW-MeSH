@@ -49,7 +49,7 @@ def create_app(debug=True, logger=None,
 
     app.config.update(dict(
         APP_NAME = 'MTW',
-        APP_VER = '1.4.5',
+        APP_VER = '1.4.6',
         API_VER = '1.0.0',
         DBVERSION = 1.0,
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),

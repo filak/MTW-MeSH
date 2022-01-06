@@ -2,7 +2,7 @@
 ### Python 3.8+ ###
 arrow==1.2.1
 bcrypt==3.2.0 # NOT python-bcrypt !!!
-cachelib==0.4.1
+cachelib==0.5.0
 certifi==2021.10.8
 diff_match_patch==20200713
 Flask==2.0.2
@@ -18,7 +18,7 @@ flask-talisman==0.8.1
 itsdangerous==2.0.1
 Jinja2==3.0.3
 pyuca==1.2
-requests==2.27.0
+requests==2.27.1
 requests_futures==1.0.0
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==2.0.0

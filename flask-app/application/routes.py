@@ -1702,8 +1702,17 @@ def checkWorker(worker):
 
 
 def checkApi(endpoint):
+
+    headers = {'Content-Type' : 'application/sparql-query; charset=utf-8'}
+    sparql  = '''
+                SELECT ?subject ?predicate ?object
+                WHERE {
+                ?subject ?predicate ?object
+                } LIMIT 5        
+            '''
+
     try:
-        with closing(requests.get(endpoint, timeout=10) ) as r:
+        with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=10) ) as r:
             if r.status_code == 200:
                 return 'SUCCESS'
             else:

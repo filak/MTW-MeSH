@@ -1702,6 +1702,7 @@ def checkWorker(worker):
 
 
 def checkApi(endpoint):
+
     headers = {'Content-Type' : 'application/sparql-query; charset=utf-8'}
     sparql  = '''
                 SELECT ?subject ?predicate ?object
@@ -1709,15 +1710,14 @@ def checkApi(endpoint):
                 ?subject ?predicate ?object
                 } LIMIT 5        
             '''
-    with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=10) ) as r:
-        if r.status_code == 200:
-            return 'SUCCESS'
-        else:
-            app.logger.warning('API: %s \n\n %s', endpoint, r.status_code )
-            return 'ERROR'
 
     try:
-        pass
+        with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=10) ) as r:
+            if r.status_code == 200:
+                return 'SUCCESS'
+            else:
+                app.logger.warning('API: %s \n\n %s', endpoint, r.status_code )
+                return 'ERROR'
                     
     except requests.RequestException as err:
         app.logger.error('API: %s \n\n %s', endpoint, str(err) )

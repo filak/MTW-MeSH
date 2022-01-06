@@ -48,7 +48,8 @@ def show_elapsed(begin, tag=''):
     return elapsed
 
 
-def getSparqlData(template, query='', show='', status='', top='', tn='', concept='', output='json', slang=None, lang=None, scr=None, key=None, cache=None):
+def getSparqlData(template, query='', show='', status='', top='', tn='', concept='', 
+                  output='json', slang=None, lang=None, scr=None, key=None, cache=None):
 
     t0 = timer()
 
@@ -72,7 +73,8 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
     lang_umls = mtu.getLangCodeUmls(lang)
 
     sparql = render_template('sparql/'+template+'.sparql', query=cleanQuery(query),
-                             show=show, status=status, top=top, tn=tn, toptn=toptn, concept=concept, lang=lang, lang_umls=lang_umls, slang=slang, scr=scr)
+                             show=show, status=status, top=top, tn=tn, toptn=toptn, concept=concept, 
+                             lang=lang, lang_umls=lang_umls, slang=slang, scr=scr)
 
     ##print(sparql)
 

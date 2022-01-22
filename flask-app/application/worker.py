@@ -80,8 +80,10 @@ def create_app(debug=False, logger=None,
                     if request.json:
                         if request.json.get(export):
                             mtu.exportLookup(export, params=request.json.get(export))
+                    else:
+                        mtu.exportLookup(export)  
                 else:
-                    mtu.exportLookup(export)    
+                    mtu.exportLookup(export)          
 
             app.logger.info('Export '+ export +' finished ...')
 

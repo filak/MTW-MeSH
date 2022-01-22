@@ -150,7 +150,7 @@ def exportData(export):
     lpath = getLockFpath('stats')
     ext = 'json'
     if export in ['umls','umls_all']:
-        ext = 'tsv'
+        ext = 'tsv'  
 
     if export == 'umls_all':
         fpath = getTempFpath('umls', ext=ext)
@@ -206,25 +206,23 @@ def exportLookup(export, params={}):
     else:
         return
 
+    locked = False
     lpath = getLockFpath('stats')
     if not lpath.is_file():
-        writeTempLock(lpath, export)
+        locked = writeTempLock(lpath, export)
+
+    if not locked:
+        return
 
     fpath = getStatsFpath(export, ext=output, params=params)
     
     if output == 'json' and export == 'js_elastic':
         data = getLookupJson(lookups, export)
         jdata = getElasticData(data) 
-        writeJsonFile(fpath, jdata, comp=gzip)
-    
-    ### not used    
-    elif output == 'ndjson' and export == 'js_elastic':
-        data = getLookupJson(lookups, export)
-        ndata = getElasticData(data) 
-        writeNDJson(fpath, ndata, comp=gzip)             
+        writeJsonFile(fpath, jdata, comp=gzip)           
 
     elif output == 'json':
-        data = getLookupJson(lookups, export)
+        data = getLookupJson(lookups, export)        
         writeJsonFile(fpath, data, comp=gzip)
         
     elif output == 'xml':
@@ -235,7 +233,7 @@ def exportLookup(export, params={}):
         data = getMarc(lookups, export, params)
         writeTextFile(fpath, data, comp=gzip)
 
-    delTempLock(lpath)
+    return delTempLock(lpath)
 
 
 def getLookupJson(lookups, export):

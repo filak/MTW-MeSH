@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 DEFAULT_CONFIG = 'conf/mtw.ini'
+
 import sys
 from application.worker import create_app
 

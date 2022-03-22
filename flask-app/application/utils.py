@@ -693,7 +693,13 @@ def getMarc(lookups, export, params, as_string=True):
     notes = xdata.get('desc_notes',{})
 
     timestamp = data.get('timestamp','')
-    gen_date = timestamp[0:10].replace('-','')
+    
+    if timestamp:
+        tsa = arrow.get(timestamp)
+    else:
+        tsa = arrow.get()   
+
+    gen_date = tsa.format('YYYYMMDDHHmmss.S')    
 
     line_pref = '='
     ldr_pref = 'LDR  '

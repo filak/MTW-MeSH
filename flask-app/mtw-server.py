@@ -9,7 +9,7 @@ from application import create_app
 from waitress import serve
 
 appname    = 'mtw-server'
-appdesc    = 'MTW Server 1.4.7'
+appdesc    = 'MTW Server 1.4.8'
 appusage   = 'Help:  ' + appname + ' -h \n'
 appauthor  = 'Filip Kriz'
 

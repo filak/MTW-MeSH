@@ -27,6 +27,6 @@ Werkzeug==2.0.3
 ### (optional) If building for Windows:
 pyinstaller==4.10
 ## Install pywin32
-pywin32==303
+pywin32==304
 ## and run AS Admin (!): 
 ##  python venv\Scripts\pywin32_postinstall.py -install

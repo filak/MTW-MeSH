@@ -22,7 +22,7 @@ pyuca==1.2
 requests==2.27.1
 requests_futures==1.0.0
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
-waitress==2.1.1
+waitress==2.1.2
 Werkzeug==2.0.3
 ### (optional) If building for Windows:
 pyinstaller==4.10

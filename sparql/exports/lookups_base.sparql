@@ -8,7 +8,7 @@ PREFIX text:   <http://jena.apache.org/text#>
 PREFIX meshx:  <http://mesh.medvik.cz/link/>
 PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
-SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?nlm ?rn ?cas
+SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?rn ?cas
       (GROUP_CONCAT(DISTINCT ?trns ; separator='~') AS ?trn)
       (GROUP_CONCAT(DISTINCT ?pac ; separator='~') AS ?pa)
       (GROUP_CONCAT(DISTINCT ?bd ; separator='~') AS ?btd)
@@ -21,12 +21,14 @@ WHERE {
   #BIND(mesh:Q000009 as ?d)
   #BIND(mesh:D002493 as ?d)
   #BIND(mesh:D005123 as ?d)
-  BIND(mesh:D018806 as ?d)
+  #BIND(mesh:D018806 as ?d)
+  BIND(mesh:D023482 as ?d)
   ?d rdf:type ?dtype .
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
   ?d meshv:active ?active .
   ?d meshv:dateCreated ?crt .
+  ?d meshv:dateEstablished ?est .
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
     ?tree rdfs:label ?trns
@@ -60,5 +62,5 @@ WHERE {
   OPTIONAL { ?c meshv:registryNumber ?rn }
   OPTIONAL { ?c meshv:casn1_label ?cas }
 }
-GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?nlm ?rn ?cas
+GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?rn ?cas
 ###LIMIT 100

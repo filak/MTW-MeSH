@@ -358,6 +358,10 @@ def getLookupJson(lookups, export):
             if crt:
                 d['crt'] = crt
 
+            est = item.get('est')
+            if est:
+                d['est'] = est                
+
             for t in terms:
                 if t:
                     d['xtr'].append( t.replace('[OBSOLETE]','').strip() )

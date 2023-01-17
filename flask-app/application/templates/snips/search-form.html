@@ -3,7 +3,7 @@
       <form action="{{ url_for('search', dui='') }}" method="get">
         <div class="input-group mb-2">
           <input type="text" class="form-control" placeholder="Your query... with * and ? support " maxlength="100" aria-label="Your query... with two button addons" aria-describedby="button-addon4"
-                 name="q" value="{{ session.get('q','') }}" required>
+                 name="q" value="{{ session.get('q','') }}" required autofocus>
           <div class="input-group-append" id="button-addon4">
             <span class="input-group-text">{{ hits_cnt }}</span>
             <button class="btn btn-secondary" type="submit" title="Search" aria-label="Search"><i class="fas fa-search"></i></button>

@@ -1,13 +1,13 @@
-### Version 1.4.9
+### Version 1.4.10
 ### Python 3.8+ ###
 arrow==1.2.3
-bcrypt==3.2.0 # NOT python-bcrypt !!!
-cachelib==0.9.0
+bcrypt==4.0.1 # NOT python-bcrypt !!!
+cachelib==0.9.0 # 0.10.1 incompatible !
 certifi==2022.12.7
 cffi==1.15.1
 diff_match_patch==20200713
 Flask==2.2.2
-Flask-Babel==3.0.0
+Flask-Babel==3.0.1
 Flask-Caching==2.0.2
 Flask-Paranoid==0.3.0
 Flask-SeaSurf==1.1.1
@@ -21,7 +21,7 @@ Jinja2==3.1.2
 pyuca==1.2
 requests==2.28.2
 requests_futures==1.0.0
-setuptools==66.0.0
+setuptools==67.0.0
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==2.1.2
 Werkzeug==2.2.2

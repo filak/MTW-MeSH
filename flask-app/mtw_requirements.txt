@@ -24,7 +24,7 @@ requests_futures==1.0.0
 setuptools==67.0.0
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==2.1.2
-Werkzeug==2.2.2
+Werkzeug==2.2.3
 wheel==0.38.4
 ### (optional) If building for Windows:
 pyinstaller==5.7.0

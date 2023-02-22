@@ -1,12 +1,12 @@
-### Version 1.4.10
+### Version 1.4.11
 ### Python 3.8+ ###
 arrow==1.2.3
 bcrypt==4.0.1 # NOT python-bcrypt !!!
-cachelib==0.9.0 # 0.10.1 incompatible !
+cachelib==0.9.0 # 0.10+ incompatible !
 certifi==2022.12.7
 cffi==1.15.1
 diff_match_patch==20200713
-Flask==2.2.2
+Flask==2.2.3
 Flask-Babel==3.0.1
 Flask-Caching==2.0.2
 Flask-Paranoid==0.3.0
@@ -16,18 +16,21 @@ Flask-Session==0.4.0
 # https://github.com/filak/flask-session
 # - copy the files to: application\custom\flask_session
 flask-talisman==1.0.0
+future==0.18.3
 itsdangerous==2.1.2
 Jinja2==3.1.2
+pip_audit==2.4.14 # Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt
 pyuca==1.2
 requests==2.28.2
 requests_futures==1.0.0
-setuptools==67.0.0
+setuptools==67.4.0
+urllib3==1.26.14
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==2.1.2
 Werkzeug==2.2.3
 wheel==0.38.4
 ### (optional) If building for Windows:
-pyinstaller==5.7.0
+pyinstaller==5.8.0
 ## Install pywin32
 pywin32==305
 ## and run AS Admin (!): 

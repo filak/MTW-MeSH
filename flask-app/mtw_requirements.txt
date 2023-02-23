@@ -2,7 +2,7 @@
 ### Python 3.10+ ###
 arrow==1.2.3
 bcrypt==4.0.1 # NOT python-bcrypt !!!
-cachelib==0.9.0 # 0.10+ incompatible !
+cachelib==0.9.0 # 0.10+ incompatible with Flask-caching 2.0.2 !
 certifi==2022.12.7
 cffi==1.15.1
 colorama==0.4.6

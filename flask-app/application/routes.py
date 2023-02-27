@@ -1453,7 +1453,7 @@ def update_stats(stat):
     fsession = FuturesSession()
 
     if stat in ['umls','umls_all','js_all','js_parsers','js_elastic','xml_desc','xml_qualif']:
-        future_umls = fsession.post(worker+'export_data/get:'+stat)
+        future_exp = fsession.post(worker+'export_data/get:'+stat)
 
     elif stat == 'marc':
         params = {}
@@ -1471,7 +1471,7 @@ def update_stats(stat):
         if anglo_style in ['yes','no']:
             params['marc']['anglo_style'] = anglo_style
 
-        future_umls = fsession.post(worker+'export_data/get:'+stat, json=params)
+        future_exp_json = fsession.post(worker+'export_data/get:'+stat, json=params)
 
     elif stat in ['initial','actual','all','duplicates','lookups','lookups_rest']:
         future_stat = fsession.post(worker+'refresh_stats/get:'+stat)

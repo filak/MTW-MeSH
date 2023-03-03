@@ -179,7 +179,9 @@ def todo(tlist):
 
     hits = None
     tlist_check = tlist.lower()
-    if tlist_check in ['preferred','nonpreferred','scopenote','nonprefscopenote','customconcepts','duplicates','duplicates_eng','mesht_predicates']:
+    if tlist_check in ['preferred','nonpreferred', 'preftermmissing',
+                       'scopenote','nonprefscopenote','customconcepts',
+                       'duplicates','duplicates_eng','mesht_predicates']:
         session['tlist'] = tlist
         template = 'reports/todo_' + tlist
         data = sparql.getSparqlData(template)

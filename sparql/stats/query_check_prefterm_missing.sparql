@@ -1,0 +1,30 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+PREFIX meshx: <http://mesh.medvik.cz/link/>
+
+SELECT distinct ?label ?dui ?cui ?type ?active ?val ?lockedBy
+WHERE {
+  BIND('PREFTERM_MISSING' as ?tty)
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:identifier ?dui .
+  ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
+  ?c meshv:identifier|mesht:identifier ?cui .
+  ?c mesht:term|mesht:preferredTerm ?t .
+  ?c rdfs:label ?label .
+  OPTIONAL { ?c mesht:preferredTerm ?pt }
+  OPTIONAL { ?d meshv:active ?active }
+  OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+  OPTIONAL { ?c mesht:notTranslatable ?ntx }
+  FILTER (!BOUND(?ntx))  
+  ?t mesht:prefLabel ?val
+  #FILTER ( ?dui in("D000080066","D000083102","D000092283","D000092482","D000092622","D000094504","D000094783","D016495"))
+  FILTER(NOT EXISTS { ?c mesht:preferredTerm ?pt })
+}
+#LIMIT 100 

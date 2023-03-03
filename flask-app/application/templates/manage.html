@@ -42,6 +42,16 @@ Manage
 
     <div class="row mb-4">
       <div class="col">
+        <h5>PrefTerm NOT specified</h5>
+            <a href="{{ url_for('todo', tlist='prefTermMissing') }}" class="btn btn-warning" role="button">
+              Check
+            </a>
+            <span class="text-warning">[shall be 0 before exports]</span>
+      </div>
+    </div>    
+
+    <div class="row mb-4">
+      <div class="col">
         <h5>Pending changes</h5>
             <a href="{{ url_for('approve', status='pending') }}" class="btn btn-warning" role="button">
               Check

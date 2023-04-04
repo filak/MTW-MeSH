@@ -1,0 +1,20 @@
+## Descriptor predicates stats query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT distinct ?label ?d ?type ?active ?val ?lockedBy
+WHERE {
+  ?d rdf:type ?type
+  FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
+  ?c meshv:identifier|mesht:identifier ?cui .
+  ?c mesht:term|mesht:preferredTerm ?t .
+  ?c rdfs:label ?label .
+  OPTIONAL { ?c mesht:preferredTerm ?pt }
+  OPTIONAL { ?d meshv:active ?active }
+  OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+  OPTIONAL { ?c mesht:notTranslatable ?ntx }
+  FILTER (!BOUND(?ntx))  
+  ?t mesht:prefLabel ?val
+  FILTER(NOT EXISTS { ?c mesht:preferredTerm ?pt })
+}

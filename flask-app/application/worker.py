@@ -30,7 +30,7 @@ def create_app(debug=False, logger=None,
 
     app.config.update(dict(
         APP_NAME = 'MTW Worker',
-        APP_VER = '0.1.7',
+        APP_VER = '0.1.8',
         API_VER = '1.0.0',
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
         local_config_file = mtu.get_instance_dir(app, config_path)
@@ -77,11 +77,13 @@ def create_app(debug=False, logger=None,
                 mtu.exportData(export)
             else:
                 if request.method == 'POST':
-                    if request.json:
+                    if request.is_json:
                         if request.json.get(export):
                             mtu.exportLookup(export, params=request.json.get(export))
+                    else:
+                        mtu.exportLookup(export)  
                 else:
-                    mtu.exportLookup(export)    
+                    mtu.exportLookup(export)          
 
             app.logger.info('Export '+ export +' finished ...')
 

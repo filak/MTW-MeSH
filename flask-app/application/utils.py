@@ -107,8 +107,8 @@ def getLocalConfValue(conf):
         d['TRX_NOTES'] = conf.get('flowconf', 'TRX_NOTES').replace('\n','').strip().split(',')
         d['WORKER_HOST'] = conf.get('appconf', 'WORKER_HOST', fallback='http://127.0.0.1:55933/')
         d['PID_PREFIX_CONCEPT'] = conf.get('appconf', 'PID_PREFIX_CONCEPT', fallback='F')
-        d['CSRF_COOKIE_SECURE'] = conf.get('appconf', 'CSRF_COOKIE_SECURE', fallback=True)
-        d['CSRF_DISABLE'] = conf.get('appconf', 'DEV_DISABLE_CSRF', fallback=False)
+        d['CSRF_COOKIE_SECURE'] = conf.getboolean('appconf', 'CSRF_COOKIE_SECURE', fallback=True)
+        d['CSRF_DISABLE'] = conf.getboolean('appconf', 'DEV_DISABLE_CSRF', fallback=False)
         d['GCSP'] = json.loads(conf.get('appconf', 'GCSP'))
 
         for key, val in json.loads( conf.get('appconf', 'CACHING', fallback={}) ).items():
@@ -150,7 +150,7 @@ def exportData(export):
     lpath = getLockFpath('stats')
     ext = 'json'
     if export in ['umls','umls_all']:
-        ext = 'tsv'
+        ext = 'tsv'  
 
     if export == 'umls_all':
         fpath = getTempFpath('umls', ext=ext)
@@ -206,25 +206,23 @@ def exportLookup(export, params={}):
     else:
         return
 
+    locked = False
     lpath = getLockFpath('stats')
     if not lpath.is_file():
-        writeTempLock(lpath, export)
+        locked = writeTempLock(lpath, export)
+
+    if not locked:
+        return
 
     fpath = getStatsFpath(export, ext=output, params=params)
     
     if output == 'json' and export == 'js_elastic':
         data = getLookupJson(lookups, export)
         jdata = getElasticData(data) 
-        writeJsonFile(fpath, jdata, comp=gzip)
-    
-    ### not used    
-    elif output == 'ndjson' and export == 'js_elastic':
-        data = getLookupJson(lookups, export)
-        ndata = getElasticData(data) 
-        writeNDJson(fpath, ndata, comp=gzip)             
+        writeJsonFile(fpath, jdata, comp=gzip)           
 
     elif output == 'json':
-        data = getLookupJson(lookups, export)
+        data = getLookupJson(lookups, export)        
         writeJsonFile(fpath, data, comp=gzip)
         
     elif output == 'xml':
@@ -235,7 +233,7 @@ def exportLookup(export, params={}):
         data = getMarc(lookups, export, params)
         writeTextFile(fpath, data, comp=gzip)
 
-    delTempLock(lpath)
+    return delTempLock(lpath)
 
 
 def getLookupJson(lookups, export):
@@ -359,6 +357,10 @@ def getLookupJson(lookups, export):
             crt = item.get('crt')
             if crt:
                 d['crt'] = crt
+
+            est = item.get('est')
+            if est:
+                d['est'] = est                
 
             for t in terms:
                 if t:
@@ -695,7 +697,13 @@ def getMarc(lookups, export, params, as_string=True):
     notes = xdata.get('desc_notes',{})
 
     timestamp = data.get('timestamp','')
-    gen_date = timestamp[0:10].replace('-','')
+    
+    if timestamp:
+        tsa = arrow.get(timestamp)
+    else:
+        tsa = arrow.get()   
+
+    gen_date = tsa.format('YYYYMMDDHHmmss.S')    
 
     line_pref = '='
     ldr_pref = 'LDR  '

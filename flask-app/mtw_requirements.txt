@@ -1,21 +1,21 @@
-### Version 1.4.13
+### Version 1.4.14
 ### Python 3.10+ ###
 arrow==1.2.3
-bcrypt==4.0.1 # NOT python-bcrypt !!!
-cachelib==0.9.0 # 0.10+ incompatible with Flask-caching 2.0.2 !
+bcrypt==4.0.1 ## NOT python-bcrypt !!!
+cachelib==0.9.0 ## 0.10+ incompatible with Flask-caching 2.0.2 !
 certifi==2022.12.7
 cffi==1.15.1
 colorama==0.4.6
 diff_match_patch==20200713
-Flask==2.2.3
+Flask==2.3.2
 Flask-Babel==3.0.1
 Flask-Caching==2.0.2
 Flask-Paranoid==0.3.0
 Flask-SeaSurf==1.1.1
-Flask-Session==0.4.0
+Flask-Session==0.4.0 ## Stick to 0.4.0
 ### (optional) For SameSite cookie attribute support use: 
-# https://github.com/filak/flask-session
-# - copy the files to: application\custom\flask_session
+## https://github.com/filak/flask-session
+## - copy the files to: application\custom\flask_session
 flask-talisman==1.0.0
 future==0.18.3
 idna==3.4
@@ -23,20 +23,20 @@ itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.2
 pefile==2023.2.7
-pip_audit==2.4.14 # Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt
+pip_audit==2.5.4 ## Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt
 pyuca==1.2
-requests==2.28.2
+requests==2.29.0
 requests_futures==1.0.0
-setuptools==67.4.0
+setuptools==67.7.2
 urllib3==1.26.14
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==2.1.2
-Werkzeug==2.2.3
-wheel==0.38.4
+Werkzeug==2.3.3
+wheel==0.40.0
 ### (optional) If building for Windows:
 pyinstaller==5.8.0
 pyinstaller-hooks-contrib==2023.0
 ## Install pywin32
-pywin32==305
+pywin32==306
 ## and run AS Admin (!): 
 ##  python venv\Scripts\pywin32_postinstall.py -install

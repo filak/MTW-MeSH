@@ -7,7 +7,7 @@ certifi==2022.12.7
 cffi==1.15.1
 colorama==0.4.6
 diff_match_patch==20200713
-Flask==2.2.3
+Flask==2.3.2
 Flask-Babel==3.0.1
 Flask-Caching==2.0.2
 Flask-Paranoid==0.3.0

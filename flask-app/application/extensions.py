@@ -2,16 +2,13 @@
 """
 Flask Extensions
 """
-###from flask_babel import Babel, gettext
+
 from flask_caching import Cache
 from flask_paranoid import Paranoid
 from flask_seasurf import SeaSurf
-##from flask_session import Session
-from application.custom.flask_session import Session
+from flask_session import Session
 ###from flask_sqlalchemy import SQLAlchemy
 from flask_talisman import Talisman
-
-#babel = Babel()
 
 cache = Cache()
 

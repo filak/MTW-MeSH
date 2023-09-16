@@ -1,4 +1,4 @@
-### Not translated nonPreferred Concepts v1.0 ###
+### Not translated nonPreferred Concepts v1.1 ###
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -12,6 +12,7 @@ WHERE {
   ?c mesht:preferredTerm ?id .
   ?id mesht:prefLabel ?val .
   ?d meshv:concept ?nc .
+  OPTIONAL { ?nc mesht:notTranslatable ?ntxnc }
   OPTIONAL {
     ?nc mesht:preferredTerm ?idx .
     ?idx mesht:prefLabel ?nval
@@ -23,6 +24,7 @@ WHERE {
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   FILTER (!BOUND(?ntx))
+  FILTER (!BOUND(?ntxnc))
 }
 ORDER BY ?label LIMIT 200
 

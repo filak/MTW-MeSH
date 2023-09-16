@@ -80,7 +80,7 @@ ORDER BY DESC(?score)
   OPTIONAL {?c mesht:notTranslatable ?ntx}
 
   OPTIONAL {
-    ?d meshv:concept ?npc .
+    ?d meshv:concept ?npc
   }
   OPTIONAL {
     ?npc mesht:preferredTerm ?termIDnp

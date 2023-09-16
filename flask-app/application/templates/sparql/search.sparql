@@ -1,4 +1,4 @@
-### Search/Text query v1.1
+### Search/Text query v1.2
 ## All Descriptors & Concepts
 ## params: query string [+ filter: active=false]
 
@@ -101,14 +101,14 @@ ORDER BY DESC(?score)
 
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
 
-  {% if show == 'ntx' %} ## notTranslatable
-      ?c mesht:notTranslatable ?ntx .
+  {% if show == 'ntx' %}
+  OPTIONAL { ?c mesht:notTranslatable ?ntx }
   {% endif %}
 
-    OPTIONAL {
-      ?c mesht:preferredTerm ?termID .
-      ?termID mesht:prefLabel ?val
-    }
+  OPTIONAL {
+    ?c mesht:preferredTerm ?termID .
+    ?termID mesht:prefLabel ?val
+  }
 
   OPTIONAL {?c meshv:scopeNote ?scnv .
             BIND('YES' as ?scn)
@@ -118,7 +118,11 @@ ORDER BY DESC(?score)
            }
 
     {% if status == 'notpref' %}
-        ?d meshv:concept ?npc .
+
+        ?d meshv:concept ?npc
+
+        OPTIONAL { ?npc mesht:notTranslatable ?ntxnp }
+
         OPTIONAL { ?npc mesht:preferredTerm ?termIDnp }
         {% if show == 'translated' %}
             FILTER (BOUND(?termIDnp))   ## Translated
@@ -126,6 +130,10 @@ ORDER BY DESC(?score)
         {% if show == 'todo' %}
             FILTER (!BOUND(?termIDnp))  ## notTranslated
         {% endif %}
+        {% if show == 'ntx' %}
+            FILTER (BOUND(?ntxnp))
+        {% endif %}
+
     {% endif %}
 
     {% if show == 'translated' %}
@@ -140,6 +148,12 @@ ORDER BY DESC(?score)
         FILTER (BOUND(?val))   ## Translated
         FILTER (BOUND(?scn))   ## ScopeNote
         FILTER (!BOUND(?scnt)) ## notTranslatedScopeNote
+    {% endif %}
+
+    {% if show == 'ntx' %}
+      {% if status != 'notpref' %}
+        FILTER (BOUND(?ntx))
+      {% endif %}
     {% endif %}
 
 } LIMIT 500

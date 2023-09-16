@@ -69,7 +69,7 @@
 
 {% set in_con_v_pterm = deepGet(initial, 'meshv_nonPref.preferredTerm') %}
 {% set in_con_t_pterm = deepGet(initial, 'mesht_nonPref.preferredTerm') %}
-{% set ac_con_t_pterm = deepGet(actual, 'mesht_nonPref.preferredTerm') %}
+{% set ac_con_t_pterm = deepGet(actual,  'mesht_nonPref.preferredTerm') %}
 {% set nw_con_t_pterm = ac_con_t_pterm - in_con_t_pterm %}
 {% set todo_con_pterm = in_con_v_pterm - ac_con_t_pterm %}
 

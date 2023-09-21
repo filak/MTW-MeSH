@@ -2,4 +2,4 @@
 
 There is no guarantee that the queries here match the query templates used in production:
 
-https://github.com/filak/MTW-MeSH/tree/master/flask-app/mtw/templates/sparql
+https://github.com/filak/MTW-MeSH/tree/master/flask-app/application/templates/sparql

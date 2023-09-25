@@ -8,6 +8,7 @@ PREFIX text:   <http://jena.apache.org/text#>
 PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 PREFIX meshx: <http://mesh.medvik.cz/link/>
 
+#SELECT ?pred (COUNT(?pred) AS ?count) {
 SELECT DISTINCT * {
   {
   SELECT ?c1 ?pred ?sub WHERE {
@@ -27,3 +28,4 @@ SELECT DISTINCT * {
     }
   }
 } ORDER BY ?c1 ?pred ?sub
+#} GROUP BY ?pred ORDER BY ?pred

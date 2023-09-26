@@ -4,7 +4,7 @@ from timeit import default_timer as timer
 import xml.etree.ElementTree as ET
 
 appname = 'mesh-xml2trx'
-appversion = '1.4 14-3-2019'
+appversion = '1.5 26-9-2023'
 appdesc = 'Extracting translation dataset from MeSH XML'
 appusage = 'Help:   '+ appname +'.py -h \n'
 appauthor = 'Filip Kriz'
@@ -27,7 +27,7 @@ def main():
     parser = argparse.ArgumentParser(description=appdesc, prog=appname, usage='%(prog)s inputFile meshxPrefix [options]')
     parser.add_argument('inputFile', type=str, help='MeSH XML file name (plain or gzipped)')
     parser.add_argument('meshxPrefix', type=str, help='MeSH Translation namespace prefix ie. http://mesh.medvik.cz/link/ ')
-    parser.add_argument('--out', type=str, default='mesh-trx', help='Output file')
+    parser.add_argument('--out', type=str, default='mesh-trx', help='Output file name prefix')
 
     args, unknown = parser.parse_known_args()
 
@@ -244,7 +244,7 @@ def getRoot(input_file):
                 tree = ET.parse(fh)
 
     except Exception as err:
-        logging.error(' reading file : %s', input_file)
+        print('ERROR reading file : ', input_file)
         raise
 
     finally:

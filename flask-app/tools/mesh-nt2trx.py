@@ -3,7 +3,7 @@ import os, sys, argparse, string, datetime, time, io, gzip
 from timeit import default_timer as timer
 
 appname = 'mesh-nt2trx'
-appversion = '1.4 13-3-2019'
+appversion = '1.5 26-9-2023'
 appdesc = 'Extracting translation dataset from Fuseki backup dump'
 appusage = 'Help:   '+ appname +'.py -h \n'
 appauthor = 'Filip Kriz'
@@ -23,7 +23,7 @@ def main():
 
     parser = argparse.ArgumentParser(description=appdesc, prog=appname, usage='%(prog)s inputFile [options]')
     parser.add_argument('inputFile', type=str, help='MTW dump file name (plain or gzipped)')
-    parser.add_argument('--out', type=str, default='mtw-trx', help='Output file name')
+    parser.add_argument('--out', type=str, default='mtw-trx', help='Output file name prefix')
 
     args, unknown = parser.parse_known_args()
 

@@ -7,9 +7,8 @@
 @prefix fuseki:  <http://jena.apache.org/fuseki#> .
 @prefix meshv:   <http://id.nlm.nih.gov/mesh/vocab#> .
 @prefix mesht:   <http://www.medvik.cz/schema/mesh/vocab/#> .
-@prefix meshx:   <http://mesh.medvik.cz/link/> .
 
-### Version 1.0.3
+### Version 1.0.4
 
 ## Initialize text query
 [] ja:loadClass       "org.apache.jena.query.text.TextQuery" .
@@ -32,13 +31,13 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
 # A TDB dataset used for RDF storage
 <#dataset> 
     a tdb2:DatasetTDB2 ;
-    tdb2:location  "d:/apache-jena-data/databases/mesh" ;
+    tdb2:location  "d:/Data/jena/databases/mesh" ;
     .
 
 # Text index description
 <#indexLucene> 
     a text:TextIndexLucene ;
-    text:directory "d:/apache-jena-data/indexes/mesh" ;
+    text:directory "d:/Data/jena/indexes/mesh" ;
     text:entityMap <#entMap> ;
     text:storeValues true ;
     ##text:analyzer[ a text:StandardAnalyzer ] ;

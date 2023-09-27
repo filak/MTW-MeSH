@@ -12,7 +12,7 @@ pp = pprint.PrettyPrinter(indent=2)
 from application.extensions import Talisman, cache, csrf, paranoid, sess
 from application import utils as mtu
 
-def create_app(debug=True, logger=None, 
+def create_app(debug=False, logger=None, port=None, relax=False,
                config_path='conf/mtw.ini',
                static_url_path='/assets-mtw'):
 
@@ -31,9 +31,10 @@ def create_app(debug=True, logger=None,
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
-    app.debug = debug
-    if debug:
-        print('config: ', config_path)
+    if debug and not app.debug:
+      app.debug = debug
+    if app.debug:
+        print('config:', config_path, '- port:', port) 
 
     if logger:
         app.logger = logger
@@ -58,15 +59,16 @@ def create_app(debug=True, logger=None,
         pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json'),
         CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
         CSRF_COOKIE_HTTPONLY = True,
-        CSRF_COOKIE_SECURE = True,
         CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1),
+        CSRF_COOKIE_SECURE = True,
         SESSION_COOKIE_HTTPONLY = True,
         SESSION_COOKIE_SAMESITE = 'Lax',
         SESSION_COOKIE_SECURE = True,
         SESSION_PERMANENT = False,
         SESSION_USE_SIGNER = True,
+        SESSION_TYPE = 'filesystem',
         SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions')
-    ))
+    ))   
 
     app.app_context().push()
     ### Or use: with app.app_context():    
@@ -101,24 +103,22 @@ def create_app(debug=True, logger=None,
     cache.init_app(app)
     sess.init_app(app)
 
-    ## Paranoid
-
-    if not debug:
-        paranoid.init_app(app)
-        paranoid.redirect_view = getPath('/')    
-
     ##  SeaSurf (csrf) & Talisman
+    csrf.init_app(app)    
 
-    csrf.init_app(app)
+    if not relax:
+        ## Paranoid
+        paranoid.init_app(app)
+        paranoid.redirect_view = getPath('/')
 
-    talisman = Talisman(
-                app,
-                session_cookie_secure=app.config['SESSION_COOKIE_SECURE'],
-                force_https=False,
-                strict_transport_security=False,
-                content_security_policy=app.config['GCSP'],
-                content_security_policy_nonce_in=['script-src','style-src']
-               )
+        talisman = Talisman(
+                    app,
+                    session_cookie_secure=app.config['SESSION_COOKIE_SECURE'],
+                    force_https=False,
+                    strict_transport_security=False,
+                    content_security_policy=app.config['GCSP'],
+                    content_security_policy_nonce_in=['script-src','style-src']
+                )
 
     ### Import Flask routes etc.
 

@@ -1,8 +1,8 @@
 {
     "version": "0.2.0",
-    "configurations": [         
+    "configurations": [
         {
-            "name": "Python: MTW Server",
+            "name": "Python: DEV MTW Server",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -15,29 +15,78 @@
             "args": [
                 "run",
                 "--port=5900",
+                //"--port=5901",
                 "--debugger",
                 "--reload"
             ],
             "jinja": true
         },
         {
-        "name": "Python: MTW Worker",
-        "type": "python",
-        "request": "launch",
-        "module": "flask",
-        "justMyCode": false,
-        "env": {
-            "FLASK_APP": "run-worker-dev.py",
-            "FLASK_ENV": "development",
-            "FLASK_DEBUG": "1"
+            "name": "Python: DEV MTW Worker",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "justMyCode": false,
+            "env": {
+                "FLASK_APP": "run-worker-dev.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "--port=5903",
+                "--debugger",
+                "--reload"
+            ],
+            "jinja": true
         },
-        "args": [
-            "run",
-            "--port=5903",
-            "--debugger",
-            "--reload"
-        ],
-        "jinja": true
-    }              
+        {
+            "name": "Python: MTW Server",
+            "type": "python",
+            "request": "launch",
+            "program": "mtw-server.py",
+            "justMyCode": true,
+            "env": {
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "--port", "80",
+                "--config", "conf/mtw-fr.ini",
+                //"--debug", 
+                "--relax"
+            ],
+            "jinja": true
+        },
+        {
+            "name": "Python: MTW Worker",
+            "type": "python",
+            "request": "launch",
+            "program": "mtw-worker.py",
+            "justMyCode": true,
+            "env": {
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "--port", "5903",
+                "--config", "conf/mtw-fr.ini",
+                "--debug"
+            ],
+            "jinja": true
+        },                
+        {
+            "name": "Python: mesh-trx2nt",
+            "type": "python",
+            "request": "launch",
+            "program": "tools/mesh-trx2nt.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "tools/trans_only_2023_expanded_fre.txt",
+                "fr",
+                "http://meshfr.medvik.cz/link/"
+            ],            
+        }        
     ]
 }

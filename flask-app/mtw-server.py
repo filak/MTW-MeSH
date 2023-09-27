@@ -9,7 +9,7 @@ from application import create_app
 from waitress import serve
 
 appname    = 'mtw-server'
-appdesc    = 'MTW Server 1.5.0'
+appdesc    = 'MTW Server 1.5.1'
 appusage   = 'Help:  ' + appname + ' -h \n'
 appauthor  = 'Filip Kriz'
 
@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--port', type=int, help='Port number - default: '+str(DEFAULT_PORT), default=DEFAULT_PORT)
     parser.add_argument('--threads', type=int, help='Number of threads - default: '+str(DEFAULT_THREADS), default=DEFAULT_THREADS)
     parser.add_argument('--debug', help='Run in debug mode - DO NOT use in production !', action='store_true')
+    parser.add_argument('--relax', help='Run in relaxed mode - DO NOT use in production !', action='store_true')
 
     args, unknown = parser.parse_known_args()
 
@@ -35,7 +36,7 @@ def main():
     else:
         debug = False
 
-    app = create_app(debug=debug, logger=logger, config_path=args.config)
+    app = create_app(debug=debug, logger=logger, config_path=args.config, port=args.port, relax=args.relax)
 
     if getattr(sys, 'frozen', False):
         app.static_folder = os.path.join(os.path.dirname(sys.executable), 'static')

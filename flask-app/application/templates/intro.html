@@ -29,7 +29,7 @@ Intro
 <div class="container-fluid">
 <div class="row">
 
-  <div class="col-md-3 col-sm">
+  <div class="col-md-2 col-sm d-print-none">
 
     <h4 class="mb-4">Welcome, {{ session.fname }}</h4>
 
@@ -97,7 +97,7 @@ Intro
 
 
   </div>
-  <div class="col-md-2 col-sm">
+  <div class="col-md-2 col-sm d-print-none">
 
     <h4 class="mb-4">Activity</h4>
 
@@ -134,7 +134,7 @@ Intro
       {% endfor  %}
 
   </div>
-  <div class="col-lg-7 col-md">
+  <div class="col-lg-8 col-md">
 
     <h4 class="mb-4">Stats for {{ config.TARGET_YEAR }}  <small><a href="{{ url_for('todo', tlist='duplicates') }}" class="text-warning" title="Check regularly!">Duplicate terms check</a></small>
     </h4>

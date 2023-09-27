@@ -26,7 +26,7 @@ def main():
 
     parser = argparse.ArgumentParser(description=appdesc, prog=appname, usage='%(prog)s inputFile meshxPrefix [options]')
     parser.add_argument('inputFile', type=str, help='MeSH XML file name (plain or gzipped)')
-    parser.add_argument('meshxPrefix', type=str, help='MeSH Translation namespace prefix ie. http://mesh.medvik.cz/link/ ')
+    parser.add_argument('meshxPrefix', type=str, help='MeSH Translation namespace prefix ie. http://my.mesh.com/id/ ')
     parser.add_argument('--out', type=str, default='mesh-trx', help='Output file name prefix')
 
     args, unknown = parser.parse_known_args()

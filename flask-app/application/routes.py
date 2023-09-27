@@ -288,7 +288,7 @@ def update_clipboard(dui):
 @login_required
 def update_concept(dui, pref):
 
-    if session['ugroup'] in ['viewer','disabled']:
+    if session['ugroup'] in ['viewer','disabled','locked']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -508,7 +508,7 @@ def add_cpid(dui, cui):
 @login_required
 def update_note(dui):
 
-    if session['ugroup'] in ['viewer','disabled']:
+    if session['ugroup'] in ['viewer','disabled','locked']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -577,7 +577,7 @@ def update_note(dui):
 @login_required
 def update_scopenote(dui):
 
-    if session['ugroup'] in ['viewer','disabled']:
+    if session['ugroup'] in ['viewer','disabled','locked']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -1645,10 +1645,10 @@ def login():
 
             session['userid'] = userid
 
-            if session['ugroup'] == 'disabled':
+            if session['ugroup'] in ['disabled','locked']:
                 session.pop('logged_in', None)
-                flash('Your account has been disabled.', 'warning')
-                app.logger.warning('Disabled user login attempt : '+username)
+                flash('Your account has been '+ session['ugroup'] +'.', 'warning')
+                app.logger.warning('Disabled/Locked user login attempt : ' + username + ' - ' + session['ugroup'])
 
                 mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='failed')
             else:
@@ -1853,7 +1853,8 @@ def get_userRep(ugroup):
         'editor'      : "success",
         'contributor' : "info",
         'viewer'      : "secondary",
-        'disabled'    : "danger"
+        'disabled'    : "danger",
+        'locked'      : "warning"
     }
     return ugroup_dict.get(ugroup, 'light')
 

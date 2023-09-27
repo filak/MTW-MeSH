@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+DEFAULT_PORT = 5900
 DEFAULT_CONFIG = 'conf/mtw.ini'
 
 import sys
@@ -13,8 +14,8 @@ def main():
     debug = True
     threaded = True
 
-    app = create_app(debug=debug, config_path=config_path)
-    app.run(port=5900, debug=debug, threaded=threaded)
+    app = create_app(debug=debug, config_path=config_path, port=DEFAULT_PORT)
+    app.run(port=DEFAULT_PORT, debug=debug, threaded=threaded)
 
 
 if __name__ == "__main__":

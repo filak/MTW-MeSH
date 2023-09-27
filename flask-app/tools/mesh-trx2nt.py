@@ -3,8 +3,8 @@ import os, argparse, datetime, io, gzip, csv, uuid
 from timeit import default_timer as timer
 
 appname = 'mesh-trx2nt'
-appversion = '0.1 26-9-2023'
-appdesc = 'Extracting translation dataset from NLM UMLS text file'
+appversion = '1.0 27-9-2023'
+appdesc = 'Extracting translation dataset from NLM UMLS text file [trans_only_2023_expanded.txt]'
 appusage = 'Help:   '+ appname +'.py -h \n'
 appauthor = 'Filip Kriz'
 
@@ -27,7 +27,7 @@ def main():
     parser = argparse.ArgumentParser(description=appdesc, prog=appname, usage='%(prog)s inputFile meshxPrefix [options]')
     parser.add_argument('inputFile', type=str, help='NLM UMLS text file name (plain or gzipped)')
     parser.add_argument('langcode', type=str, help='Language code')
-    parser.add_argument('meshxPrefix', type=str, help='MeSH Translation namespace prefix ie. http://mesh.medvik.cz/link/ ')
+    parser.add_argument('meshxPrefix', type=str, help='MeSH Translation namespace prefix ie. http://my.mesh.com/id/ ')
     parser.add_argument('--out', type=str, default='mesh-trx', help='Output file name prefix')
 
     args, unknown = parser.parse_known_args()

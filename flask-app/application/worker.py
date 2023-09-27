@@ -7,12 +7,18 @@ from flask import Flask, abort, request
 
 from application import utils as mtu
 
-def create_app(debug=False, logger=None, 
+def create_app(debug=False, logger=None, port=None, 
                config_path='conf/mtw.ini',
-               static_url_path='/assets-mtw'):
+               static_url_path='/assets-mtw'):   
 
     app = Flask(__name__, instance_relative_config=True, static_url_path=static_url_path)
-    app.debug = debug
+
+    if debug and not app.debug:
+      app.debug = debug
+
+    if app.debug:
+        print('config:', config_path, '- port:', port) 
+
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
@@ -30,7 +36,7 @@ def create_app(debug=False, logger=None,
 
     app.config.update(dict(
         APP_NAME = 'MTW Worker',
-        APP_VER = '0.1.8',
+        APP_VER = '0.1.9',
         API_VER = '1.0.0',
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
         local_config_file = mtu.get_instance_dir(app, config_path)

@@ -1,0 +1,71 @@
+{
+  "A": {
+    "en": "Anatomy",
+    "cs": "Anatomie"
+  },
+  "B": {
+    "en": "Organisms",
+    "cs": "Organismy"
+  },
+  "C": {
+    "en": "Diseases",
+    "cs": "Nemoci"
+  },
+  "D": {
+    "en": "Chemicals and Drugs",
+    "cs": "Chemikálie a léčiva"
+  },
+  "E": {
+    "en": "Analytical, Diagnostic and Therapeutic Techniques and Equipment",
+    "cs": "Analytické, diagnostické a terapeutické techniky a přístroje"
+  },
+  "F": {
+    "en": "Psychiatry and Psychology",
+    "cs": "Psychiatrie a psychologie"
+  },
+  "G": {
+    "en": "Phenomena and Processes",
+    "cs": "Jevy a procesy"
+  },
+  "H": {
+    "en": "Disciplines and Occupations",
+    "cs": "Obory a povolání"
+  },
+  "I": {
+    "en": "Anthropology, Education, Sociology and Social Phenomena",
+    "cs": "Antropologie, vzdělávání, sociologie a sociální jevy"
+  },
+  "J": {
+    "en": "Technology, Industry, Agriculture",
+    "cs": "Technologie, průmysl a zemědělství"
+  },
+  "K": {
+    "en": "Humanities",
+    "cs": "Humanitní vědy"
+  },
+  "L": {
+    "en": "Information Science",
+    "cs": "Informační vědy"
+  },
+  "M": {
+    "en": "Named Groups",
+    "cs": "Lidé"
+  },
+  "N": {
+    "en": "Health Care",
+    "cs": "Zdravotní péče"
+  },
+  "V": {
+    "en": "Publication Characteristics",
+    "cs": "Publikační charakteristiky"
+  },
+  "Y": {
+    "en": "Qualifiers (Subheadings)",
+    "cs": "Kvalifikátory (podhesla)"
+  },
+  "Z": {
+    "en": "Geographicals",
+    "cs": "Geografická místa"
+  }
+}
+

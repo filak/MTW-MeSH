@@ -1,4 +1,4 @@
--- version 0.2.2
+-- version 0.2.3
 -- run:  sqlite3 mtw.db < mtw_schema.sql
 
 /* users */
@@ -18,6 +18,7 @@ create table users (
   params text
 );
 
+DROP TRIGGER users_upd_trig;
 CREATE TRIGGER users_upd_trig AFTER UPDATE ON users
  BEGIN
   update users SET updated = strftime('%Y-%m-%dT%H:%M:%S','now', 'localtime') WHERE id = NEW.id;
@@ -49,6 +50,7 @@ create table audit (
   params text      -- null or input-data or original-data
 );
 
+DROP TRIGGER audit_upd_trig;
 CREATE TRIGGER audit_upd_trig AFTER UPDATE ON audit
  BEGIN
   update audit SET updated = strftime('%Y-%m-%dT%H:%M:%S','now', 'localtime') WHERE id = NEW.id;

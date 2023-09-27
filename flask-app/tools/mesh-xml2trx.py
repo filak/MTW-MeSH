@@ -41,7 +41,7 @@ def main():
         if os.path.isfile(inFile):
             getSubset(inFile, args.meshxPrefix, args.out)
         else:
-            print('ERROR : Bad input file : ', args.inputFile)
+            print('ERROR : Input file NOT found : ', args.inputFile)
 
 
 def getSubset(inputFile, meshxPrefix, outputFile):

@@ -200,7 +200,7 @@ def getAuditEventStatus(db, event, targetyear=None):
 
 
 ### sqlite view:  audit_users_tstate
-def getAuditUserStatus(db, userid='', tstate='', targetyear=None):
+def getAuditUserStatus(db, userid='', tstate='', targetyear=None, route=None):
     userid = str(userid)
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
@@ -212,9 +212,14 @@ def getAuditUserStatus(db, userid='', tstate='', targetyear=None):
         params['targetyear'] = targetyear
 
         if not userid and not tstate:
-            query = 'select tstate, cnt from audit_tstate where targetyear = :targetyear order by tstate '
-            cur = db.execute(query, params)
-            return cur.fetchall()
+            if route == 'approve':
+                query = 'select distinct userid, username, ugroup from audit_users_tstate where targetyear = :targetyear order by username '
+                cur = db.execute(query, params)
+                return cur.fetchall()
+            else:    
+                query = 'select tstate, cnt from audit_tstate where targetyear = :targetyear order by tstate '
+                cur = db.execute(query, params)
+                return cur.fetchall()
 
         if userid:
             where += ' and userid = :userid '
@@ -230,7 +235,7 @@ def getAuditUserStatus(db, userid='', tstate='', targetyear=None):
 
 
 ### sqlite view:  audit_users_event
-def getAuditUsersEvent(db, event, userid='', tstate='', targetyear=None):
+def getAuditUsersEvent(db, event, userid='', tstate='', targetyear=None, route=None):
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
@@ -303,7 +308,7 @@ def getAuditRecord(db, apid):
         return cur.fetchone()
 
 
-def getAuditPending(db, tstate='pending', userid=None, sort='asc', limit=500):
+def getAuditPending(db, tstate='pending', userid=None, event=None, sort='asc', limit=500):
     if db:
         db.row_factory = dict_factory
         if limit > 500:
@@ -321,6 +326,10 @@ def getAuditPending(db, tstate='pending', userid=None, sort='asc', limit=500):
         if userid:
             where += ' and userid = :userid '
             params['userid'] = userid
+
+        if event:
+            where += ' and event = :event '
+            params['event'] = event            
 
         q = query + where + tail
         cur = db.execute(q, params)

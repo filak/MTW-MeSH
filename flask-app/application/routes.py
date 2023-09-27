@@ -97,7 +97,7 @@ def intro():
 
     db = get_db()
     stats_user = []
-    stats_user = mdb.getAuditUserStatus(db, userid=session['userid'])
+    stats_user = mdb.getAuditUserStatus(db, userid=session['userid'], route='intro')
 
     show_elapsed(t0, tag='stats_user')
 
@@ -488,6 +488,7 @@ def add_cpid(dui, cui):
 
         if updated:
             mtu.writeJsonFile(fpath, pid_counter)
+            mdb.addAudit(get_db(), session['uname'], userid=session['userid'], otype='concept', detail=dui, label=cpid, opid=cui, dui=dui, event='create_pid', tstate='updated')
             msg = 'CUI generated: ' + cpid
             flash(msg, 'info')
             app.logger.info(msg + ' for ' + curi)
@@ -946,14 +947,14 @@ def approve(status, event, userid, username):
             statuses = mdb.getAuditUserStatus(db, userid=userid, targetyear=year)
         else:
             statuses = mdb.getAuditEventStatus(db, event, targetyear=year)
-        users = mdb.getAuditUsersEvent(db, event, userid=userid, tstate=status, targetyear=year)
+        users = mdb.getAuditUsersEvent(db, event, userid=userid, tstate=status, targetyear=year, route='approve')
     else:
         statuses = mdb.getAuditUserStatus(db, userid=userid, targetyear=year)
-        users = mdb.getAuditUserStatus(db, userid=userid, tstate=status, targetyear=year)
+        users = mdb.getAuditUserStatus(db, userid=userid, tstate=status, targetyear=year, route='approve')
 
     pending = {}
     if userid:
-        pending = mdb.getAuditPending(db, userid=userid)
+        pending = mdb.getAuditPending(db, userid=userid, event=event)
         mtu.getAuditDict(pending)
 
     resolved = {}
@@ -1050,7 +1051,7 @@ def search(dui, action):
     t0 = timer()
 
     text_query = None
-    hits_key = 'hits_'+str(session['userid'])
+    hits_key = 'hits_' + str(session['userid'])
     tab = 'concepts'
 
     if request.args.get('q'):
@@ -1832,7 +1833,7 @@ def get_statRep(status):
         'rejected' : "danger",
         'approved' : "success",
         'updated'  : "secondary",
-        'deleted'  : "dark",
+        'deleted'  : "muted",
         'purged'   : "light",
         'locked'   : "warning",
         'unlocked' : "primary"

@@ -30,7 +30,7 @@ Manage
       </li>
     </ul>
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>Duplicate terms in translation</h5>
             <a href="{{ url_for('todo', tlist='duplicates') }}" class="btn btn-danger" role="button">
@@ -40,7 +40,19 @@ Manage
       </div>
     </div>
 
-    <div class="row mb-4">
+    {% if session.ugroup == 'admin' %}
+    <div class="row mb-3">
+      <div class="col">
+        <h5>Generate identifs for new Concepts</h5>
+            <a href="{{ url_for('approve', status='approved', event='insert_concept') }}" class="btn btn-danger" role="button">
+              Check
+            </a>
+            <span class="text-info">[if any]</span>
+      </div>
+    </div>
+    {% endif %}     
+
+    <div class="row mb-3">
       <div class="col">
         <h5>PrefTerm NOT specified</h5>
             <a href="{{ url_for('todo', tlist='prefTermMissing') }}" class="btn btn-warning" role="button">
@@ -50,7 +62,7 @@ Manage
       </div>
     </div>    
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>Pending changes</h5>
             <a href="{{ url_for('approve', status='pending') }}" class="btn btn-warning" role="button">
@@ -58,17 +70,17 @@ Manage
             </a>
             <span class="text-warning">[shall be 0 before exports]</span>
       </div>
-    </div>
+    </div>    
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>Duplicate terms in original</h5>
-            <a href="{{ url_for('todo', tlist='duplicates_eng') }}" class="btn btn-info" role="button">
+            <a href="{{ url_for('todo', tlist='duplicates_eng') }}" class="btn btn-sm btn-info" role="button">
               Check
             </a>
             <span class="text-info">[shall be 0]</span>
       </div>
-    </div>
+    </div>   
 
     <ul class="list-inline mb-2">
       <li class="list-inline-item"><h4>Stats</h4></li>
@@ -76,29 +88,28 @@ Manage
       </li>
     </ul>
     
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>Count mesht-predicates</h5>
-            <a href="{{ url_for('todo', tlist='mesht_predicates') }}" class="btn btn-info" role="button">
+            <a href="{{ url_for('todo', tlist='mesht_predicates') }}" class="btn btn-sm btn-info" role="button">
               Show
             </a>
             <span class="text-info">[takes some time]</span>
       </div>
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>Actual stats</h5>
           <form action="{{ url_for('update_stats', stat='actual') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-success" type="submit" title="Update Actual stats">
-              Refresh
-                </button>
+            <button class="btn btn-sm btn-success" type="submit" title="Update Actual stats">
+              Refresh</button>
           </form>
       </div>
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>Initial stats</h5>
           <form action="{{ url_for('update_stats', stat='initial') }}" method="post">
@@ -124,7 +135,7 @@ Manage
       </li>
     </ul>
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
 
 {% if isDbLocked() %}
@@ -151,7 +162,7 @@ Manage
   {% set export_disabled = 'disabled' %}
 {% endif %}
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>UMLS TSV</h5>
           <form action="{{ url_for('update_stats', stat='umls') }}" method="post">
@@ -172,7 +183,7 @@ Manage
       </div>
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>Base Exports<small class="text-success"> [generate to enable more exports]</small></h5>
           <form action="{{ url_for('update_stats', stat='lookups') }}" method="post">
@@ -223,7 +234,7 @@ Manage
     
 {% if show_marc %}
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>Settings</h5>
 
@@ -281,7 +292,7 @@ Manage
               </div>              
             </div>            
 
-            <button class="btn btn-success mb-2" type="submit" title="Create MARC file (TXT)">
+            <button class="btn btn-sm btn-success mb-2" type="submit" title="Create MARC file (TXT)">
               Generate
             </button>
 
@@ -347,7 +358,7 @@ Manage
 
     {% if show_lookups %}
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>JSON <small class="text-info">for Javascript</small> <small>[<a href="{{ url_for('download', fname='structure.json') }}">structure</a>]</small></h5>
           <form action="{{ url_for('update_stats', stat='js_all') }}" method="post">
@@ -375,7 +386,7 @@ Manage
       </div>
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>XSLT lookup <small class="text-info">for Descriptors</small></h5>
           <form action="{{ url_for('update_stats', stat='xml_desc') }}" method="post">
@@ -403,7 +414,7 @@ Manage
       </div>
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>XSLT lookup <small class="text-info">for Qualifiers</small></h5>
           <form action="{{ url_for('update_stats', stat='xml_qualif') }}" method="post">
@@ -442,7 +453,7 @@ Manage
     
     {% if show_lookups %} 
     
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>JSON <small class="text-info">for data parsers</small></h5>
 
@@ -474,7 +485,7 @@ Manage
     </div>
     
     
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>JSON <small class="text-info">for Elastic</small></h5>
 
@@ -505,7 +516,7 @@ Manage
       </div>
     </div>         
     
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col">
         <h5>UMLS TSV <small class="text-info">for MSSQL - includes inactive terms !</small></h5>
 

@@ -12,7 +12,6 @@ mesh_prefix  = 'http://id.nlm.nih.gov/mesh/'
 mesht_prefix = 'http://www.medvik.cz/schema/mesh/vocab/#'
 
 custom_concepts = {}
-desc_to_concepts = {}
 
 def main():
 
@@ -43,7 +42,7 @@ def main():
         if os.path.isfile(inFile):
             procFile(inFile, args.meshxPrefix, args.out, args.langcode)
         else:
-            print('ERROR : Bad input file : ', args.inputFile)
+            print('ERROR : Input file NOT found : ', args.inputFile)
 
 
 def procFile(inputFile, meshxPrefix, outputFile, lang_tag):
@@ -90,22 +89,27 @@ def parse_file(inputFile, outputFile, meshx_prefix, lang_tag, startDate):
     result['LanguageTag'] = lang_tag
 
     for line in readData(inputFile):
-        recCount += 1
-        batch += 1
 
-        docs += getTriples(line, lang_tag, meshx_prefix, startDate)
-        #docs += line
+        if recCount == 0 and line[0] == 'DescriptorUI':
+            ## Skip headers if present
+            pass
+        else:
+            recCount += 1
+            batch += 1
 
-        if batch == bsize:
-            flushTriples(outputFile, docs)
-            batch = 0
-            docs = []
+            docs += getTriples(line, lang_tag, meshx_prefix, startDate)
+            #docs += line
+
+            if batch == bsize:
+                flushTriples(outputFile, docs)
+                batch = 0
+                docs = []
 
     flushTriples(outputFile, docs)
     ##for row in docs:
     ##    print(row)
 
-    result['recordsCount'] = recCount
+    result['rowCount'] = recCount
 
     print('... DONE!')
     return result
@@ -114,15 +118,13 @@ def parse_file(inputFile, outputFile, meshx_prefix, lang_tag, startDate):
 def getTriples(line, lang_tag, meshx_prefix, startDate):
     triples = []
 
-    DescriptorUI, ConceptUI, Language, TermType, Term, TermUI, ScopeNote, Tree, x = line
+    DescriptorUI, ConceptUI, Language, TermType, Term, TermUI, ScopeNote, Tree, Created, Relation, ParentCUI = line
 
     csub = mesh_prefix + ConceptUI
     obj  = meshx_prefix + str(uuid.uuid4())  
 
-    # TBD dateCreated 
-    dateCrt = None
-    if not dateCrt:
-        dateCrt = startDate     
+    if not Created:
+        Created = startDate     
 
     if ConceptUI.startswith('F'):
 
@@ -136,10 +138,10 @@ def getTriples(line, lang_tag, meshx_prefix, startDate):
 
         if TermType == 'PEP':
             dsub = mesh_prefix + DescriptorUI
-            csub = mesh_prefix + desc_to_concepts[DescriptorUI]
+            csub = mesh_prefix + ParentCUI
 
             triples.append( getTriple(dsub, 'concept', ccsub) )
-            triples.append( getTriple(csub, 'narrowerConcept', ccsub) )
+            triples.append( getTriple(csub, getRelationPredicate(Relation), ccsub) )
             triples.append( getTriple(ccsub, 'identifier', ConceptUI, literal=True) )
             triples.append( getTriple(ccsub, 'preferredTerm', obj) )
 
@@ -150,9 +152,6 @@ def getTriples(line, lang_tag, meshx_prefix, startDate):
             triples.append( getTriple(ccsub, 'term', obj) )
         
     else:
-        if TermType == 'MH': 
-            desc_to_concepts[DescriptorUI] = ConceptUI
-
         if TermType in ['MH','PEP']:
             triples.append( getTriple(csub, 'preferredTerm', obj) )
 
@@ -163,9 +162,20 @@ def getTriples(line, lang_tag, meshx_prefix, startDate):
             triples.append( getTriple(csub, 'term', obj) )   
 
     triples.append( getTriple(obj, 'prefLabel', Term, literal=True, lang_tag=lang_tag) )
-    triples.append( getTriple(obj, 'dateCreated', dateCrt, date=True) )                                             
+    triples.append( getTriple(obj, 'dateCreated', Created, date=True) )                                             
 
     return triples
+
+
+def getRelationPredicate(Relation):
+    if Relation == 'RB':
+        return 'broaderConcept'
+    elif Relation == 'RN':
+        return 'narrowerConcept'
+    elif Relation == 'RO':
+        return 'relatedConcept'
+    else:
+        return 'narrowerConcept'    
 
 
 def getTriple(sub, pred, obj, literal=False, date=False, lang_tag=None):
@@ -177,7 +187,7 @@ def getTriple(sub, pred, obj, literal=False, date=False, lang_tag=None):
             return sub + getMesht(pred) + '"' + sanitize_input(obj) + '"'
 
     if date:
-        return sub + getMesht(pred) + getDate(obj) 
+        return sub + getMesht(pred) + '"' + obj + '"^^<http://www.w3.org/2001/XMLSchema#date>' 
 
     return sub + getMesht(pred) + '<' + obj + '>'
 
@@ -194,10 +204,6 @@ def sanitize_input(text):
     return t
 
 
-def getDate(date):
-    return '"' + date + '"^^<http://www.w3.org/2001/XMLSchema#date>'
-
-
 def readData(input_file):
 
     fext = os.path.splitext(input_file)[1]
@@ -208,14 +214,12 @@ def readData(input_file):
         if fext == '.gz':
             with gzip.open(input_file, mode='rt', encoding='utf-8') as fh:
                 tsv_file = csv.reader(fh, delimiter='\t', quotechar=None)
-                headers = next(tsv_file)
                 for line in tsv_file:
                     data.append(line)                
 
         if fext == '.txt':
             with open(input_file, mode='r', encoding='utf-8') as fh:
                 tsv_file = csv.reader(fh, delimiter='\t', quotechar=None)
-                headers = next(tsv_file)
                 for line in tsv_file:
                     data.append(line)                 
 

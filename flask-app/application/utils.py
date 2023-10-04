@@ -1248,10 +1248,11 @@ def sanitize_text_query(text):
 
 
 def normalize_str(text, escape_double_chars=False):
-    for src, trg in app.config['CHAR_NORM_MAP']:
-        text = text.replace(src, trg)
-    if escape_double_chars:
-        text = text.replace('\\"','""')
+    if text:
+        for src, trg in app.config['CHAR_NORM_MAP']:
+            text = text.replace(src, trg)
+        if escape_double_chars:
+            text = text.replace('\\"','""')
     return text    
 
 
@@ -1585,7 +1586,7 @@ def exportTsv(export, inputFile, outputFile):
                 else:
                     line = (tab).join(row[2:])
                     ## Escape OR Not Escape ?
-                    s.write(normalize_str(line, escape_double_chars=False))
+                    s.write( normalize_str(line, escape_double_chars=False) )
 
             else:
                 line = (tab).join(row)

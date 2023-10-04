@@ -1,6 +1,6 @@
 ### Version 1.5.2
 ### Python 3.11 ###
-arrow==1.2.3
+arrow==1.3.0
 bcrypt==4.0.1 ## NOT python-bcrypt !!!
 cachelib==0.9.0 ## 0.10+ incompatible with Flask-caching 2.0.2 !
 certifi==2023.7.22

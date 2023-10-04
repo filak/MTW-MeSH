@@ -293,7 +293,10 @@ def parseSparqlStats(data, template):
                     val = row[item].get('value','')
                     if row[item].get('type') == 'uri':
                         val = clearPredicateUri(val)
-                    vals[item] = val
+                    if item in ['trx','scnt','tan','tcx','thn','termsx','ntermsx']:
+                        vals[item] = mtu.normalize_str(val)
+                    else:        
+                        vals[item] = val
             metadata['data'].append(vals)
 
         metadata['hits_cnt'] = hits_cnt

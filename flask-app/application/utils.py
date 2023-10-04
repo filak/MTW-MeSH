@@ -2,17 +2,13 @@
 """
 MeSH Traslation Workflow (MTW) - utils
 """
-import ast
-import base64
+import csv
 import datetime
 import gzip
 import html
 import io
 import json
 import os
-import pprint
-import re
-import shutil
 import sys
 import time
 import uuid
@@ -25,7 +21,7 @@ import arrow
 import diff_match_patch as dmp_module
 
 from application import coll, pp, sparql
-from flask import Flask, abort
+from flask import abort
 from flask import current_app as app
 from pyuca import Collator
 
@@ -100,6 +96,8 @@ def getLocalConfValue(conf):
         d['SOURCE_NS_VOCAB'] = conf.get('sparqlconf', 'SOURCE_NS_VOCAB', fallback='http://id.nlm.nih.gov/mesh/vocab#')
         d['TARGET_LANG'] = conf.get('sparqlconf', 'TARGET_LANG')
         d['MESH_TREE'] = loadJsonFile(get_instance_dir(app, 'conf/mesh_tree_top_'+ d['TARGET_LANG'] +'.json'))
+        d['CHAR_NORM_FILE'] = conf.get('appconf', 'CHAR_NORM_FILE', fallback='norm_chars_table.tsv.txt')
+        d['CHAR_NORM_PATH'] = get_instance_dir(app, 'conf/'+ d['CHAR_NORM_FILE'])
         d['TARGET_NS'] = conf.get('sparqlconf', 'TARGET_NS')
         d['TRX_NS_VOCAB'] = conf.get('sparqlconf', 'TRX_NS_VOCAB', fallback='http://www.medvik.cz/schema/mesh/vocab/#')
         d['ROLES'] = conf.get('flowconf', 'ROLES').replace('\n','').strip().split(',')
@@ -110,6 +108,9 @@ def getLocalConfValue(conf):
         d['CSRF_COOKIE_SECURE'] = conf.getboolean('appconf', 'CSRF_COOKIE_SECURE', fallback=True)
         d['CSRF_DISABLE'] = conf.getboolean('appconf', 'DEV_DISABLE_CSRF', fallback=False)
         d['GCSP'] = json.loads(conf.get('appconf', 'GCSP'))
+
+        char_list = readDataTsv(d['CHAR_NORM_PATH'])
+        d['CHAR_NORM_MAP'] = getCharMap(char_list)
 
         for key, val in json.loads( conf.get('appconf', 'CACHING', fallback={}) ).items():
             d[key] = val
@@ -1229,18 +1230,29 @@ def deep_get(dictionary, keys, default=None):
     return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."), dictionary)
 
 
-def sanitize_input(text):
+def sanitize_input(text, normalize=True):
     t = text.strip()
     t = ' '.join(t.split())
     t = t.replace('"','\\"')
     t = t.replace('?','')
+    if normalize:
+        return normalize_str(t)
     return t
+
 
 def sanitize_text_query(text):
     t = text.strip()
     t = ' '.join(t.split())
     t = t.replace('\\','')
     return t
+
+
+def normalize_str(text, escape_double_chars=False):
+    for src, trg in app.config['CHAR_NORM_MAP']:
+        text = text.replace(src, trg)
+    if escape_double_chars:
+        text = text.replace('\\"','""')
+    return text    
 
 
 def getCui(concept):
@@ -1572,7 +1584,8 @@ def exportTsv(export, inputFile, outputFile):
                     pass
                 else:
                     line = (tab).join(row[2:])
-                    s.write(line)
+                    ## Escape OR Not Escape ?
+                    s.write(normalize_str(line, escape_double_chars=False))
 
             else:
                 line = (tab).join(row)
@@ -1651,3 +1664,63 @@ class diff_match_patch(dmp_module.diff_match_patch):
             html.append("<span>%s</span>" % text)
 
         return ''.join(html)
+    
+
+def readDataTsv(input_file):
+
+    fext = os.path.splitext(input_file)[1]
+    tsv_file = None
+    data = []
+
+    try:
+        if fext == '.gz':
+            with gzip.open(input_file, mode='rt', encoding='utf-8') as fh:
+                tsv_file = csv.reader(fh, delimiter='\t', quotechar=None)
+                for line in tsv_file:
+                    if len(line):
+                        if line[0].startswith('#') or line[0].startswith('Code'):
+                            pass
+                        else:
+                            data.append(line)                
+
+        if fext == '.txt':
+            with open(input_file, mode='r', encoding='utf-8') as fh:
+                tsv_file = csv.reader(fh, delimiter='\t', quotechar=None)
+                for line in tsv_file:
+                    if len(line):
+                        if line[0].startswith('#') or line[0].startswith('Code'):
+                            pass
+                        else:
+                            data.append(line)                
+
+    except Exception as err:
+        print('ERROR reading file : ', input_file)
+        raise
+
+    return data
+
+
+def getChar(code):
+    return chr( int(code[2:], 16) )
+
+
+def getCharMap(char_list):
+    char_map = []
+    for item in char_list:
+        Code, CharName, ReplCode, ReplChar = item
+        src = getChar(Code)
+        trg = None        
+        if ReplCode == 'None':
+            trg = ''
+        elif ReplCode == 'str':
+            trg = ReplChar
+        else:
+            trg = getChar(ReplCode)
+        char_map.append((src, trg)) 
+
+    return char_map   
+
+
+
+
+

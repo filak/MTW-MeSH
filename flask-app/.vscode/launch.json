@@ -52,8 +52,9 @@
             },
             "args": [
                 "--port", "80",
-                "--config", "conf/mtw-fr.ini",
-                //"--debug", 
+                "--config", "conf/mtw.ini",
+                //"--config", "conf/mtw-fr.ini",
+                "--debug", 
                 "--relax"
             ],
             "jinja": true
@@ -70,7 +71,8 @@
             },
             "args": [
                 "--port", "5903",
-                "--config", "conf/mtw-fr.ini",
+                "--config", "conf/mtw.ini",
+                //"--config", "conf/mtw-fr.ini",
                 "--debug"
             ],
             "jinja": true

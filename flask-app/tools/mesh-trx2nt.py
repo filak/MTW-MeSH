@@ -3,7 +3,7 @@ import os, argparse, datetime, io, gzip, csv, uuid
 from timeit import default_timer as timer
 
 appname = 'mesh-trx2nt'
-appversion = '1.0 27-9-2023'
+appversion = '1.1 4-10-2023'
 appdesc = 'Extracting translation dataset from NLM UMLS text file [trans_only_2023_expanded.txt]'
 appusage = 'Help:   '+ appname +'.py -h \n'
 appauthor = 'Filip Kriz'
@@ -215,13 +215,21 @@ def readData(input_file):
             with gzip.open(input_file, mode='rt', encoding='utf-8') as fh:
                 tsv_file = csv.reader(fh, delimiter='\t', quotechar=None)
                 for line in tsv_file:
-                    data.append(line)                
+                    if len(line):
+                        if line[0].startswith('#'):
+                            pass
+                        else:
+                            data.append(line)                 
 
         if fext == '.txt':
             with open(input_file, mode='r', encoding='utf-8') as fh:
                 tsv_file = csv.reader(fh, delimiter='\t', quotechar=None)
                 for line in tsv_file:
-                    data.append(line)                 
+                    if len(line):
+                        if line[0].startswith('#'):
+                            pass
+                        else:
+                            data.append(line)                
 
     except Exception as err:
         print('ERROR reading file : ', input_file)

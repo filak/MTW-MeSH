@@ -529,7 +529,7 @@ def update_note(dui):
 
         if request.form['tnote_changed'] == 'true':
             tnote  = mtu.sanitize_input(request.form['tnote'])
-            tnoteo = mtu.sanitize_input(request.form['tnote_original'])
+            tnoteo = mtu.sanitize_input(request.form['tnote_original'], normalize=False)
 
             insert = True
             if tnote == '':
@@ -598,9 +598,9 @@ def update_scopenote(dui):
 
         db = get_db()
 
-        if request.form['scnt_changed'] == 'true':
+        if request.form['scnt_changed'] == 'true' or request.form.get('scnt_update_force') == 'on':
             scnt  = mtu.sanitize_input(request.form['scnt'])
-            scnto = mtu.sanitize_input(request.form['scnt_original'])
+            scnto = mtu.sanitize_input(request.form['scnt_original'], normalize=False)
 
             insert = True
             if scnt == '':
@@ -649,8 +649,8 @@ def update_scopenote(dui):
             ##pp.pprint(params)
 
         if request.form['scne_changed'] == 'true':
-            scne = mtu.sanitize_input(request.form['scne'])
-            scneo = mtu.sanitize_input(request.form['scne_original'])
+            scne  = mtu.sanitize_input(request.form['scne'])
+            scneo = mtu.sanitize_input(request.form['scne_original'], normalize=False)
 
             insert = True
             if scne == '':
@@ -833,7 +833,7 @@ def compare(dui):
 
     if request.args.get('year'):
         year = request.args.get('year')
-        year = mtu.sanitize_input(year)
+        year = mtu.sanitize_input(year, normalize=False)
     else:
         year = app.config['PREV_YEAR_DEF']
 

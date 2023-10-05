@@ -1232,18 +1232,20 @@ def deep_get(dictionary, keys, default=None):
 
 def sanitize_input(text, normalize=True):
     t = text.strip()
-    t = ' '.join(t.split())
-    t = t.replace('"','\\"')
-    t = t.replace('?','')
-    if normalize:
-        return normalize_str(t)
+    if t:
+        t = ' '.join(t.split())
+        t = t.replace('"','\\"')
+        t = t.replace('?','')
+        if normalize:
+            return normalize_str(t)
     return t
 
 
 def sanitize_text_query(text):
     t = text.strip()
-    t = ' '.join(t.split())
-    t = t.replace('\\','')
+    if t:    
+        t = ' '.join(t.split())
+        t = t.replace('\\','')
     return t
 
 

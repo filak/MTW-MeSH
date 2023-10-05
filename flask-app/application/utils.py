@@ -1570,7 +1570,7 @@ def exportTsv(export, inputFile, outputFile):
         if count > 1:
             line = line.replace('@'+app.config['TARGET_LANG'], '')
             line = line.replace('^^xsd:boolean', '')
-            row = line.split(tab)
+            row  = line.split(tab)
 
             if export == 'umls_all':
                 if row[1] == 'false':
@@ -1578,7 +1578,7 @@ def exportTsv(export, inputFile, outputFile):
                     pass
                 else:
                     line = (tab).join(row)
-                    s.write(line)
+                    s.write( normalize_str(line, escape_double_chars=True) )
 
             elif export == 'umls':
 
@@ -1587,8 +1587,7 @@ def exportTsv(export, inputFile, outputFile):
                     pass
                 else:
                     line = (tab).join(row[2:])
-                    ## Escape OR Not Escape ?
-                    s.write( normalize_str(line, escape_double_chars=False) )
+                    s.write( normalize_str(line, escape_double_chars=True) )
 
             else:
                 line = (tab).join(row)

@@ -1342,6 +1342,9 @@ def manage(action):
     ### YYYY_umls_all.tsv.gz
     exports['umls_all_tsv'] = mtu.getStatsFpath('umls_all', ext='tsv.gz')
 
+    ### YYYY_umls_raw.tsv.gz
+    exports['umls_raw_tsv'] = mtu.getStatsFpath('umls_raw', ext='tsv.gz')    
+
     ### YYYY_lookups.json.gz
     exports['lookups'] = mtu.getStatsFpath('lookups', ext='json.gz')
 
@@ -1421,7 +1424,7 @@ def update_stats(stat):
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    if stat not in ['initial','actual','umls','umls_all','lookups','lookups_rest','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
+    if stat not in ['initial','actual','umls','umls_all','umls_raw','lookups','lookups_rest','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
         msg = 'Unknown params for update_stats'
         flash(msg, 'danger')
         return render_template('errors/error_page.html', errcode=404, error=msg), 404
@@ -1455,7 +1458,7 @@ def update_stats(stat):
     
     fsession = FuturesSession()
 
-    if stat in ['umls','umls_all','js_all','js_parsers','js_elastic','xml_desc','xml_qualif']:
+    if stat in ['umls','umls_all','umls_raw','js_all','js_parsers','js_elastic','xml_desc','xml_qualif']:
         future_exp = fsession.post(worker+'export_data/get:'+stat)
 
     elif stat == 'marc':

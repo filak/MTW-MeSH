@@ -150,10 +150,10 @@ def refreshStats(stat):
 def exportData(export):
     lpath = getLockFpath('stats')
     ext = 'json'
-    if export in ['umls','umls_all']:
+    if export in ['umls','umls_all','umls_raw']:
         ext = 'tsv'  
 
-    if export == 'umls_all':
+    if export in ['umls_all','umls_raw']:
         fpath = getTempFpath('umls', ext=ext)
         epath = getStatsFpath(export, ext=ext)
         exportTsv(export, fpath, epath)
@@ -1249,11 +1249,12 @@ def sanitize_text_query(text):
     return t
 
 
-def normalize_str(text, escape_double_chars=False):
+def normalize_str(text, escape_double_chars_tsv=False, skip_normalization=False):
     if text:
-        for src, trg in app.config['CHAR_NORM_MAP']:
-            text = text.replace(src, trg)
-        if escape_double_chars:
+        if not skip_normalization:
+            for src, trg in app.config['CHAR_NORM_MAP']:
+                text = text.replace(src, trg)
+        if escape_double_chars_tsv:
             text = text.replace('\\"','""')
     return text    
 
@@ -1548,7 +1549,7 @@ def exportTsv(export, inputFile, outputFile):
         ###    ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
         head = (tab).join(cols) + '\n'
-    elif export == 'umls_all':
+    elif export in ['umls_all','umls_raw']:
         ###    ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'Dstatus,Tstatus,DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
         head = (tab).join(cols) + '\n'
@@ -1572,13 +1573,16 @@ def exportTsv(export, inputFile, outputFile):
             line = line.replace('^^xsd:boolean', '')
             row  = line.split(tab)
 
-            if export == 'umls_all':
+            if export in ['umls_all','umls_raw']:
                 if row[1] == 'false':
                     #print(line)
                     pass
                 else:
                     line = (tab).join(row)
-                    s.write( normalize_str(line, escape_double_chars=True) )
+                    if export == 'umls_raw':
+                        s.write( normalize_str(line, escape_double_chars_tsv=True, skip_normalization=True) )
+                    else:    
+                        s.write( normalize_str(line, escape_double_chars_tsv=True) )
 
             elif export == 'umls':
 
@@ -1587,7 +1591,7 @@ def exportTsv(export, inputFile, outputFile):
                     pass
                 else:
                     line = (tab).join(row[2:])
-                    s.write( normalize_str(line, escape_double_chars=True) )
+                    s.write( normalize_str(line, escape_double_chars_tsv=True) )
 
             else:
                 line = (tab).join(row)

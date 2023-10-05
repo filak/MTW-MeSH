@@ -75,11 +75,11 @@ def create_app(debug=False, logger=None, port=None,
     @app.route('/export_data/get:<export>', methods=['GET','POST'])
     def export_data(export):
 
-        if export in ['umls','umls_all','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
+        if export in ['umls','umls_all','umls_raw','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
 
             app.logger.info('Export '+ export +' started  ...')
 
-            if export in ['umls','umls_all']:
+            if export in ['umls','umls_all','umls_raw']:
                 mtu.exportData(export)
             else:
                 if request.method == 'POST':

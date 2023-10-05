@@ -518,7 +518,7 @@ Manage
     
     <div class="row mb-3">
       <div class="col">
-        <h5>UMLS TSV <small class="text-info">for MSSQL - includes inactive terms !</small></h5>
+        <h5>UMLS TSV <small class="text-info">for MSSQL - includes inactive terms</small></h5>
 
         {% if show_marc %}
           <form action="{{ url_for('update_stats', stat='umls_all') }}" method="post">
@@ -547,6 +547,36 @@ Manage
       </div>
     </div>
 
+    <div class="row mb-3">
+      <div class="col">
+        <h5>UMLS TSV RAW <small class="text-info">Includes inactive terms; chars NOT normalized</small></h5>
+
+        {% if show_marc %}
+          <form action="{{ url_for('update_stats', stat='umls_raw') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['umls_raw_tsv'] %}
+            <button class="btn btn-sm btn-info" type="submit" title="Refresh">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['umls_raw_tsv'] %}
+            {% set file = exports['umls_raw_tsv'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+
+          </form>
+        {% endif %}
+      </div>
+    </div>
     
     
     {% endif %}

@@ -1234,10 +1234,10 @@ def sanitize_input(text, normalize=True):
     t = text.strip()
     if t:
         t = ' '.join(t.split())
-        t = t.replace('"','\\"')
         t = t.replace('?','')
         if normalize:
-            return normalize_str(t)
+            t = normalize_str(t)
+        t = t.replace('"','\\"')
     return t
 
 

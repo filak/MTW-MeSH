@@ -14,10 +14,10 @@
             },
             "args": [
                 "run",
-                "--port=5900",
-                //"--port=5901",
+                "--port=80",
+                //"--port=5900",
                 "--debugger",
-                "--reload"
+                "--reload" 
             ],
             "jinja": true
         },

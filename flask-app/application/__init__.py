@@ -106,7 +106,7 @@ def create_app(debug=False, logger=None, port=None, relax=False,
     ##  SeaSurf (csrf) & Talisman
     csrf.init_app(app)    
 
-    if not relax:
+    if not relax and not app.debug:
         ## Paranoid
         paranoid.init_app(app)
         paranoid.redirect_view = getPath('/')

@@ -156,7 +156,7 @@ def exportData(export):
     if export in ['umls_all','umls_raw']:
         fpath = getTempFpath('umls', ext=ext)
         epath = getStatsFpath(export, ext=ext)
-        exportTsv(export, fpath, epath)
+        exportTsvFile(export, fpath, epath)
     else:
         fpath = getTempFpath(export, ext=ext)
         if not lpath.is_file():
@@ -164,7 +164,7 @@ def exportData(export):
 
         if resp and fpath.is_file():
             epath = getStatsFpath(export, ext=ext)
-            exportTsv(export, fpath, epath)
+            exportTsvFile(export, fpath, epath)
 
 
 def startStats(stat, fpath, lpath, interval=None):
@@ -1210,6 +1210,12 @@ def writeOutputGzip(fpath, data, mode='wt'):
         ft.write(data)
 
 
+def writeOutputGzipTsv(fpath, lines, mode='wt'):
+    with gzip.open(str(fpath)+'.gz', mode=mode, encoding='utf-8', newline='') as ft:
+        writer = csv.writer(ft, delimiter='\t', doublequote=True, quoting=1)
+        writer.writerows(lines)       
+
+
 def loadJsonFile(fpath, default=None):
     try:
         with open(str(fpath), mode='r', encoding='utf-8') as json_file:
@@ -1236,7 +1242,7 @@ def sanitize_input(text, normalize=True):
         t = ' '.join(t.split())
         t = t.replace('?','')
         if normalize:
-            t = normalize_str(t)
+            t = normalize_str(t, clear_escaping=True)
         t = t.replace('"','\\"')
     return t
 
@@ -1249,13 +1255,13 @@ def sanitize_text_query(text):
     return t
 
 
-def normalize_str(text, escape_double_chars_tsv=False, skip_normalization=False):
+def normalize_str(text, skip_normalization=False, clear_escaping=False):
     if text:
         if not skip_normalization:
             for src, trg in app.config['CHAR_NORM_MAP']:
                 text = text.replace(src, trg)
-        if escape_double_chars_tsv:
-            text = text.replace('\\"','""')
+        if clear_escaping:
+            text = text.replace('\\"','"')     
     return text    
 
 
@@ -1531,81 +1537,70 @@ def getDescClass(dtype):
     return dtype_dict.get(dtype, '-1')
 
 
-def exportTsv(export, inputFile, outputFile):
-
-    count = 0
-    found = 0
-    batch = 0
-
-    bsize = 30000
+def exportTsvFile(export, inputFile, outputFile):
 
     ext = os.path.splitext(inputFile)[1]
     fext = ext.lower()
-
-    head = ''
     tab = '\t'
 
     if export == 'umls':
         ###    ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
-        head = (tab).join(cols) + '\n'
+
     elif export in ['umls_all','umls_raw']:
         ###    ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'Dstatus,Tstatus,DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
-        head = (tab).join(cols) + '\n'
 
-    writeOutputGzip(outputFile, head)
+    writeOutputGzipTsv(outputFile, [cols], mode='wt')
 
     if fext == '.gz':
         fh = gzip.open(str(inputFile), mode='rt', encoding='utf-8')
     else:
         fh = open(str(inputFile), mode='r', encoding='utf-8')
 
-    s = io.StringIO()
+    docs = []
+    count = 0
 
     for line in fh:
-        count += 1
-        found += 1
-        batch += 1
-
-        if count > 1:
+        if count > 0:
             line = line.replace('@'+app.config['TARGET_LANG'], '')
             line = line.replace('^^xsd:boolean', '')
-            row  = line.split(tab)
+
+            row  = line.strip().split(tab)
 
             if export in ['umls_all','umls_raw']:
                 if row[1] == 'false':
                     #print(line)
                     pass
                 else:
-                    line = (tab).join(row)
+                    clean_row = (tab).join( clearQuotes(row) )
+
                     if export == 'umls_raw':
-                        s.write( normalize_str(line, escape_double_chars_tsv=True, skip_normalization=True) )
+                        docs.append( normalize_str( clean_row, clear_escaping=True, skip_normalization=True ).split(tab) )
                     else:    
-                        s.write( normalize_str(line, escape_double_chars_tsv=True) )
+                        docs.append( normalize_str( clean_row, clear_escaping=True ).split(tab) )
 
             elif export == 'umls':
-
                 if row[0] == 'false' or row[1] == 'false':
                     #print(line)
                     pass
                 else:
-                    line = (tab).join(row[2:])
-                    s.write( normalize_str(line, escape_double_chars_tsv=True) )
+                    clean_row = (tab).join( clearQuotes(row[2:]) )
+                    docs.append( normalize_str( clean_row, clear_escaping=True ).split(tab) )            
 
-            else:
-                line = (tab).join(row)
-                s.write(line)
+        count += 1                
 
-        if batch == bsize:
-            writeOutputGzip(outputFile, s.getvalue(), mode='at')
-            batch = 0
-            s.close()
-            s = io.StringIO()
+    writeOutputGzipTsv(outputFile, docs, mode='at')
 
-    fh.close()
-    writeOutputGzip(outputFile, s.getvalue(), mode='at')
-    s.close()
+
+def clearQuotes(row):
+    cleaned = []
+    for item in row:
+        if item.startswith('"'):
+            cleaned.append(item[1:-1])
+        else:
+            cleaned.append(item)
+    return cleaned        
 
 
 def cleanDescView(dview):
@@ -1627,18 +1622,18 @@ def cleanDescView(dview):
             line = line.strip()
 
             if line.startswith('type:'):
-              if 'MeSH TopicalDescriptor' in line:
-                  pass
-              elif 'MeSH GeographicalDescriptor' in line:
-                  pass
-              elif 'MeSH PublicationType' in line:
-                  pass
-              elif 'MeSH CheckTag' in line:
-                  pass
-              elif 'MeSH Qualifier' in line:
-                  pass
-              elif line:
-                  out += line + '\n'
+                if 'MeSH TopicalDescriptor' in line:
+                    pass
+                elif 'MeSH GeographicalDescriptor' in line:
+                    pass
+                elif 'MeSH PublicationType' in line:
+                    pass
+                elif 'MeSH CheckTag' in line:
+                    pass
+                elif 'MeSH Qualifier' in line:
+                    pass
+                elif line:
+                    out += line + '\n'
             else:
                 if line:
                     out += line + '\n'

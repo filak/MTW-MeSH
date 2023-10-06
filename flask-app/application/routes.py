@@ -1385,6 +1385,13 @@ def manage(action):
             exp_files[f]['fname'] = fp.name
             exp_files[f]['fdate'] = mtu.getFpathDate(fp)
 
+
+    # 2024_umls.tsv
+    show_umls_exports = False
+    umls_tsv = mtu.getTempFpath('umls', ext='tsv')
+    if umls_tsv.is_file():
+        show_umls_exports = True    
+
     show_lookups_exports = False
     lookups_base = mtu.getTempFpath('lookups')
     if lookups_base.is_file():
@@ -1400,7 +1407,8 @@ def manage(action):
         msg = 'Background worker is RUNNING...'
         flash(msg, 'info')
 
-    return render_template('manage.html', users=users, exports=exp_files, show_lookups=show_lookups_exports, show_marc=show_marc_exports)
+    return render_template('manage.html', users=users, exports=exp_files, 
+                           show_lookups=show_lookups_exports, show_marc=show_marc_exports, show_umls_exports=show_umls_exports)
 
 
 @app.route(getPath('/download/<fname>'))

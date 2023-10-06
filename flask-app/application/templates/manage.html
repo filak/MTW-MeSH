@@ -17,9 +17,7 @@ Manage
 <div class="row">
 
   <div class="col-md-3 col-sm">
-
     {% include 'snips/users.html' %}
-
   </div>
 
   <div class="col-md-3 col-sm">
@@ -232,7 +230,7 @@ Manage
       </li>
     </ul>
     
-{% if show_marc %}
+  {% if show_marc %}
 
     <div class="row mb-3">
       <div class="col">
@@ -341,7 +339,7 @@ Manage
       </div>
     </div>
 
-    {% endif %}        
+  {% endif %}        
 
 
   </div>
@@ -484,7 +482,6 @@ Manage
       </div>
     </div>
     
-    
     <div class="row mb-3">
       <div class="col">
         <h5>JSON <small class="text-info">for Elastic</small></h5>
@@ -518,14 +515,16 @@ Manage
     
     <div class="row mb-3">
       <div class="col">
-        <h5>UMLS TSV <small class="text-info">for MSSQL - includes inactive terms</small></h5>
+        <h5>UMLS TSV MSSQL <small class="text-info">[includes inactive terms]</small></h5>
 
-        {% if show_marc %}
+        {% if show_umls_exports %}
           <form action="{{ url_for('update_stats', stat='umls_all') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
             {% if exports['umls_all_tsv'] %}
-            <button class="btn btn-sm btn-info" type="submit" title="Refresh">
+            <button class="btn btn-sm btn-info" type="submit" 
+                    data-toggle="tooltip" data-placement="bottom"
+                    title="To refresh You need to regenerate UMLS TSV first">
               Refresh
                 </button>
             {% else %}
@@ -549,14 +548,16 @@ Manage
 
     <div class="row mb-3">
       <div class="col">
-        <h5>UMLS TSV RAW <small class="text-info">Includes inactive terms; chars NOT normalized</small></h5>
+        <h5>UMLS TSV RAW <small class="text-info">[includes inactive terms; chars NOT normalized]</small></h5>
 
-        {% if show_marc %}
+        {% if show_umls_exports %}
           <form action="{{ url_for('update_stats', stat='umls_raw') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
             {% if exports['umls_raw_tsv'] %}
-            <button class="btn btn-sm btn-info" type="submit" title="Refresh">
+            <button class="btn btn-sm btn-info" type="submit" 
+                    data-toggle="tooltip" data-placement="bottom"
+                    title="To refresh You need to regenerate UMLS TSV first">
               Refresh
                 </button>
             {% else %}
@@ -578,12 +579,8 @@ Manage
       </div>
     </div>
     
-    
-    {% endif %}
-
+  {% endif %}
   </div>
-
-
 </div>
 
 </div>

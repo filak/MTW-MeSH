@@ -45,10 +45,6 @@ from flask_session import Session
 
 requests.packages.urllib3.disable_warnings()
 
-def getPath(path):
-    customDir = app.config['APP_PATH']
-    return(customDir+path)
-
 
 def login_required(func):
     @functools.wraps(func)
@@ -64,7 +60,7 @@ def login_required(func):
 def ref_redirect():
     try:
         purl = urlparse(request.referrer)
-        new_url = app.config['HOST_LINK'] + purl.path
+        new_url = purl.path
         if purl.query:
             new_url += '?' + purl.query
         return new_url
@@ -89,7 +85,7 @@ def show_elapsed(begin, started=None, tag=''):
 
 ###  Pages
 
-@app.route(getPath('/'), methods=['GET'])
+@app.route('/', methods=['GET'])
 @login_required
 def intro():
 
@@ -156,7 +152,7 @@ def intro():
                                          initial=stats_initial, actual=stats_actual)
 
 
-@app.route(getPath('/settings/set_style/'), methods=['POST'])
+@app.route('/settings/set_style/', methods=['POST'])
 @login_required
 def settings():
 
@@ -172,8 +168,8 @@ def settings():
 
 ###  Audit
 
-@app.route(getPath('/todo/'), defaults={'tlist': 'Preferred'}, methods=['GET'])
-@app.route(getPath('/todo/list:<tlist>'), methods=['GET'])
+@app.route('/todo/', defaults={'tlist': 'Preferred'}, methods=['GET'])
+@app.route('/todo/list:<tlist>', methods=['GET'])
 @login_required
 def todo(tlist):
 
@@ -196,8 +192,8 @@ def todo(tlist):
     return render_template('todo.html', tlist_check=tlist_check, tlist=tlist, hits=hits)
 
 
-@app.route(getPath('/update_clipboard/'), defaults={'dui':''}, methods=['POST'])
-@app.route(getPath('/update_clipboard/dui:<dui>'), methods=['POST'])
+@app.route('/update_clipboard/', defaults={'dui':''}, methods=['POST'])
+@app.route('/update_clipboard/dui:<dui>', methods=['POST'])
 @login_required
 def update_clipboard(dui):
 
@@ -284,7 +280,7 @@ def update_clipboard(dui):
     return redirect(ref_redirect())
 
 
-@app.route(getPath('/update_concept/dui:<dui>/pref:<pref>'), methods=['POST'])
+@app.route('/update_concept/dui:<dui>/pref:<pref>', methods=['POST'])
 @login_required
 def update_concept(dui, pref):
 
@@ -440,7 +436,7 @@ def update_concept(dui, pref):
     return redirect(url_for('search', dui=dui))
 
 
-@app.route(getPath('/add_cpid/dui:<dui>/cui:<cui>'), methods=['GET'])
+@app.route('/add_cpid/dui:<dui>/cui:<cui>', methods=['GET'])
 @login_required
 def add_cpid(dui, cui):
 
@@ -504,7 +500,7 @@ def add_cpid(dui, cui):
     return redirect(ref_redirect())
 
 
-@app.route(getPath('/update_note/dui:<dui>'), methods=['POST'])
+@app.route('/update_note/dui:<dui>', methods=['POST'])
 @login_required
 def update_note(dui):
 
@@ -573,7 +569,7 @@ def update_note(dui):
     return redirect(url_for('search', dui=dui, tab='notes'))
 
 
-@app.route(getPath('/update_scopenote/dui:<dui>'), methods=['POST'])
+@app.route('/update_scopenote/dui:<dui>', methods=['POST'])
 @login_required
 def update_scopenote(dui):
 
@@ -701,7 +697,7 @@ def update_scopenote(dui):
     return redirect(url_for('search', dui=dui))
 
 
-@app.route(getPath('/update_audit/'), methods=['POST'])
+@app.route('/update_audit/', methods=['POST'])
 @login_required
 def update_audit():
 
@@ -822,8 +818,8 @@ def update_audit():
 
 ###  Compare
 
-@app.route(getPath('/compare/'), defaults={'dui': ''}, methods=['GET'])
-@app.route(getPath('/compare/dui:<dui>'), methods=['GET'])
+@app.route('/compare/', defaults={'dui': ''}, methods=['GET'])
+@app.route('/compare/dui:<dui>', methods=['GET'])
 @login_required
 def compare(dui):
 
@@ -861,9 +857,9 @@ def compare(dui):
 
 ###  Audit
 
-@app.route(getPath('/audit/'), defaults={'dui': '', 'cui': ''}, methods=['GET'])
-@app.route(getPath('/audit/dui:<dui>'), defaults={'cui': ''}, methods=['GET'])
-@app.route(getPath('/audit/dui:<dui>/cui:<cui>'), methods=['GET'])
+@app.route('/audit/', defaults={'dui': '', 'cui': ''}, methods=['GET'])
+@app.route('/audit/dui:<dui>', defaults={'cui': ''}, methods=['GET'])
+@app.route('/audit/dui:<dui>/cui:<cui>', methods=['GET'])
 @login_required
 def audit(dui, cui):
 
@@ -896,16 +892,16 @@ def audit(dui, cui):
 
 ###  Approval
 
-@app.route(getPath('/approve/'), defaults={'userid': '', 'username': '', 'status': '', 'event': ''}, methods=['GET'])
-@app.route(getPath('/approve/status:<status>'), defaults={'userid': '', 'username': '', 'event': ''}, methods=['GET'])
-@app.route(getPath('/approve/event:<event>'), defaults={'userid': '', 'username': '', 'status': ''}, methods=['GET'])
-@app.route(getPath('/approve/event:<event>/userid:<userid>/user:<username>'), defaults={'status': ''}, methods=['GET'])
-@app.route(getPath('/approve/status:<status>/event:<event>'), defaults={'userid': '', 'username': ''}, methods=['GET'])
-@app.route(getPath('/approve/status:<status>/event:<event>/userid:<userid>'), defaults={'username': ''}, methods=['GET'])
-@app.route(getPath('/approve/userid:<userid>'), defaults={'username': '', 'status': '', 'event': ''}, methods=['GET'])
-@app.route(getPath('/approve/userid:<userid>/user:<username>'), defaults={'status': '', 'event': ''}, methods=['GET'])
-@app.route(getPath('/approve/userid:<userid>/user:<username>/status:<status>'), defaults={'event': ''}, methods=['GET'])
-@app.route(getPath('/approve/userid:<userid>/user:<username>/status:<status>/event:<event>'), methods=['GET'])
+@app.route('/approve/', defaults={'userid': '', 'username': '', 'status': '', 'event': ''}, methods=['GET'])
+@app.route('/approve/status:<status>', defaults={'userid': '', 'username': '', 'event': ''}, methods=['GET'])
+@app.route('/approve/event:<event>', defaults={'userid': '', 'username': '', 'status': ''}, methods=['GET'])
+@app.route('/approve/event:<event>/userid:<userid>/user:<username>', defaults={'status': ''}, methods=['GET'])
+@app.route('/approve/status:<status>/event:<event>', defaults={'userid': '', 'username': ''}, methods=['GET'])
+@app.route('/approve/status:<status>/event:<event>/userid:<userid>', defaults={'username': ''}, methods=['GET'])
+@app.route('/approve/userid:<userid>', defaults={'username': '', 'status': '', 'event': ''}, methods=['GET'])
+@app.route('/approve/userid:<userid>/user:<username>', defaults={'status': '', 'event': ''}, methods=['GET'])
+@app.route('/approve/userid:<userid>/user:<username>/status:<status>', defaults={'event': ''}, methods=['GET'])
+@app.route('/approve/userid:<userid>/user:<username>/status:<status>/event:<event>', methods=['GET'])
 @login_required
 def approve(status, event, userid, username):
 
@@ -969,12 +965,12 @@ def approve(status, event, userid, username):
                                            pending=pending, resolved=resolved, year=year)
 
 
-@app.route(getPath('/browse/'), defaults={'top': '', 'tn': '', 'action':''}, methods=['GET'])
-@app.route(getPath('/browse/do:<action>'), defaults={'top': '', 'tn': ''}, methods=['GET'])
-@app.route(getPath('/browse/<top>'), defaults={'tn': '', 'action':''}, methods=['GET'])
-@app.route(getPath('/browse/<top>/tree:<tn>'), defaults={'action':''}, methods=['GET'])
-@app.route(getPath('/browse/<top>/do:<action>'), defaults={'tn':''}, methods=['GET'])
-@app.route(getPath('/browse/<top>/tree:<tn>/do:<action>'), methods=['GET'])
+@app.route('/browse/', defaults={'top': '', 'tn': '', 'action':''}, methods=['GET'])
+@app.route('/browse/do:<action>', defaults={'top': '', 'tn': ''}, methods=['GET'])
+@app.route('/browse/<top>', defaults={'tn': '', 'action':''}, methods=['GET'])
+@app.route('/browse/<top>/tree:<tn>', defaults={'action':''}, methods=['GET'])
+@app.route('/browse/<top>/do:<action>', defaults={'tn':''}, methods=['GET'])
+@app.route('/browse/<top>/tree:<tn>/do:<action>', methods=['GET'])
 @login_required
 def browse(top, tn, action):
 
@@ -1042,9 +1038,9 @@ def browse(top, tn, action):
     return render_template('browse.html', hits_cnt=hits_cnt, top=top, tn=tn, subtitle=subtitle, tree=tree, show=session.get('show'), status=session.get('status'))
 
 
-@app.route(getPath('/search/'), defaults={'dui':'', 'action':''}, methods=['GET'])
-@app.route(getPath('/search/dui:<dui>'), defaults={'action':''}, methods=['GET'])
-@app.route(getPath('/search/do:<action>'), defaults={'dui':''}, methods=['GET'])
+@app.route('/search/', defaults={'dui':'', 'action':''}, methods=['GET'])
+@app.route('/search/dui:<dui>', defaults={'action':''}, methods=['GET'])
+@app.route('/search/do:<action>', defaults={'dui':''}, methods=['GET'])
 @login_required
 def search(dui, action):
 
@@ -1212,10 +1208,10 @@ def store_visited(dui, label):
 
 ###  Reporting
 
-@app.route(getPath('/report/'), defaults={'userid':'', 'year':''}, methods=['GET'])
-@app.route(getPath('/report/userid:<userid>'), defaults={'year':''}, methods=['GET'])
-@app.route(getPath('/report/year:<year>'), defaults={'userid':''}, methods=['GET'])
-@app.route(getPath('/report/userid:<userid>/year:<year>'), methods=['GET'])
+@app.route('/report/', defaults={'userid':'', 'year':''}, methods=['GET'])
+@app.route('/report/userid:<userid>', defaults={'year':''}, methods=['GET'])
+@app.route('/report/year:<year>', defaults={'userid':''}, methods=['GET'])
+@app.route('/report/userid:<userid>/year:<year>', methods=['GET'])
 @login_required
 def report(userid, year):
 
@@ -1293,8 +1289,8 @@ def report(userid, year):
 
 ###  Management
 
-@app.route(getPath('/manage/'), defaults={'action': ''}, methods=['GET'])
-@app.route(getPath('/manage/action:<action>'), methods=['POST'])
+@app.route('/manage/', defaults={'action': ''}, methods=['GET'])
+@app.route('/manage/action:<action>', methods=['POST'])
 @login_required
 def manage(action):
 
@@ -1411,7 +1407,7 @@ def manage(action):
                            show_lookups=show_lookups_exports, show_marc=show_marc_exports, show_umls_exports=show_umls_exports)
 
 
-@app.route(getPath('/download/<fname>'))
+@app.route('/download/<fname>')
 @login_required
 def download(fname):
 
@@ -1423,7 +1419,7 @@ def download(fname):
         return send_from_directory(app.config['EXP_DIR'], fname, as_attachment=True)  
 
 
-@app.route(getPath('/update_stats/get:<stat>'), methods=['POST'])
+@app.route('/update_stats/get:<stat>', methods=['POST'])
 @login_required
 def update_stats(stat):
 
@@ -1502,7 +1498,7 @@ def update_stats(stat):
     return redirect(ref_redirect())
 
 
-@app.route(getPath('/user/add'), methods=['POST'])
+@app.route('/user/add', methods=['POST'])
 def add_user():
     if session['ugroup'] not in ['admin','manager']:
         abort(403)
@@ -1542,7 +1538,7 @@ def add_user():
         return redirect(url_for('manage'))
 
 
-@app.route(getPath('/user/update'), methods=['POST'])
+@app.route('/user/update', methods=['POST'])
 def update_user():
     if session['ugroup'] not in ['admin','manager']:
         abort(403)
@@ -1603,7 +1599,7 @@ def update_user():
 
 ###  Login | Logout
 
-@app.route(getPath('/login/'), methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
     error = None
     login = False
@@ -1674,7 +1670,7 @@ def login():
     return render_template('login.html')
 
 
-@app.route(getPath('/logout/'))
+@app.route('/logout/')
 def logout():
 
     if session.get('logged_user') and session['ugroup']:

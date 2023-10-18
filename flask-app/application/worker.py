@@ -2,28 +2,34 @@
 """
 MeSH Traslation Workflow (MTW) background worker - Flask app factory
 """
-import logging
+import logging, os
 from flask import Flask, abort, request
 
 from application import utils as mtu
 
-def create_app(debug=False, logger=None, port=None, 
+def create_app(debug=False, logger=None, port=None, server_name=None, 
                config_path='conf/mtw.ini',
                static_url_path='/assets-mtw'):   
 
     app = Flask(__name__, instance_relative_config=True, static_url_path=static_url_path)
 
-    if debug and not app.debug:
-      app.debug = debug
-
-    if app.debug:
-        print('config:', config_path, '- port:', port) 
-
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
+    if debug and not app.debug:
+        app.debug = debug
+    elif os.getenv('FLASK_DEBUG', None):
+        app.debug = True
+    if debug:
+        print('config:', config_path) 
+
     if logger:
-        app.logger = logger
+        app.logger = logger 
+
+    if app.debug:
+        print('config:', config_path, '- port:', port)     
+
+    if logger:
         file_handler = logging.FileHandler(mtu.get_instance_dir(app, 'logs/mtw_worker.log'))
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s '))
@@ -51,7 +57,9 @@ def create_app(debug=False, logger=None, port=None,
         error = 'Error reading local config file: ' + app.config['local_config_file']
         app.logger.error(error)
         abort(500)
-        
+
+    app.config.update({'SERVER_NAME': None})    
+
 
     @app.route('/')
     def hello_world():

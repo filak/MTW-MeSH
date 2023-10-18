@@ -2,8 +2,9 @@
 """
 MeSH Traslation Workflow (MTW) - Flask app factory
 """
-import datetime, logging, pprint
+import datetime, logging, os, pprint
 from flask import Flask, abort
+from werkzeug.middleware.proxy_fix import ProxyFix
 from pyuca import Collator
 
 coll = Collator()
@@ -12,32 +13,35 @@ pp = pprint.PrettyPrinter(indent=2)
 from application.extensions import Talisman, cache, csrf, paranoid, sess
 from application import utils as mtu
 
-def create_app(debug=False, logger=None, port=None, relax=False,
+def create_app(debug=False, logger=None, relax=False,
+               url_prefix='',
                config_path='conf/mtw.ini',
-               static_url_path='/assets-mtw'):
+               static_url_path='/assets-mtw',
+               server_name=None):
 
-    class ReverseProxied(object):
-        def __init__(self, app):
-            self.app = app
+    url_prefix = url_prefix.strip().strip('/')
 
-        def __call__(self, environ, start_response):
-            if not debug:
-                environ['wsgi.url_scheme'] = 'https'
-
-            return self.app(environ, start_response)    
+    if url_prefix:
+        url_prefix = '/' + url_prefix
+    else:
+        url_prefix = ''    
 
     app = Flask(__name__, instance_relative_config=True, static_url_path=static_url_path)
-    app.wsgi_app = ReverseProxied(app.wsgi_app)
+
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
     if debug and not app.debug:
-      app.debug = debug
-    if app.debug:
-        print('config:', config_path, '- port:', port) 
+        app.debug = debug
+    elif os.getenv('FLASK_DEBUG', None):
+        app.debug = True
+    if debug:
+        print('config:', config_path) 
 
     if logger:
-        app.logger = logger
+        app.logger = logger        
+
+    if not app.debug:
         file_handler = logging.FileHandler(mtu.get_instance_dir(app, 'logs/mtw_server.log'))
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s '))
@@ -50,13 +54,9 @@ def create_app(debug=False, logger=None, port=None, relax=False,
 
     app.config.update(dict(
         APP_NAME = 'MTW',
-        APP_VER = '1.5.3',
+        APP_VER = '1.5.5',
         API_VER = '1.0.0',
         DBVERSION = 1.0,
-        TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
-        local_config_file = mtu.get_instance_dir(app, config_path),
-        admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp'),
-        pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json'),
         CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
         CSRF_COOKIE_HTTPONLY = True,
         CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1),
@@ -64,10 +64,17 @@ def create_app(debug=False, logger=None, port=None, relax=False,
         SESSION_COOKIE_HTTPONLY = True,
         SESSION_COOKIE_SAMESITE = 'Lax',
         SESSION_COOKIE_SECURE = True,
+        SESSION_FILE_THRESHOLD = 1000,
         SESSION_PERMANENT = False,
+        SESSION_REVERSE_PROXY = True,
         SESSION_USE_SIGNER = True,
         SESSION_TYPE = 'filesystem',
-        SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions')
+        SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions'),
+        TEMPLATES_AUTO_RELOAD = False,
+        TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
+        local_config_file = mtu.get_instance_dir(app, config_path),
+        admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp'),
+        pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json')        
     ))   
 
     app.app_context().push()
@@ -92,10 +99,19 @@ def create_app(debug=False, logger=None, port=None, relax=False,
         abort(503)
 
 
-    def getPath(path):
-        customDir = app.config['APP_PATH']
-        return(customDir+path)
-    
+    ### Server settings
+
+    if app.config['SERVER_NAME']:
+        app.config.update({'SESSION_COOKIE_DOMAIN': app.config['SERVER_NAME']})
+
+    ## --fqdn <server_name>
+    if server_name:
+        app.config.update({'SERVER_NAME': server_name})
+        app.config.update({'SESSION_COOKIE_DOMAIN': server_name}) 
+
+    if app.config.get('SERVER_NAME'):
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)        
+
 
     ###  Flask Extensions init
 
@@ -109,12 +125,12 @@ def create_app(debug=False, logger=None, port=None, relax=False,
     if not relax and not app.debug:
         ## Paranoid
         paranoid.init_app(app)
-        paranoid.redirect_view = getPath('/')
+        paranoid.redirect_view = ('/')
 
         talisman = Talisman(
                     app,
                     session_cookie_secure=app.config['SESSION_COOKIE_SECURE'],
-                    force_https=False,
+                    force_https=app.config['SESSION_COOKIE_SECURE'],
                     strict_transport_security=False,
                     content_security_policy=app.config['GCSP'],
                     content_security_policy_nonce_in=['script-src','style-src']

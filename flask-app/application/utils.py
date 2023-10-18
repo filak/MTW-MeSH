@@ -66,8 +66,7 @@ def getAdminConfValue(conf):
 def getLocalConfValue(conf):
     d = {}
     try:
-        d['APP_PATH'] = conf.get('appconf', 'APP_PATH', fallback='/')
-        d['HOST_LINK'] = conf.get('appconf', 'HOST_LINK')
+        d['SERVER_NAME'] = conf.get('appconf', 'SERVER_NAME', fallback=None)
         d['DATABASE_NAME'] = conf.get('appconf', 'DATABASE_NAME', fallback='mtw.db')
         d['DATABASE'] = get_instance_dir( app, 'db/'+d['DATABASE_NAME'] )
         d['DEFAULT_THEME'] = conf.get('appconf', 'DEFAULT_THEME', fallback='slate')

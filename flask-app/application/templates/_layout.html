@@ -11,7 +11,7 @@
         {% set bootstrap = 'bootstrap/4.6.0/css/'+config.DEFAULT_THEME+'.min.css'  %}
     {% endif %}
     <link href="{{ url_for('static', filename=bootstrap) }}" rel="stylesheet" type="text/css">
-    <link href="{{ url_for('static', filename='css/all.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/fa-all.min.css') }}?v=5.15.4" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/custom.css') }}?v={{ config.APP_VER }}" rel="stylesheet">
   </head>
 

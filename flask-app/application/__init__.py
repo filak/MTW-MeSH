@@ -101,6 +101,9 @@ def create_app(debug=False, logger=None, relax=False,
 
     ### Server settings
 
+    if relax:
+        app.config.update({'SERVER_NAME': None})
+
     if app.config['SERVER_NAME']:
         app.config.update({'SESSION_COOKIE_DOMAIN': app.config['SERVER_NAME']})
 

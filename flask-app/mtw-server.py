@@ -52,7 +52,7 @@ def main():
 
     try:
         if args.debug or args.relax:
-            serve(app, host=args.host, port=args.port, threads=args.threads)
+            serve(app, host=args.host, port=args.port, threads=args.threads, url_prefix=url_prefix)
         else:
             server_name = app.config['SERVER_NAME']
 

@@ -11,12 +11,9 @@ def main():
     else:
         config_path = DEFAULT_CONFIG
 
-    debug = True
-    threaded = True
-
-    app = create_app(debug=debug, config_path=config_path, port=DEFAULT_PORT)
-    app.run(port=DEFAULT_PORT, debug=debug, threaded=threaded)
-
+    app = create_app(debug=True, config_path=config_path, port=DEFAULT_PORT)
+    app.run(port=DEFAULT_PORT, debug=debug, threaded=True)
 
 if __name__ == "__main__":
     main()
+

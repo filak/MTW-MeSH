@@ -21,7 +21,7 @@ def public_api_only(func):
     def check_public(*args, **kwargs):
 
         if app.config.get('API_STATUS') == 'private':
-            if not app.debug and not app.config.get('MTW_RELAXED'):
+            if not app.debug and not app.config.get('APP_RELAXED'):
                 code, msg = validateRequest(app, request)
                 if code != 200:
                     app.logger.error(msg)
@@ -52,7 +52,7 @@ def validateRequest(app, request):
 
     if host_check not in ['localhost', '127.0.0.1']:
         hostname = request.host.strip().split(':')[0]
-        mtw_host = app.config.get('MTW_HOST')
+        mtw_host = app.config.get('APP_HOST')
 
         if host_check != mtw_host:
             headers = None

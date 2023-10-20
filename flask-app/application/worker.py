@@ -29,7 +29,7 @@ def create_app(debug=False, logger=None, port=5903,
     if logger:
         app.logger = logger
 
-    if logger:
+    if not app.debug:
         file_handler = logging.FileHandler(mtu.get_instance_dir(app, 'logs/mtw_worker.log'))
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s '))

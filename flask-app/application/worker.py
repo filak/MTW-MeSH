@@ -68,11 +68,11 @@ def create_app(debug=False, logger=None, port=5903,
         app.logger.error(error)
         abort(500)
 
-    app.config.update({'MTW_HOST': app.config.get('SERVER_NAME')})
+    app.config.update({'APP_HOST': app.config.get('SERVER_NAME')})
     app.config.update({'SERVER_NAME': None})  
 
     if relax:
-        app.config.update({'MTW_RELAXED': True}) 
+        app.config.update({'APP_RELAXED': True}) 
 
     app.app_context().push()
     from application.modules.worker_api import endpoints

@@ -99,7 +99,7 @@ Manage
     <div class="row mb-3">
       <div class="col">
         <h5>Actual stats</h5>
-          <form action="{{ url_for('update_stats', stat='actual') }}" method="post">
+          <form action="{{ url_for('update_stats', stat='actual', force=1) }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-sm btn-success" type="submit" title="Update Actual stats">
               Refresh</button>
@@ -110,7 +110,7 @@ Manage
     <div class="row mb-3">
       <div class="col">
         <h5>Initial stats</h5>
-          <form action="{{ url_for('update_stats', stat='initial') }}" method="post">
+          <form action="{{ url_for('update_stats', stat='initial', force=1) }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-danger" type="submit" title="Update Initial stats">
               Reset

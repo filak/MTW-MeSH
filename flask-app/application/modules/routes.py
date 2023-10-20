@@ -2,59 +2,26 @@
 """
 Routes & pages
 """
-import ast
-import base64
-import datetime
-import functools
-import io
-import json
-import os
-import pprint
-import re
-import subprocess
-import sys
-import time
-import uuid
-from collections import defaultdict
+import bcrypt, json, requests, uuid
+
 from contextlib import closing
-from pathlib import Path
 from sqlite3 import dbapi2 as sqlite3
 from timeit import default_timer as timer
-from urllib.parse import quote, urlparse
+from urllib.parse import urlparse
 
-import bcrypt
-import jinja2.ext
-import requests
-from flask_caching import Cache
-from flask_paranoid import Paranoid
-from flask_seasurf import SeaSurf
-from flask_talisman import Talisman
-from requests_futures.sessions import FuturesSession
-
-from application import cache, coll, csrf
-from application import database as mdb
-from application import paranoid, pp, sess
-from application import sparql as sparql
-from application import utils as mtu
-from flask import Flask, Response, abort
 from flask import current_app as app
-from flask import (flash, g, make_response, redirect, render_template,
-                   render_template_string, request, send_file, send_from_directory, session,
+
+from application.main import cache, pp
+from application.modules import database as mdb
+from application.modules import sparql as sparql
+from application.modules import utils as mtu
+from application.modules.auth import login_required
+
+from flask import (abort, flash, g, make_response, redirect, render_template,
+                   request, send_from_directory, session,
                    url_for)
-from flask_session import Session
 
 requests.packages.urllib3.disable_warnings()
-
-
-def login_required(func):
-    @functools.wraps(func)
-    def secure_function(*args, **kwargs):
-        if not session.get('logged_in'):
-            session['next'] = request.url
-            return redirect(url_for('login'))
-        return func(*args, **kwargs)
-
-    return secure_function    
 
 
 def ref_redirect():
@@ -134,11 +101,9 @@ def intro():
     
             if mtu.fileOld(actual, app.config['REFRESH_AFTER']):
                     
-                fsession = FuturesSession()
-                future_act = fsession.post(worker+'refresh_stats/get:actual')
+                mtu.callWorker(stat='actual')
         else:
-            fsession = FuturesSession()
-            future_all = fsession.post(worker+'refresh_stats/get:all')
+            mtu.callWorker(stat='all')
 
     if session['ugroup'] in ['admin','manager','editor']:
         status = mdb.getAuditStatus(db)
@@ -1419,7 +1384,7 @@ def download(fname):
         return send_from_directory(app.config['EXP_DIR'], fname, as_attachment=True)  
 
 
-@app.route('/update_stats/get:<stat>', methods=['POST'])
+@app.route('/update_stats/<stat>', methods=['POST'])
 @login_required
 def update_stats(stat):
 
@@ -1437,6 +1402,10 @@ def update_stats(stat):
     lpath = mtu.getLockFpath('stats')
     worker = app.config['WORKER_HOST']
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
+
+    force = False
+    if request.args.get('force'):
+        force = True
     
     if lpath.is_file():
         msg = 'Background worker is BUSY - please try again later.'
@@ -1460,10 +1429,9 @@ def update_stats(stat):
         
         return redirect(ref_redirect())       
     
-    fsession = FuturesSession()
-
     if stat in ['umls','umls_all','umls_raw','js_all','js_parsers','js_elastic','xml_desc','xml_qualif']:
-        future_exp = fsession.post(worker+'export_data/get:'+stat)
+
+        mtu.callWorker(export=stat)
 
     elif stat == 'marc':
         params = {}
@@ -1481,10 +1449,11 @@ def update_stats(stat):
         if anglo_style in ['yes','no']:
             params['marc']['anglo_style'] = anglo_style
 
-        future_exp_json = fsession.post(worker+'export_data/get:'+stat, json=params)
+        mtu.callWorker(export=stat)
 
     elif stat in ['initial','actual','all','duplicates','lookups','lookups_rest']:
-        future_stat = fsession.post(worker+'refresh_stats/get:'+stat)
+
+        mtu.callWorker(stat=stat, force=force)
 
     else:
         msg = 'Output stat not defined !'

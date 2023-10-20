@@ -14,16 +14,21 @@ import time
 import uuid
 from configparser import ConfigParser
 from functools import reduce
+from requests_futures.sessions import FuturesSession
 from pathlib import Path
 from urllib import parse as uparse
 
 import arrow
 import diff_match_patch as dmp_module
 
-from application import coll, pp, sparql
-from flask import abort
+from flask import abort, url_for
 from flask import current_app as app
-from pyuca import Collator
+
+from application.main import coll, pp 
+from application.modules import sparql
+from application.modules.auth import genApiHeaders
+
+fsession = FuturesSession()
 
 
 def get_instance_dir(app, file_path):
@@ -50,12 +55,19 @@ def getConfig(cfg_file):
         return
 
 
-def getAdminConfValue(conf):
+def getAdminConfValue(conf, worker_only=False):
     d = {}
     try:
-        d['SECRET_KEY'] = conf.get('adminconf', 'SECRET_KEY')
-        d['ADMINNAME'] = conf.get('adminconf', 'ADMINNAME')
-        d['ADMINPASS'] = conf.get('adminconf', 'ADMINPASS')
+        if worker_only:
+            d['API_KEY'] = conf.get('worker', 'API_KEY')
+            d['API_SALT']   = conf.get('worker', 'API_SALT')
+        else:    
+            d['ADMINNAME']  = conf.get('adminconf', 'ADMINNAME')
+            d['ADMINPASS']  = conf.get('adminconf', 'ADMINPASS')
+            d['SECRET_KEY'] = conf.get('adminconf', 'SECRET_KEY')
+            d['API_KEY']    = conf.get('worker', 'API_KEY')
+            d['API_SALT']   = conf.get('worker', 'API_SALT')            
+
     except:
         error = 'Error parsing admin config : '+app.config['admin_config_file']
         app.logger.error(error)
@@ -108,6 +120,10 @@ def getLocalConfValue(conf):
         d['CSRF_DISABLE'] = conf.getboolean('appconf', 'DEV_DISABLE_CSRF', fallback=False)
         d['GCSP'] = json.loads(conf.get('appconf', 'GCSP'))
 
+        d['API_STATUS'] = conf.get('worker', 'API_STATUS', fallback='private')
+        d['API_MAX_AGE'] = int( conf.get('worker', 'API_TOKEN_MAX_AGE', fallback=5) )
+        d['API_TIMEOUT'] = int( conf.get('worker', 'API_TIMEOUT', fallback=10) )
+
         char_list = readDataTsv(d['CHAR_NORM_PATH'])
         d['CHAR_NORM_MAP'] = getCharMap(char_list)
 
@@ -124,7 +140,7 @@ def getLocalConfValue(conf):
     return d
 
 
-def refreshStats(stat):
+def refreshStats(stat, force=False):
     interval = None
     lpath = getLockFpath('stats')
 
@@ -143,7 +159,7 @@ def refreshStats(stat):
         if stat == 'actual':
             interval = app.config['REFRESH_AFTER']
         if not lpath.is_file():
-            startStats(stat, fpath, lpath, interval=interval)
+            startStats(stat, fpath, lpath, interval=interval, force=force)
 
 
 def exportData(export):
@@ -166,9 +182,9 @@ def exportData(export):
             exportTsvFile(export, fpath, epath)
 
 
-def startStats(stat, fpath, lpath, interval=None):
+def startStats(stat, fpath, lpath, interval=None, force=False):
     start = True
-    if interval:
+    if interval and not force:
         if not fileOld(fpath, interval):
             start = False
 
@@ -1721,6 +1737,19 @@ def getCharMap(char_list):
     return char_map   
 
 
+def callWorker(export=None, stat=None, force=False):
+    worker = app.config['WORKER_HOST'].strip('/')
+    endpoint = None
 
+    # future_all = fsession.post(worker+'refresh_stats/get:all')
+    if stat:
+        endpoint = worker + '/refresh_stats/' + stat
+    elif export:
+        endpoint = worker + '/export_data/' + export
 
+    if force:
+        endpoint += '?force=1'    
+
+    if endpoint:
+        fsession.post(endpoint, headers=genApiHeaders())                
 

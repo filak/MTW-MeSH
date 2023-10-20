@@ -5,13 +5,15 @@ MeSH Traslation Workflow (MTW) background worker - Flask app factory
 import logging, os
 from flask import Flask, abort, request
 
-from application import utils as mtu
+from application.modules import utils as mtu
 
-def create_app(debug=False, logger=None, port=None, server_name=None, 
+
+def create_app(debug=False, logger=None, port=5903,
                config_path='conf/mtw.ini',
-               static_url_path='/assets-mtw'):   
+               server_name=None, 
+               relax=False):   
 
-    app = Flask(__name__, instance_relative_config=True, static_url_path=static_url_path)
+    app = Flask(__name__, instance_relative_config=True)
 
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
@@ -20,14 +22,12 @@ def create_app(debug=False, logger=None, port=None, server_name=None,
         app.debug = debug
     elif os.getenv('FLASK_DEBUG', None):
         app.debug = True
-    if debug:
-        print('config:', config_path) 
-
-    if logger:
-        app.logger = logger 
 
     if app.debug:
-        print('config:', config_path, '- port:', port)     
+        print('config:', config_path, '- port:', port) 
+
+    if logger:
+        app.logger = logger
 
     if logger:
         file_handler = logging.FileHandler(mtu.get_instance_dir(app, 'logs/mtw_worker.log'))
@@ -45,8 +45,18 @@ def create_app(debug=False, logger=None, port=None, server_name=None,
         APP_VER = '0.1.9',
         API_VER = '1.0.0',
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
-        local_config_file = mtu.get_instance_dir(app, config_path)
+        local_config_file = mtu.get_instance_dir(app, config_path),
+        admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp')
     ))
+
+    adminConfig = mtu.getConfig(app.config['admin_config_file'])
+    if adminConfig:
+        d = mtu.getAdminConfValue(adminConfig, worker_only=True)
+        app.config.update(d)
+    else:
+        error = '\n\nNo admin config file: ' + app.config['admin_config_file'] + '\nPlease, run the set-mtw-admin tool...\n\n'
+        app.logger.error(error)
+        abort(503)
 
     localConfig = mtu.getConfig(app.config['local_config_file'])
     if localConfig:
@@ -58,53 +68,14 @@ def create_app(debug=False, logger=None, port=None, server_name=None,
         app.logger.error(error)
         abort(500)
 
-    app.config.update({'SERVER_NAME': None})    
+    app.config.update({'MTW_HOST': app.config.get('SERVER_NAME')})
+    app.config.update({'SERVER_NAME': None})  
 
+    if relax:
+        app.config.update({'MTW_RELAXED': True}) 
 
-    @app.route('/')
-    def hello_world():
-        return 'MTW worker'
+    app.app_context().push()
+    from application.modules.worker_api import endpoints
 
-
-    @app.route('/refresh_stats/get:<stat>', methods=['GET','POST'])
-    def refresh_stats(stat):
-
-        if stat in ['initial','actual','all','duplicates','lookups','lookups_rest']:
-
-            app.logger.info('Stats gen started  ...')
-            mtu.refreshStats(stat)
-            app.logger.info('Stats gen finished ...')
-
-            return 'OK'
-        else:
-            return 'ERROR'
-
-
-    @app.route('/export_data/get:<export>', methods=['GET','POST'])
-    def export_data(export):
-
-        if export in ['umls','umls_all','umls_raw','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
-
-            app.logger.info('Export '+ export +' started  ...')
-
-            if export in ['umls','umls_all','umls_raw']:
-                mtu.exportData(export)
-            else:
-                if request.method == 'POST':
-                    if request.is_json:
-                        if request.json.get(export):
-                            mtu.exportLookup(export, params=request.json.get(export))
-                    else:
-                        mtu.exportLookup(export)  
-                else:
-                    mtu.exportLookup(export)          
-
-            app.logger.info('Export '+ export +' finished ...')
-
-            return 'OK'
-        else:
-            return 'ERROR'        
-
-    return app    
-
+    return app
 

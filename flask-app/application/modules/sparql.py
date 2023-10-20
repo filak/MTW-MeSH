@@ -2,31 +2,16 @@
 """
 MeSH Traslation Workflow (MTW) - SPARQL ops
 """
-import ast
-import base64
 import datetime
-import io
-import json
-import os
-import pprint
-import re
-import sys
-import time
-import uuid
+import requests
 from contextlib import closing
-from pathlib import Path
 from timeit import default_timer as timer
 
-import requests
-
-from application import utils as mtu
-from flask import Flask, Response, abort
+from flask import abort, render_template
 from flask import current_app as app
-from flask import (
-    flash, g, make_response, redirect, render_template, request, send_file,
-    session, url_for)
 
-pp = pprint.PrettyPrinter(indent=2)
+from application.main import pp
+from application.modules import utils as mtu
 
 
 def clear_cached(dui=None, cache=None):

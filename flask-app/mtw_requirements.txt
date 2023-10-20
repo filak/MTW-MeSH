@@ -11,7 +11,7 @@ Flask==3.0.0
 Flask-Caching==2.1.0
 Flask-Paranoid==0.3.0
 ##Flask-SeaSurf==1.1.1 ## This version is broken with Flask 3+ 
-#Run: pip install https://github.com/filak/flask-seasurf/archive/refs/heads/master.zip
+#Run: pip install https://github.com/maxcountryman/flask-seasurf/archive/refs/heads/main.tar.gz --force
 ##Flask-Session==0.5.0 ## This version is broken with Werkzeug 3+
 #Run: pip install https://github.com/filak/flask-session/archive/refs/heads/main.zip
 flask-talisman==1.1.0

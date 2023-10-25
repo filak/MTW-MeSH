@@ -29,7 +29,7 @@ setuptools==68.2.2
 urllib3==1.26.18
 ### (optional) If deploying with Waitress (https://github.com/Pylons/waitress):
 waitress==2.1.2
-Werkzeug==3.0.0
+Werkzeug==3.0.1
 wheel==0.41.2
 ### (optional) If building for Windows:
 pyinstaller==6.1.0

@@ -54,7 +54,7 @@ def validateRequest(app, request):
         hostname = request.host.strip().split(':')[0]
         mtw_host = app.config.get('APP_HOST')
 
-        if host_check != mtw_host:
+        if mtw_host and host_check != mtw_host:
             headers = None
             try:
                 headers = request.headers.environ

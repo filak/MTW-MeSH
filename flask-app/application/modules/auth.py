@@ -32,7 +32,7 @@ def public_api_only(func):
     return check_public
 
 
-def validateRequest(app, request):
+def validateRequest(app, request, scope=None):
 
     errmsg  = ''
     token = request.headers.get('x-mdv-api-token')
@@ -41,12 +41,13 @@ def validateRequest(app, request):
         errmsg = 'Missing token'
 
     token_data = decodeApiToken(token, app.config.get('API_KEY'), 
-                                        salt=app.config.get('API_SALT'), 
+                                        salt=scope, 
                                         max_age=app.config.get('API_MAX_AGE'), 
                                         debug=False)
 
     if not token_data:
         errmsg = 'Invalid token'
+        return(403, errmsg)
 
     host_check = str(token_data).strip().split(':')[0]
 
@@ -69,7 +70,7 @@ def validateRequest(app, request):
         return(200, 'OK')    
 
 
-def decodeApiToken(token, secret, salt='', max_age=5, debug=False):
+def decodeApiToken(token, secret, salt=None, max_age=5, debug=False):
     s = URLSafeTimedSerializer(secret, salt=salt)
 
     try:
@@ -78,14 +79,14 @@ def decodeApiToken(token, secret, salt='', max_age=5, debug=False):
         return False
     
 
-def genApiToken(secret, salt='', data='check'):
+def genApiToken(secret, salt=None, data='check'):
     s = URLSafeTimedSerializer(secret, salt=salt)
     return s.dumps(data) 
 
 
-def genApiHeaders():
+def genApiHeaders(scope=None):
     api_token = genApiToken(app.config['API_KEY'], 
-                            salt=app.config['API_SALT'],
+                            salt=scope,
                             data=str(request.host)) 
     headers = {'x-mdv-api-token': api_token}  
 

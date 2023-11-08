@@ -60,13 +60,11 @@ def getAdminConfValue(conf, worker_only=False):
     try:
         if worker_only:
             d['API_KEY'] = conf.get('worker', 'API_KEY')
-            d['API_SALT']   = conf.get('worker', 'API_SALT')
         else:    
             d['ADMINNAME']  = conf.get('adminconf', 'ADMINNAME')
             d['ADMINPASS']  = conf.get('adminconf', 'ADMINPASS')
             d['SECRET_KEY'] = conf.get('adminconf', 'SECRET_KEY')
-            d['API_KEY']    = conf.get('worker', 'API_KEY')
-            d['API_SALT']   = conf.get('worker', 'API_SALT')            
+            d['API_KEY']    = conf.get('worker', 'API_KEY')         
 
     except:
         error = 'Error parsing admin config : '+app.config['admin_config_file']

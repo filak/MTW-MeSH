@@ -4,7 +4,7 @@ import bcrypt, secrets
 from pathlib import Path
 
 appname = 'set-mtw-admin'
-appversion = '1.3'
+appversion = '1.3.1'
 appdesc = '(re)Set Admin credentials and SecKeys in MTW Admin Config'
 appusage = 'Help:   '+ appname +' -h '
 
@@ -55,7 +55,6 @@ def procFile(args):
         section = 'worker'
         config.add_section(section)
         config.set(section, 'API_KEY', str(os.urandom(24) ).replace('%','%%') )
-        config.set(section, 'API_SALT', secrets.token_urlsafe() )
 
         with open(str(configFile), 'w', encoding='utf-8') as configfile:
             config.write(configfile)        
@@ -68,7 +67,6 @@ def procFile(args):
         config.remove_section(section)
         config.add_section(section)
         config.set(section, 'API_KEY', str(os.urandom(24) ).replace('%','%%') )
-        config.set(section, 'API_SALT', secrets.token_urlsafe() )
 
         with open(str(configFile), 'w', encoding='utf-8') as configfile:
             config.write(configfile)

@@ -10,6 +10,8 @@ from pyuca import Collator
 coll = Collator()
 pp = pprint.PrettyPrinter(indent=2)
 
+WORKER_TOKEN_HEADER = 'x-mdv-api-token'
+
 from application.modules.extensions import Talisman, cache, csrf, paranoid, sess
 from application.modules import utils as mtu
 

@@ -26,7 +26,7 @@ from flask import current_app as app
 
 from application.main import coll, pp 
 from application.modules import sparql
-from application.modules.auth import genApiHeaders
+from application.modules.auth import genApiHeaders, getReqHost
 
 fsession = FuturesSession()
 
@@ -119,8 +119,9 @@ def getLocalConfValue(conf):
         d['GCSP'] = json.loads(conf.get('appconf', 'GCSP'))
 
         d['API_STATUS'] = conf.get('worker', 'API_STATUS', fallback='private')
-        d['API_MAX_AGE'] = int( conf.get('worker', 'API_TOKEN_MAX_AGE', fallback=5) )
+        d['API_MAX_AGE'] = int( conf.get('worker', 'API_TOKEN_MAX_AGE', fallback=10) )
         d['API_TIMEOUT'] = int( conf.get('worker', 'API_TIMEOUT', fallback=10) )
+        d['API_AUTH_BASIC'] = (conf.get('worker', 'API_AUTH_BASIC_USER'), conf.get('worker', 'API_AUTH_BASIC_PWD'))
 
         char_list = readDataTsv(d['CHAR_NORM_PATH'])
         d['CHAR_NORM_MAP'] = getCharMap(char_list)
@@ -1749,5 +1750,5 @@ def callWorker(export=None, stat=None, force=False):
         endpoint += '?force=1'    
 
     if endpoint:
-        fsession.post(endpoint, headers=genApiHeaders())                
+        fsession.post(endpoint, headers=genApiHeaders(data=getReqHost()))                
 

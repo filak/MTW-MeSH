@@ -11,13 +11,13 @@ def worker_index():
 
 
 @app.route('/test')
-@public_api_only
+@public_api_only(scope=None)
 def worker_test():
     return 'MTW Worker API is NOT secured ! Debug: ' + str(app.debug)   
 
 
 @app.route('/refresh_stats/<stat>', methods=['GET','POST'])
-@public_api_only
+@public_api_only(scope=None)
 def refresh_stats(stat):
 
     force = False
@@ -36,7 +36,7 @@ def refresh_stats(stat):
 
 
 @app.route('/export_data/<export>', methods=['GET','POST'])
-@public_api_only
+@public_api_only(scope=None)
 def export_data(export):
 
     if export in ['umls','umls_all','umls_raw','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:

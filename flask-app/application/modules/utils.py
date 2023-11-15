@@ -76,61 +76,70 @@ def getAdminConfValue(conf, worker_only=False):
 def getLocalConfValue(conf):
     d = {}
     try:
-        d['SERVER_NAME'] = conf.get('appconf', 'SERVER_NAME', fallback=None)
-        d['DATABASE_NAME'] = conf.get('appconf', 'DATABASE_NAME', fallback='mtw.db')
-        d['DATABASE'] = get_instance_dir( app, 'db/'+d['DATABASE_NAME'] )
-        d['DEFAULT_THEME'] = conf.get('appconf', 'DEFAULT_THEME', fallback='slate')
-        d['SRC_DIR'] = conf.get('appconf', 'SRC_DIR', fallback=get_instance_dir(app, '_data/in') )
-        d['EXP_DIR'] = conf.get('appconf', 'EXP_DIR', fallback=get_instance_dir(app, '_data/out') )
-        d['TARGET_YEAR'] = conf.get('appconf', 'TARGET_YEAR')
-        d['PREV_YEAR_DEF'] = conf.get('appconf', 'PREV_YEAR_DEF')
-        d['PREV_YEARS'] = conf.get('appconf', 'PREV_YEARS').strip().split(',')
-        d['REVISED_AFTER'] = conf.get('appconf', 'REVISED_AFTER')
-        d['CREATED_AFTER'] = conf.get('appconf', 'CREATED_AFTER')
-        d['MARC_LIBCODE']  = conf.get('appconf', 'MARC_LIBCODE', fallback='LIB')
-        d['MARC_CATCODE']  = conf.get('appconf', 'MARC_CATCODE', fallback='CAT')
-        d['MARC_MESHCODE'] = conf.get('appconf', 'MARC_MESHCODE', fallback='xxmesh')
-        d['MARC_LINE'] = conf.get('appconf', 'MARC_LINE', fallback='mrk')
-        d['MARC_TREE'] = conf.get('appconf', 'MARC_TREE', fallback='def')
-        d['MARC_ANGLO'] = conf.get('appconf', 'MARC_ANGLO', fallback='no')
-        d['REFRESH_AFTER'] = int( conf.get('appconf', 'REFRESH_AFTER', fallback=30) )
-        d['LOGOUT_AFTER']  = int( conf.get('appconf', 'LOGOUT_AFTER', fallback=30) )
-        d['CLIPBOARD_SIZE'] = int( conf.get('appconf', 'CLIPBOARD_SIZE', fallback=20) )
-        d['AUT_LINK'] = conf.get('appconf', 'AUT_LINK', fallback='/mtw/search/dui:')
-        d['SPARQL_HOST'] = conf.get('sparqlconf', 'SPARQL_HOST', fallback='http://127.0.0.1:3030/')
-        d['SPARQL_DATASET'] = conf.get('sparqlconf', 'SPARQL_DATASET', fallback='mesh')
-        d['MESH_RDF'] = conf.get('sparqlconf', 'MESH_RDF', fallback='https://id.nlm.nih.gov/mesh/sparql')
-        d['MESH_WEB'] = conf.get('sparqlconf', 'MESH_WEB', fallback='https://id.nlm.nih.gov/mesh/')
-        d['SOURCE_NS'] = conf.get('sparqlconf', 'SOURCE_NS', fallback='http://id.nlm.nih.gov/mesh/')
-        d['SOURCE_NS_VOCAB'] = conf.get('sparqlconf', 'SOURCE_NS_VOCAB', fallback='http://id.nlm.nih.gov/mesh/vocab#')
-        d['TARGET_LANG'] = conf.get('sparqlconf', 'TARGET_LANG')
-        d['MESH_TREE'] = loadJsonFile(get_instance_dir(app, 'conf/mesh_tree_top_'+ d['TARGET_LANG'] +'.json'))
-        d['CHAR_NORM_FILE'] = conf.get('appconf', 'CHAR_NORM_FILE', fallback='norm_chars_table.tsv.txt')
-        d['CHAR_NORM_PATH'] = get_instance_dir(app, 'conf/'+ d['CHAR_NORM_FILE'])
-        d['TARGET_NS'] = conf.get('sparqlconf', 'TARGET_NS')
-        d['TRX_NS_VOCAB'] = conf.get('sparqlconf', 'TRX_NS_VOCAB', fallback='http://www.medvik.cz/schema/mesh/vocab/#')
-        d['ROLES'] = conf.get('flowconf', 'ROLES').replace('\n','').strip().split(',')
-        d['DESC_NOTES'] = conf.get('flowconf', 'DESC_NOTES').replace('\n','').strip().split(',')
-        d['TRX_NOTES'] = conf.get('flowconf', 'TRX_NOTES').replace('\n','').strip().split(',')
-        d['WORKER_HOST'] = conf.get('appconf', 'WORKER_HOST', fallback='http://127.0.0.1:55933/')
-        d['PID_PREFIX_CONCEPT'] = conf.get('appconf', 'PID_PREFIX_CONCEPT', fallback='F')
-        d['CSRF_COOKIE_SECURE'] = conf.getboolean('appconf', 'CSRF_COOKIE_SECURE', fallback=True)
-        d['CSRF_DISABLE'] = conf.getboolean('appconf', 'DEV_DISABLE_CSRF', fallback=False)
-        d['GCSP'] = json.loads(conf.get('appconf', 'GCSP'))
+        section = 'appconf'
+        for key, val in json.loads( conf.get(section, 'CACHING', fallback={}) ).items():
+            d[key] = val
 
-        d['API_STATUS'] = conf.get('worker', 'API_STATUS', fallback='private')
-        d['API_MAX_AGE'] = int( conf.get('worker', 'API_TOKEN_MAX_AGE', fallback=10) )
-        d['API_TIMEOUT'] = int( conf.get('worker', 'API_TIMEOUT', fallback=10) )
-        d['API_AUTH_BASIC'] = (conf.get('worker', 'API_AUTH_BASIC_USER'), conf.get('worker', 'API_AUTH_BASIC_PWD'))
+        for key, val in json.loads( conf.get(section, 'SESSIONS', fallback={}) ).items():
+            d[key] = val
+
+        d['SERVER_NAME'] = conf.get(section, 'SERVER_NAME', fallback=None)
+        d['DATABASE_NAME'] = conf.get(section, 'DATABASE_NAME', fallback='mtw.db')
+        d['DATABASE'] = get_instance_dir( app, 'db/'+d['DATABASE_NAME'] )
+        d['DEFAULT_THEME'] = conf.get(section, 'DEFAULT_THEME', fallback='slate')
+        d['SRC_DIR'] = conf.get(section, 'SRC_DIR', fallback=get_instance_dir(app, '_data/in') )
+        d['EXP_DIR'] = conf.get(section, 'EXP_DIR', fallback=get_instance_dir(app, '_data/out') )
+        d['TARGET_YEAR'] = conf.get(section, 'TARGET_YEAR')
+        d['PREV_YEAR_DEF'] = conf.get(section, 'PREV_YEAR_DEF')
+        d['PREV_YEARS'] = conf.get(section, 'PREV_YEARS').strip().split(',')
+        d['REVISED_AFTER'] = conf.get(section, 'REVISED_AFTER')
+        d['CREATED_AFTER'] = conf.get(section, 'CREATED_AFTER')
+        d['MARC_LIBCODE']  = conf.get(section, 'MARC_LIBCODE', fallback='LIB')
+        d['MARC_CATCODE']  = conf.get(section, 'MARC_CATCODE', fallback='CAT')
+        d['MARC_MESHCODE'] = conf.get(section, 'MARC_MESHCODE', fallback='xxmesh')
+        d['MARC_LINE'] = conf.get(section, 'MARC_LINE', fallback='mrk')
+        d['MARC_TREE'] = conf.get(section, 'MARC_TREE', fallback='def')
+        d['MARC_ANGLO'] = conf.get(section, 'MARC_ANGLO', fallback='no')
+        d['REFRESH_AFTER'] = int( conf.get(section, 'REFRESH_AFTER', fallback=30) )
+        d['LOGOUT_AFTER']  = int( conf.get(section, 'LOGOUT_AFTER', fallback=30) )
+        d['CLIPBOARD_SIZE'] = int( conf.get(section, 'CLIPBOARD_SIZE', fallback=20) )
+        d['AUT_LINK'] = conf.get(section, 'AUT_LINK', fallback='/mtw/search/dui:')
+        d['PID_PREFIX_CONCEPT'] = conf.get(section, 'PID_PREFIX_CONCEPT', fallback='F')
+        d['CSRF_COOKIE_SECURE'] = conf.getboolean(section, 'CSRF_COOKIE_SECURE', fallback=True)
+        d['CSRF_DISABLE'] = conf.getboolean(section, 'DEV_DISABLE_CSRF', fallback=False)
+        d['GCSP'] = json.loads(conf.get(section, 'GCSP'))
+        d['CHAR_NORM_FILE'] = conf.get(section, 'CHAR_NORM_FILE', fallback='norm_chars_table.tsv.txt')
+
+        section = 'sparqlconf'
+        d['SPARQL_HOST'] = conf.get(section, 'SPARQL_HOST', fallback='http://127.0.0.1:3030/')
+        d['SPARQL_DATASET'] = conf.get(section, 'SPARQL_DATASET', fallback='mesh')
+        d['MESH_RDF'] = conf.get(section, 'MESH_RDF', fallback='https://id.nlm.nih.gov/mesh/sparql')
+        d['MESH_WEB'] = conf.get(section, 'MESH_WEB', fallback='https://id.nlm.nih.gov/mesh/')
+        d['SOURCE_NS'] = conf.get(section, 'SOURCE_NS', fallback='http://id.nlm.nih.gov/mesh/')
+        d['SOURCE_NS_VOCAB'] = conf.get(section, 'SOURCE_NS_VOCAB', fallback='http://id.nlm.nih.gov/mesh/vocab#')
+        d['TARGET_LANG'] = conf.get(section, 'TARGET_LANG')
+        d['TARGET_NS'] = conf.get(section, 'TARGET_NS')
+        d['TRX_NS_VOCAB'] = conf.get(section, 'TRX_NS_VOCAB', fallback='http://www.medvik.cz/schema/mesh/vocab/#')
+
+        section = 'flowconf'
+        d['ROLES'] = conf.get(section, 'ROLES').replace('\n','').strip().split(',')
+        d['DESC_NOTES'] = conf.get(section, 'DESC_NOTES').replace('\n','').strip().split(',')
+        d['TRX_NOTES'] = conf.get(section, 'TRX_NOTES').replace('\n','').strip().split(',')
+
+        section = 'worker'
+        d['WORKER_HOST'] = conf.get(section, 'WORKER_HOST', fallback='http://127.0.0.1:55933/')  
+        d['API_STATUS'] = conf.get(section, 'API_STATUS', fallback='private')
+        d['API_MAX_AGE'] = int( conf.get(section, 'API_TOKEN_MAX_AGE', fallback=10) )
+        d['API_TIMEOUT'] = int( conf.get(section, 'API_TIMEOUT', fallback=10) )
+        if conf.get(section, 'API_AUTH_BASIC_USER', fallback=None) and conf.get(section, 'API_AUTH_BASIC_PWD', fallback=None):
+            d['API_AUTH_BASIC'] = (conf.get(section, 'API_AUTH_BASIC_USER'), conf.get(section, 'API_AUTH_BASIC_PWD'))
+
+
+        d['MESH_TREE'] = loadJsonFile(get_instance_dir(app, 'conf/mesh_tree_top_'+ d['TARGET_LANG'] +'.json'))
+        d['CHAR_NORM_PATH'] = get_instance_dir(app, 'conf/'+ d['CHAR_NORM_FILE'])
 
         char_list = readDataTsv(d['CHAR_NORM_PATH'])
         d['CHAR_NORM_MAP'] = getCharMap(char_list)
-
-        for key, val in json.loads( conf.get('appconf', 'CACHING', fallback={}) ).items():
-            d[key] = val
-
-        for key, val in json.loads( conf.get('appconf', 'SESSIONS', fallback={}) ).items():
-            d[key] = val
 
     except:
         error = 'Error parsing local config : '+app.config['local_config_file']
@@ -1747,8 +1756,10 @@ def callWorker(export=None, stat=None, force=False):
         endpoint = worker + '/export_data/' + export
 
     if force:
-        endpoint += '?force=1'    
+        endpoint += '?force=1'  
+
+    bauth = app.config.get('API_AUTH_BASIC', None)      
 
     if endpoint:
-        fsession.post(endpoint, headers=genApiHeaders(data=getReqHost()))                
+        fsession.post(endpoint, headers=genApiHeaders(data=getReqHost()), auth=bauth)                
 

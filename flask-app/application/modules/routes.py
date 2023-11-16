@@ -1449,7 +1449,7 @@ def update_stats(stat):
         if anglo_style in ['yes','no']:
             params['marc']['anglo_style'] = anglo_style
 
-        mtu.callWorker(export=stat)
+        mtu.callWorker(export=stat, params=params)
 
     elif stat in ['initial','actual','all','duplicates','lookups','lookups_rest']:
 

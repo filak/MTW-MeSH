@@ -1049,7 +1049,7 @@ def getStatsFpath(stat, ext='json', params={}, target_year=None):
 
     if ext == 'marc':
         ext = params.get('tree_style','') + '.txt'
-        stat += '_' +  params.get('line_style')
+        stat += '_' +  params.get('line_style','')
 
     if not target_year:
         target_year = app.config['TARGET_YEAR']
@@ -1745,7 +1745,7 @@ def getCharMap(char_list):
     return char_map   
 
 
-def callWorker(export=None, stat=None, force=False):
+def callWorker(export=None, stat=None, force=False, params=None):
     worker = app.config['WORKER_HOST'].strip('/')
     endpoint = None
 
@@ -1758,8 +1758,12 @@ def callWorker(export=None, stat=None, force=False):
     if force:
         endpoint += '?force=1'  
 
-    bauth = app.config.get('API_AUTH_BASIC', None)      
+    bauth   = app.config.get('API_AUTH_BASIC', None)
+    headers = genApiHeaders( data=getReqHost() )
 
     if endpoint:
-        fsession.post(endpoint, headers=genApiHeaders(data=getReqHost()), auth=bauth)                
+        fsession.post(endpoint, 
+                      headers=headers, 
+                      auth=bauth, 
+                      json=params)                
 

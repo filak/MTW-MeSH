@@ -95,10 +95,8 @@ def validateRequest(scope=None, token=None):
     if not token:
         if request.method == 'GET':
             token = request.args.get('token')
-        elif request.is_json:
-            data = request.get_json()
-            token = data.get('token')
-        else:
+
+        if not token:
             token = request.headers.get(WORKER_TOKEN_HEADER)    
         
     if not token:

@@ -141,7 +141,7 @@ def get_headers_log():
     try:
         headers = request.headers.environ     
     except:
-        pass
+        headers = 'NO_HEADERS'
     return str(headers)       
 
 

@@ -506,7 +506,8 @@ def getElasticData(data):
         for trn in item.get('trn',[]):
             ### Add later by running:  grind-data elastic mesh ... 
             ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
-            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} ) 
+            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
+                          'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} ) 
         
         ### Add later by running:  grind-data elastic mesh ...          
         ##resp.append( {'index': {'_id': dui, '_index': 'mesh'}} )
@@ -1225,8 +1226,8 @@ def writeNDJson(fpath, data, comp=False):
     finally:
         s.close()
         data = {} 
-        return err_msg  
-        
+    
+    return err_msg
         
 
 def writeOutputGzip(fpath, data, mode='wt'):

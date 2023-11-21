@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, sys, argparse, string, datetime, time, io, gzip
+import os, argparse, datetime, io, gzip
 from timeit import default_timer as timer
 import xml.etree.ElementTree as ET
 
@@ -67,7 +67,7 @@ def getSubset(inputFile, meshxPrefix, outputFile):
     result = parse_xml(inputFile, outputFile, meshx_prefix)
     print('\n', result)
 
-    endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
+    ##endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
     et = ('\nElapsed time : ' + str((timer() - t0) / 60) + ' min\n')
     print(et)
 
@@ -127,7 +127,7 @@ def getTriples(rec, lang_code, lang_tag, meshx_prefix):
     for concept in rec.findall('ConceptList/Concept'):
 
         cui = concept.find('ConceptUI').text.strip()
-        cpref = concept.attrib['PreferredConceptYN']
+        ##cpref = concept.attrib['PreferredConceptYN']
 
         cui = concept.find('ConceptUI').text.strip()
         if cui.startswith('F'):
@@ -243,14 +243,13 @@ def getRoot(input_file):
             with open(input_file, mode='r', encoding='utf-8') as fh:
                 tree = ET.parse(fh)
 
-    except Exception as err:
+    except:
         print('ERROR reading file : ', input_file)
         raise
 
-    finally:
-        if tree:
-            root = tree.getroot()
-            return root
+    if tree:
+        root = tree.getroot()
+        return root
 
 
 def flushTriples(outputFile, docs):

@@ -69,7 +69,7 @@ def procFile(inputFile, meshxPrefix, outputFile, lang_tag):
     result = parse_file(inputFile, outputFile, meshx_prefix, lang_tag, startDate)
     print('\n', result)
 
-    endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
+    ##endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
     et = ('\nElapsed time : ' + str((timer() - t0) / 60) + ' min\n')
     print(et)
 
@@ -231,7 +231,7 @@ def readData(input_file):
                         else:
                             data.append(line)                
 
-    except Exception as err:
+    except:
         print('ERROR reading file : ', input_file)
         raise
 

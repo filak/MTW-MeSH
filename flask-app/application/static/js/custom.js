@@ -1,4 +1,4 @@
-// MTW custom javascript v0.1.7
+// MTW custom javascript 1.6.1
 
 $(document).ready(function(){
 
@@ -56,7 +56,7 @@ $(document).ready(function(){
         var isChecked = $(this).is(':checked');
         var termInputId = $(this).data('terminput');
 
-        if (isChecked == true) {
+        if (isChecked === true) {
             $(termInputId).find('input.termInput').removeAttr('required');
             $(termInputId).find('input.termInput').attr('placeholder', 'PrefTerm ...');
         } else {
@@ -84,7 +84,7 @@ $(document).ready(function(){
         var target = $(e.relatedTarget).data('form');
         var active = $(e.relatedTarget).data('active');
 
-        if (active == false) {
+        if (active === false) {
            $(e.currentTarget).find('#target-form-purge').attr('title',target);
            $(e.currentTarget).find('#target-form-purge').show();
            $(e.currentTarget).find('#target-form').hide();
@@ -148,7 +148,7 @@ $(document).ready(function(){
           $(e.currentTarget).find('#scopeNoteDefault').attr('value', scn);
         }
 
-         if (active == false) {
+         if (active === false) {
           $(e.currentTarget).find('#editScopeNoteSave').attr('disabled','');
           $(e.currentTarget).find('#editScopeNoteProp').attr('disabled','');
           $(e.currentTarget).find('#scopeNoteEng').attr('disabled','');

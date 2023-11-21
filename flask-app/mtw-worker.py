@@ -47,6 +47,8 @@ def start():
     except:
         print('Server cannot be started - check the config / modify the args / check if the port is available')
 
+
 if __name__ == "__main__":
     start()
+    
  

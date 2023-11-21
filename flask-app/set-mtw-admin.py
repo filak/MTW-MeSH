@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, argparse, configparser
-import bcrypt, secrets
+import bcrypt
 from pathlib import Path
 
 appname = 'set-mtw-admin'

@@ -7,7 +7,7 @@ import requests
 from contextlib import closing
 from timeit import default_timer as timer
 
-from flask import abort, render_template
+from flask import render_template
 from flask import current_app as app
 
 from application.main import pp
@@ -63,7 +63,6 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
 
     ##print(sparql)
 
-    accept = 'application/json'
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
 
     if output in ['tsv','csv','json']:
@@ -72,7 +71,6 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
     headers = {'Content-Type' : 'application/sparql-query; charset=utf-8'}
     #headers = {'Content-Type' : 'application/sparql-query; charset=utf-8', 'Connection' : 'close'}
     #headers = {'Content-Type' : 'application/sparql-query; charset=utf-8', 'Connection': 'keep-alive'}
-    out = {}
 
     try:
         with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=600) ) as r:
@@ -114,7 +112,6 @@ def getSparqlDataExt(dui, output, year='', key=None, cache=None):
         return
 
     headers = {'Connection' : 'close'}
-    out = {}
 
     try:
         with closing(requests.get(url, headers=headers, timeout=600) ) as r:
@@ -151,7 +148,6 @@ def updateSparqlBatch(template, concept_list=[], term_list=[], lang=None, dui=No
 
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/update'
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/sparql-update; charset=utf-8', 'Connection' : 'close'}
-    out = {}
 
     try:
         with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=60) ) as r:
@@ -186,7 +182,6 @@ def updateTriple(template='', insert=True, uri='', predicate=None, value='', lan
 
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/update'
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/sparql-update; charset=utf-8', 'Connection' : 'close'}
-    out = {}
 
     try:
         with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=60) ) as r:

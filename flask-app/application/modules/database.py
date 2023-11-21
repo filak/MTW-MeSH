@@ -2,7 +2,7 @@
 """
 MeSH Traslation Workflow (MTW) - database ops
 """
-import os, sys, uuid, json, datetime, time, ast, base64, io, re
+import uuid
 from sqlite3 import dbapi2 as sqlite3
 
 from flask import current_app as app
@@ -43,7 +43,7 @@ def addAudit(db, username, userid=0, otype='concept', detail='', label='', opid=
 
 def updateUser(db, username, firstname, lastname, passwd, ugroup, userid, phone='', email=''):
     try:
-        if passwd != '':
+        if passwd:
             db.execute('update users set username = ?, firstname = ?, lastname = ?, passwd = ?, ugroup = ?, phone = ?, email = ? where id = ?',
                   [username, firstname, lastname, passwd, ugroup, phone, email, userid])
         else:
@@ -57,7 +57,7 @@ def updateUser(db, username, firstname, lastname, passwd, ugroup, userid, phone=
 
 def updateUserTheme(db, userid, theme):
     try:
-        if theme != '':
+        if theme:
             db.execute('update users set theme = ? where id = ?',
                        [theme, userid])
             db.commit()

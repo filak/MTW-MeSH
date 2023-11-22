@@ -58,7 +58,7 @@ def create_app(debug=False, logger=None, port=5900,
 
     app.config.update(dict(
         APP_NAME = 'MTW',
-        APP_VER = '1.6.1',
+        APP_VER = '1.6.2',
         API_VER = '1.0.0',
         DBVERSION = 1.0,
         CACHE_DIR = mtu.get_instance_dir(app, 'cache'),

@@ -1,4 +1,4 @@
-// MTW custom javascript 1.6.1
+// MTW custom javascript 1.6.2
 
 $(document).ready(function(){
 

@@ -169,6 +169,7 @@ $(document).ready(function(){
         var cui = $(e.relatedTarget).data('cui');
         var backlink = $(e.relatedTarget).data('backlink');
         var tstate = $(e.relatedTarget).data('tstate');
+        var tstate_rep = $(e.relatedTarget).data('rstate');
         var resolvedby = $(e.relatedTarget).data('resolvedby');
         var updated = $(e.relatedTarget).data('updated');
         var anote = $(e.relatedTarget).data('note');
@@ -185,11 +186,11 @@ $(document).ready(function(){
           var resby = '';
         } else {
           var resby = resolvedby;
-        }
+        }       
 
         descpage = $(e.currentTarget).find('#updateAuditForm').data('descpage');
 
-        var tstate_rep = get_statRep(tstate);
+        /* var tstate_rep = get_statRep(tstate); */
 
         var title = '<a href="'+ descpage + 'dui:' + dui + '" title="Edit descriptor" aria-label="Edit descriptor">' + label +
                     ' <i class="fas fa-pen"></i></a> <br /><span class="badge badge-secondary tree-view-badge mt-2">' + event + '</span> ' +
@@ -197,9 +198,9 @@ $(document).ready(function(){
                     '<span class="badge badge-' + tstate_rep + ' ">' + tstate + '</span> ' + '  ' + updated;
 
         $(e.currentTarget).find('#historyDetailTitle').html(title);
-        $(e.currentTarget).find('#historyParams').text(params);
-        $(e.currentTarget).find('#historyTermsOld').text(terms_old);
-        $(e.currentTarget).find('#historyTermsNew').text(terms_new);
+        $(e.currentTarget).find('#historyParams').html(wrapStrPre(params));
+        $(e.currentTarget).find('#historyTermsOld').html(wrapStrPre(terms_old));
+        $(e.currentTarget).find('#historyTermsNew').html(wrapStrPre(terms_new));
         $(e.currentTarget).find('#updateAuditApid').attr('value', apid);
         $(e.currentTarget).find('#updateAuditEvent').attr('value', event);
         $(e.currentTarget).find('#updateAuditCui').attr('value', cui);
@@ -281,6 +282,15 @@ $(document).ready(function(){
 
 // Functions
 
+function wrapStrPre(mystr) {
+    if (mystr) {
+        return '<pre>' + mystr + '</pre>';
+    } else {
+        return '';
+    }
+}
+
+/*
 function get_statRep(status) {
     var sRep = {
         'pending'  : "info",
@@ -295,4 +305,4 @@ function get_statRep(status) {
 
     return sRep[status];
 };
-
+*/

@@ -11,32 +11,22 @@
       <div class="modal-body">
 
         <div class="row">
-          <div class="col">
-            <pre id="historyParams"></pre>
-          </div>
+          <div class="col" id="historyParams"></div>
         </div>
 
-        <h4 class="card-title text-center">OLD | NEW</h4>
+        <h4 class="card-title text-center">Old | New</h4>
 
         <div class="row mb-2">
-          <div class="col-6 text-right">
-            <pre id="historyTermsOld"></pre>
-          </div>
-          <div class="col-6 text-left">
-            <pre id="historyTermsNew"></pre>
-          </div>
+          <div class="col-6 text-right" id="historyTermsOld"></div>
+          <div class="col-6" id="historyTermsNew"></div>
         </div>
 
         <div class="row mb-2">
-          <div class="col-6" id="historyScntOld">
-          </div>
-          <div class="col-6 text-left" id="historyScntNew">
-          </div>
+          <div class="col-6" id="historyScntOld"></div>
+          <div class="col-6" id="historyScntNew"></div>
         </div>
         
-        <div class="row mb-4">
-
-        </div>        
+        <div class="row mb-4"></div>        
 
        {% if session.ugroup in ['admin','manager','editor'] %}
         <div class="form-group" id="noteAuditComment">
@@ -47,10 +37,8 @@
           <span class="font-weight-bold">Comment</span>
           <p id="noteAuditLabel"></p>
        {% endif %}
-
       </div>
       <div class="modal-footer">
-
           <input type="hidden" id="updateAuditApid"
                  name="apid"
                  value="">

@@ -131,10 +131,16 @@ def getSparqlDataExt(dui, output, year='', key=None, cache=None):
         app.logger.error('%s \n\n %s \n\n %s \n\n %s', endpoint, query, str(err))
 
 
-def updateSparqlBatch(template, concept_list=[], term_list=[], lang=None, dui=None, cache=None):
+def updateSparqlBatch(template, concept_list=None, term_list=None, lang=None, dui=None, cache=None):
 
     if not template:
         return False
+    
+    if not concept_list:
+        concept_list = []
+
+    if not term_list:
+        term_list = []    
 
     template = 'sparql/updates/'+template+'.sparql'
 

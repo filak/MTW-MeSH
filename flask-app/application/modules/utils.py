@@ -208,7 +208,10 @@ def startStats(stat, fpath, lpath, interval=None, force=False):
     return start
 
 
-def exportLookup(export, params={}):
+def exportLookup(export, params=None):
+
+    if not params:
+        params = {}
 
     lookups = getTempFpath('lookups', ext='json')
     if not lookups.is_file():
@@ -1047,7 +1050,10 @@ def getFpathDate(fpath):
     return datetime.datetime.fromtimestamp(fpath.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def getStatsFpath(stat, ext='json', params={}, target_year=None):
+def getStatsFpath(stat, ext='json', params=None, target_year=None):
+
+    if not params:
+        params = {}
 
     if ext == 'marc':
         ext = params.get('tree_style','') + '.txt'

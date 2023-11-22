@@ -188,7 +188,7 @@ $(document).ready(function(){
           var resby = resolvedby;
         }       
 
-        descpage = $(e.currentTarget).find('#updateAuditForm').data('descpage');
+        var descpage = $(e.currentTarget).find('#updateAuditForm').data('descpage');
 
         /* var tstate_rep = get_statRep(tstate); */
 
@@ -282,6 +282,9 @@ $(document).ready(function(){
 
 // Functions
 
+/* 
+Wrap a string with <pre> tag
+*/
 function wrapStrPre(mystr) {
     if (mystr) {
         return '<pre>' + mystr + '</pre>';

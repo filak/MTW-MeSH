@@ -21,7 +21,7 @@ from urllib import parse as uparse
 import arrow
 import diff_match_patch as dmp_module
 
-from flask import abort, url_for
+from flask import abort
 from flask import current_app as app
 
 from application.main import coll, pp 
@@ -462,13 +462,13 @@ def getLookupJson(lookups, export):
                 qualifiers_trx[d['trx']] = d
   
     if export == 'js_elastic':
-         data['qualifiers'] = dict(sorted(qualifiers.items()))
-         data['descriptors'] = dict(sorted(descriptors.items()))
-         
-         xdata = getBaseRest()
-         data['desc_qualifs'] = xdata.get('desc_qualifs',{})
-         data['desc_notes'] = xdata.get('desc_notes',{})
-         data['desc_use'] = xdata.get('desc_use',{})
+        data['qualifiers'] = dict(sorted(qualifiers.items()))
+        data['descriptors'] = dict(sorted(descriptors.items()))
+        
+        xdata = getBaseRest()
+        data['desc_qualifs'] = xdata.get('desc_qualifs',{})
+        data['desc_notes'] = xdata.get('desc_notes',{})
+        data['desc_use'] = xdata.get('desc_use',{})
     
     else:
         data['desc_cnt'] = desc_cnt
@@ -506,7 +506,8 @@ def getElasticData(data):
         for trn in item.get('trn',[]):
             ### Add later by running:  grind-data elastic mesh ... 
             ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
-            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} ) 
+            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
+                          'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} ) 
         
         ### Add later by running:  grind-data elastic mesh ...          
         ##resp.append( {'index': {'_id': dui, '_index': 'mesh'}} )
@@ -526,7 +527,8 @@ def getElasticData(data):
         for trn in item.get('trn',[]):
             ### Add later by running:  grind-data elastic mesh ...   
             ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
-            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} )             
+            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
+                          'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} )             
                 
         if qualifs.get(dui):
             qa = []
@@ -1224,8 +1226,8 @@ def writeNDJson(fpath, data, comp=False):
     finally:
         s.close()
         data = {} 
-        return err_msg  
-        
+    
+    return err_msg
         
 
 def writeOutputGzip(fpath, data, mode='wt'):
@@ -1473,10 +1475,10 @@ def getTermList(f, concept, dui):
                 term_list.append(dterm)
 
             elif dterm['prefLabel'] != '':
-                    dterm['turi'] = app.config['TARGET_NS'] + str(uuid.uuid4())
-                    dterm['operation'] = 'insert'
-                    dterm.pop('rowid')
-                    term_list.append(dterm)
+                dterm['turi'] = app.config['TARGET_NS'] + str(uuid.uuid4())
+                dterm['operation'] = 'insert'
+                dterm.pop('rowid')
+                term_list.append(dterm)
 
     return term_list
 
@@ -1488,7 +1490,7 @@ def encodeMeshRdfQuery(query):
 def getTreeQuery(top, tn=None):
 
     query = []
-    roots = app.config['MESH_TREE']
+    ##roots = app.config['MESH_TREE']
 
     if top in ('B','E','H'):
         query.append(top+'0?')
@@ -1717,7 +1719,7 @@ def readDataTsv(input_file):
                         else:
                             data.append(line)                
 
-    except Exception as err:
+    except:
         print('ERROR reading file : ', input_file)
         raise
 

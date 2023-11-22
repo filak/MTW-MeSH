@@ -58,7 +58,7 @@ def create_app(debug=False, logger=None, port=5900,
 
     app.config.update(dict(
         APP_NAME = 'MTW',
-        APP_VER = '1.6.1',
+        APP_VER = '1.6.2',
         API_VER = '1.0.0',
         DBVERSION = 1.0,
         CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
@@ -118,7 +118,7 @@ def create_app(debug=False, logger=None, port=5900,
         app.config.update({'SESSION_COOKIE_DOMAIN': server_name}) 
 
     if app.config.get('SERVER_NAME'):
-        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)        
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)
 
 
     ###  Flask Extensions init

@@ -70,7 +70,8 @@ def validateBasicAuth():
                 if (auth is not None
                     and auth.type == "basic"
                     and auth.username == user
-                    and compare_digest(auth.password, pwd)):
+                    and compare_digest(auth.password, pwd)
+                ):
                     return True
         else:
             return True
@@ -87,10 +88,10 @@ def getReqHost():
 def validateRequest(scope=None, token=None):
 
     if not has_app_context():
-        return(418, 'No app context') 
+        return (418, 'No app context') 
 
     if not has_request_context():
-        return(418, 'No request context')
+        return (418, 'No request context')
 
     if not token:
         if request.method == 'GET':
@@ -101,7 +102,7 @@ def validateRequest(scope=None, token=None):
         
     if not token:
         errmsg = 'Missing token'
-        return(403, errmsg)  
+        return (403, errmsg)  
 
     token_data = decodeApiToken(token, app.config.get('API_KEY'), 
                                         salt=scope, 
@@ -109,7 +110,7 @@ def validateRequest(scope=None, token=None):
 
     if not token_data:
         errmsg = 'Invalid token'
-        return(403, errmsg)
+        return (403, errmsg)
 
     host = getReqHost()
     host_token = str(token_data).strip().split(':')[0]
@@ -117,9 +118,9 @@ def validateRequest(scope=None, token=None):
     errmsg = check_hostnames(host, host_token, ttype='request')
 
     if errmsg:
-        return(403, errmsg)
+        return (403, errmsg)
     else:
-        return(200, 'OK')
+        return (200, 'OK')
 
 
 def check_hostnames(host, host_token, ttype='request'):
@@ -140,7 +141,7 @@ def get_headers_log():
     try:
         headers = request.headers.environ     
     except:
-        pass
+        headers = 'NO_HEADERS'
     return str(headers)       
 
 

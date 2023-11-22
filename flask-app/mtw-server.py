@@ -11,7 +11,7 @@ from waitress import serve
 from application.main import create_app
 
 appname    = 'mtw-server'
-appdesc    = 'MTW Server 1.6.1'
+appdesc    = 'MTW Server 1.6.2'
 appusage   = 'Help:  ' + appname + ' -h \n'
 appauthor  = 'Filip Kriz'
 
@@ -64,6 +64,8 @@ def start():
     except:
         print('Server cannot be started - check the config / modify the args / check if the port is available')
 
+
 if __name__ == "__main__":
     start()
+    
     

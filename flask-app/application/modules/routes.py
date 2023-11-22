@@ -229,7 +229,8 @@ def update_clipboard(dui):
         elif request.form['action'] == 'lock' and dui:
             resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='lock', value=locked_by, dui=dui, cache=cache)
             if resp_ok:
-                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, event='lock', tstate='locked')
+                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, 
+                                 event='lock', tstate='locked')
 
         elif request.form['action'] == 'unlock' and dui:
             resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='unlock', dui=dui, cache=cache)
@@ -274,7 +275,7 @@ def update_concept(dui, pref):
         if concept == 'NEW':
             concept = app.config['TARGET_NS'] + cui
 
-        cpid = request.form['cpid'].strip()
+        ##cpid = request.form['cpid'].strip()
 
         form_changed = request.form['form_changed'].strip()
         propose = request.form.get('propose')
@@ -371,7 +372,8 @@ def update_concept(dui, pref):
                 else:
                     tstate = 'updated'
 
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, event=event, tstate=tstate, params=json.dumps(params))
+                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
+                                 event=event, tstate=tstate, params=json.dumps(params))
 
             if result_ok and event == 'insert_concept':
                 msg = 'Concept CREATED : '+label
@@ -449,7 +451,8 @@ def add_cpid(dui, cui):
 
         if updated:
             mtu.writeJsonFile(fpath, pid_counter)
-            mdb.addAudit(get_db(), session['uname'], userid=session['userid'], otype='concept', detail=dui, label=cpid, opid=cui, dui=dui, event='create_pid', tstate='updated')
+            mdb.addAudit(get_db(), session['uname'], userid=session['userid'], otype='concept', detail=dui, label=cpid, opid=cui, dui=dui, 
+                                   event='create_pid', tstate='updated')
             msg = 'CUI generated: ' + cpid
             flash(msg, 'info')
             app.logger.info(msg + ' for ' + curi)
@@ -517,7 +520,8 @@ def update_note(dui):
 
                 msg = predicate+' UPDATED : '+dui
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail, event=event, params=json.dumps(params))
+                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail, 
+                                 event=event, params=json.dumps(params))
             elif resp_ok:
                 detail = predicate + ' DELETE'
                 params['old'] = tnoteo
@@ -525,7 +529,8 @@ def update_note(dui):
 
                 msg = predicate+' DELETED : '+dui
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail, event='delete_note', tstate='deleted', params=json.dumps(params))
+                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail, 
+                                 event='delete_note', tstate='deleted', params=json.dumps(params))
             else:
                 msg = 'Update note FAILED for : '+dui+' - '+predicate
                 flash(msg, 'warning')
@@ -588,7 +593,8 @@ def update_scopenote(dui):
 
                 msg = 'ScopeNoteTrx UPDATED'
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, event=event, tstate=tstate, params=json.dumps(params))
+                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
+                                 event=event, tstate=tstate, params=json.dumps(params))
 
             elif resp_ok:
                 detail = 'scopeNoteTrx DELETE'
@@ -600,7 +606,8 @@ def update_scopenote(dui):
 
                 msg = 'ScopeNoteTrx DELETED'
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, event='delete_scopeNoteTrx', tstate=tstate, params=json.dumps(params))
+                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
+                                 event='delete_scopeNoteTrx', tstate=tstate, params=json.dumps(params))
 
             else:
                 msg = 'Update ScopeNoteTrx FAILED for : '+concept
@@ -638,7 +645,8 @@ def update_scopenote(dui):
 
                 msg = 'English ScopeNote UPDATED'
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, event=event, tstate=tstate, params=json.dumps(params) )
+                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
+                                 event=event, tstate=tstate, params=json.dumps(params) )
 
             elif resp_ok:
                 detail = 'scopeNote DELETE'
@@ -650,7 +658,8 @@ def update_scopenote(dui):
 
                 msg = 'English ScopeNote DELETED'
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, event='delete_scopeNote', tstate=tstate, params=json.dumps(params) )
+                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
+                                 event='delete_scopeNote', tstate=tstate, params=json.dumps(params) )
 
             else:
                 msg = 'Update EngScopeNote FAILED : '+concept
@@ -1000,7 +1009,8 @@ def browse(top, tn, action):
     else:
         subtitle = ''
 
-    return render_template('browse.html', hits_cnt=hits_cnt, top=top, tn=tn, subtitle=subtitle, tree=tree, show=session.get('show'), status=session.get('status'))
+    return render_template('browse.html', hits_cnt=hits_cnt, top=top, tn=tn, subtitle=subtitle, tree=tree, 
+                                          show=session.get('show'), status=session.get('status'))
 
 
 @app.route('/search/', defaults={'dui':'', 'action':''}, methods=['GET'])
@@ -1059,7 +1069,6 @@ def search(dui, action):
     hits = {}
     hits_cnt = 0
     dview = ''
-    dview_query = ''
 
     if request.args.get('tab'):
         ttab = request.args.get('tab').strip()
@@ -1249,7 +1258,8 @@ def report(userid, year):
         events = mdb.getReport(db, 'created', targetyear=year, userid=userid, mon=month)
         resolved = mdb.getReport(db, 'resolved', targetyear=year, userid=userid, mon=month)
         ##pp.pprint(report)
-        return render_template('report.html', users=users, target_years=target_years, year=year, userid=userid, months=months, month=month, report=events, resolved=resolved )
+        return render_template('report.html', users=users, target_years=target_years, year=year, 
+                                              userid=userid, months=months, month=month, report=events, resolved=resolved )
 
 
 ###  Management
@@ -1398,7 +1408,7 @@ def update_stats(stat):
         flash(msg, 'danger')
         return render_template('errors/error_page.html', errcode=404, error=msg), 404
 
-    fpath = mtu.getStatsFpath(stat)
+    ##fpath = mtu.getStatsFpath(stat)
     lpath = mtu.getLockFpath('stats')
     worker = app.config['WORKER_HOST']
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
@@ -1516,7 +1526,7 @@ def update_user():
         firstname = request.form['firstname']
         lastname = request.form['lastname']
         passwd = request.form['pswdnew']
-        id = request.form['userid']
+        uid = request.form['userid']
         ugroup = request.form['ugroup']
         action = request.form['action']
 
@@ -1531,7 +1541,7 @@ def update_user():
         params = {}
         params['changed'] = []
 
-        if passwd != '':
+        if passwd:
             passwd = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt(5))
             passwd = passwd.decode('utf-8')
             params['changed'].append('password')
@@ -1539,11 +1549,11 @@ def update_user():
         db = get_db()
 
         if action == 'delete':
-            res = mdb.deleteUser(db, id)
+            res = mdb.deleteUser(db, uid)
         else:
-            res = mdb.updateUser(db, username, firstname, lastname, passwd, ugroup, id, phone=phone, email=email)
+            res = mdb.updateUser(db, username, firstname, lastname, passwd, ugroup, uid, phone=phone, email=email)
 
-        opid = str(id) + '_' + username
+        opid = str(uid) + '_' + username
 
         if res:
             flash(res, 'danger')
@@ -1556,11 +1566,11 @@ def update_user():
             params[action].update( {'role': ugroup} )
 
         if action == 'delete':
-            flash('User '+id+' successfully DELETED ', 'secondary')
+            flash('User '+ uid +' successfully DELETED ', 'secondary')
             mdb.addAudit(db, session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params) )
 
         elif action == 'update':
-            flash('User '+id+' successfully UPDATED ', 'success')
+            flash('User '+ uid +' successfully UPDATED ', 'success')
             mdb.addAudit(db, session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params) )
 
         return redirect(url_for('manage'))
@@ -1702,15 +1712,6 @@ def checkApi(endpoint):
         app.logger.error('API: %s \n\n %s', endpoint, str(err) )
         return 'ERROR'        
 
-        
-### not used with Flask-Session
-'''
-@app.before_request
-def before_request():
-    session.permanent = True
-    app.permanent_session_lifetime = datetime.timedelta(minutes=app.config['LOGOUT_AFTER'])
-    session.modified = True
-'''
 
 @app.context_processor
 def utility_processor():
@@ -1862,9 +1863,10 @@ def getListSplit(value, delim='|'):
 ###  Database
 
 def connect_db():
-        rv = sqlite3.connect(app.config['DATABASE'])
-        rv.row_factory = sqlite3.Row
-        return rv
+    rv = sqlite3.connect(app.config['DATABASE'])
+    rv.row_factory = sqlite3.Row
+    return rv
+
 
 def get_db():
     if not hasattr(g, 'sqlite_db'):
@@ -1880,6 +1882,7 @@ def get_db():
             return g.sqlite_db
     else:
         return g.sqlite_db
+
 
 @app.teardown_appcontext
 def close_db(error):

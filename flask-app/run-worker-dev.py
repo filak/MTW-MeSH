@@ -14,6 +14,7 @@ def start():
     app = create_app(debug=True, config_path=config_path, port=DEFAULT_PORT)
     app.run(port=DEFAULT_PORT, debug=True, threaded=True)
 
+
 if __name__ == "__main__":
     start()
 

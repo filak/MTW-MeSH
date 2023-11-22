@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, sys, argparse, string, datetime, time, io, gzip
+import os, argparse, datetime, io, gzip
 from timeit import default_timer as timer
 
 appname = 'mesh-nt2trx'
@@ -60,7 +60,7 @@ def getSubset(inputFile, outputFile):
     result = getSubsetFrom(inputFile, outputFile)
     print('\n', result)
 
-    endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
+    ##endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
     et = ('\nElapsed time : ' + str((timer() - t0) / 60) + ' min\n')
     print(et)
 

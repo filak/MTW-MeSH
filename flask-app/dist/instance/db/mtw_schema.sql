@@ -1,4 +1,4 @@
--- version 0.2.3
+-- version 0.2.4
 -- run:  sqlite3 mtw.db < mtw_schema.sql
 
 /* users */
@@ -18,13 +18,13 @@ create table users (
   params text
 );
 
-DROP TRIGGER users_upd_trig;
+--DROP TRIGGER users_upd_trig;
 CREATE TRIGGER users_upd_trig AFTER UPDATE ON users
  BEGIN
   update users SET updated = strftime('%Y-%m-%dT%H:%M:%S','now', 'localtime') WHERE id = NEW.id;
  END;
 
-DROP INDEX if exists i_users;
+--DROP INDEX if exists i_users;
 CREATE INDEX i_users ON users (id, username, passwd);
 
 
@@ -50,92 +50,80 @@ create table audit (
   params text      -- null or input-data or original-data
 );
 
-DROP TRIGGER audit_upd_trig;
+--DROP TRIGGER audit_upd_trig;
 CREATE TRIGGER audit_upd_trig AFTER UPDATE ON audit
  BEGIN
   update audit SET updated = strftime('%Y-%m-%dT%H:%M:%S','now', 'localtime') WHERE id = NEW.id;
  END;
 
-DROP INDEX if exists i_audit;
+--DROP INDEX if exists i_audit;
 CREATE INDEX i_audit ON audit (id, userid, username, event, otype, opid, dui, tstate, created, resolvedby, targetyear);
 
 
 /* Views */
 --select name from sqlite_master where type in ('view');
 
-drop view audit_targetyear;
+--drop view audit_targetyear;
 create view audit_targetyear as select distinct targetyear from audit
        where otype in ('concept','descriptor') order by targetyear;
 
-drop view audit_tstate;
+--drop view audit_tstate;
 create view audit_tstate as select targetyear, tstate, count(*) as cnt from audit where otype in ('concept','descriptor') group by targetyear, tstate;
 
-drop view audit_userid_tstate;
+--drop view audit_userid_tstate;
 create view audit_userid_tstate as select targetyear, userid, tstate, count(*) as cnt from audit where otype in ('concept','descriptor') group by targetyear, userid, tstate;
 
-drop view audit_users_tstate;
+--drop view audit_users_tstate;
 create view audit_users_tstate as select *,
            (select username from users where id = A.userid) username,
            (select ugroup from users where id = A.userid) ugroup
            from audit_userid_tstate A;
 
 
-drop view audit_userid_tstate_event;
+--drop view audit_userid_tstate_event;
 create view audit_userid_tstate_event as select targetyear, userid, tstate, event, count(*) as cnt from audit where otype in ('concept','descriptor') group by targetyear, userid, tstate, event;
 
-drop view audit_users_event;
+--drop view audit_users_event;
 create view audit_users_event as select *,
            (select username from users where id = A.userid) username,
            (select ugroup from users where id = A.userid) ugroup
            from audit_userid_tstate_event A;
 
-drop view audit_event;
+--drop view audit_event;
 create view audit_event as select targetyear, event, count(*) as cnt from audit where otype in ('concept','descriptor') group by targetyear, event;
 
-drop view audit_event_tstate;
+--drop view audit_event_tstate;
 create view audit_event_tstate as select targetyear, event, tstate, count(*) as cnt from audit where otype in ('concept','descriptor') group by targetyear, event, tstate;
 
 
-drop view audit_created_yr_mon;
+--drop view audit_created_yr_mon;
 create view audit_created_yr_mon as select targetyear,
        strftime('%Y-%m', created) as yr_mon, count(*) as cnt from audit
        where otype in ('concept','descriptor') group by targetyear, yr_mon;
 
-drop view audit_created_userid;
+--drop view audit_created_userid;
 create view audit_created_userid as select targetyear, userid, tstate, event,
        strftime('%Y-%m', created) as yr_mon, count(*) as cnt from audit
        where otype in ('concept','descriptor') group by targetyear, yr_mon, userid, tstate, event;
 
-drop view audit_created;
+--drop view audit_created;
 create view audit_created as select *,
            (select username from users where id = A.userid) username
            from audit_created_userid A;
 
 
-drop view audit_resolved_yr_mon;
+--drop view audit_resolved_yr_mon;
 create view audit_resolved_yr_mon as select targetyear,
        strftime('%Y-%m', updated) as yr_mon, count(*) as cnt from audit
        where otype in ('concept','descriptor') and tstate in ('approved','rejected') group by targetyear, yr_mon;
 
-drop view audit_resolved_username;
+--drop view audit_resolved_username;
 create view audit_resolved_username as select targetyear, resolvedby as username, tstate, event,
        strftime('%Y-%m', updated) as yr_mon, count(*) as cnt from audit
        where otype in ('concept','descriptor') and tstate in ('approved','rejected') group by targetyear, yr_mon, username, tstate, event;
 
-drop view audit_resolved;
+--drop view audit_resolved;
 create view audit_resolved as select *,
            (select id from users where username = A.username) userid
            from audit_resolved_username A;
 
-/*
--- TODO:
-drop view audit_login;
-create view audit_login as select userid, username, event, strftime('%Y-%m-%d %H:%M', created) as crt
-            from audit where otype = 'user' and event = 'login'
-            and strftime('%Y-%m-%d', created) = strftime('%Y-%m-%d','now', 'localtime');
-
-drop view audit_logout;
-create view audit_logout as select userid, username, event, strftime('%Y-%m-%d %H:%M', created) as crt
-            from audit where otype = 'user' and event = 'logout'
-            and strftime('%Y-%m-%d', created) = strftime('%Y-%m-%d','now', 'localtime');
-*/

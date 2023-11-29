@@ -67,6 +67,7 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
                meshv:identifier 
                meshv:prefLabel
                meshv:altLabel
+               meshv:casn1_label
                  mesht:identifier 
                  mesht:prefLabel
                  mesht:altLabel

@@ -50,6 +50,8 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
     text:queryParser text:AnalyzingQueryParser ;
     ##text:defineAnalyzers [ . . . ] ;
     text:multilingualSupport true ;
+    ## TBD https://jena.apache.org/documentation/query/text-query.html#lists-of-indexed-properties :
+    ## text:propLists ( [ . . . ] . . . ) ;
  .
 
 <#entMap> 

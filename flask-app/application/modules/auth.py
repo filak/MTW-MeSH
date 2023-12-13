@@ -83,6 +83,13 @@ def validateBasicAuth():
 def getReqHost():
     if has_request_context():
         return str(request.host).strip().split(':')[0]
+    
+    
+def getReqOrigin():
+    if has_request_context():
+        if request.origin:
+            origin = str(request.origin).strip().strip('https://').strip('http://')
+            return origin.split(':')[0]     
   
 
 def validateRequest(scope=None, token=None):

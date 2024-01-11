@@ -18,7 +18,7 @@ flask-talisman==1.1.0
 future==0.18.3
 idna==3.6
 itsdangerous==2.1.2
-Jinja2==3.1.2
+Jinja2==3.1.3
 MarkupSafe==2.1.3
 pefile==2023.2.7
 pip_audit==2.6.1 ## Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt

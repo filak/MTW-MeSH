@@ -42,6 +42,10 @@ def start():
                      server_name=args.fqdn,
                      url_prefix=args.prefix, 
                      relax=args.relax)
+    
+    if not app:
+        print('Server cannot be started - check the config / modify the args / check if the port is available')
+        return     
 
     if getattr(sys, 'frozen', False):
         app.static_folder = os.path.join(os.path.dirname(sys.executable), 'static')

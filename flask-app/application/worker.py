@@ -48,7 +48,7 @@ def create_app(debug=False, logger=None, port=5903,
         admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp')
     ))
 
-    adminConfig = mtu.getConfig(app.config['admin_config_file'])
+    adminConfig = mtu.getConfig(app.config['admin_config_file'], admin=True)
 
     if not adminConfig:
         return

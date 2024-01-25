@@ -43,13 +43,14 @@ def get_instance_dir(app, file_path):
 
 
 ### Config loading
-def getConfig(cfg_file):
+def getConfig(cfg_file, admin=False):
     cpath = Path( cfg_file )
     if not cpath.is_file():
-        error = 'Missing Admin config file : '+ str(cfg_file)
+        error = 'Missing config file : '+ str(cfg_file)
         app.logger.error(error)
         print('ERROR: '+error)
-        print('Run the set-mtw-admin tool !')
+        if admin:
+            print('Run the set-mtw-admin tool !')
         return
     try:
         config = configparser.ConfigParser()

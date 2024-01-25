@@ -85,7 +85,7 @@ def create_app(debug=False, logger=None, port=5900,
     app.app_context().push()
     ### Or use: with app.app_context():   
 
-    adminConfig = mtu.getConfig(app.config['admin_config_file'])
+    adminConfig = mtu.getConfig(app.config['admin_config_file'], admin=True)
     if not adminConfig:
         return
 

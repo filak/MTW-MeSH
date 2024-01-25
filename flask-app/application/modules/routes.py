@@ -1669,7 +1669,9 @@ def logout():
 
     session.pop('logged_in', None)
     session.pop('next', None)
-    flash('You were logged out', 'info')
+    session.clear()
+    session.modified = True
+    flash('Logout successful', 'info')
 
     return redirect(url_for('login'))
 

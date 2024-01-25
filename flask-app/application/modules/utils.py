@@ -12,7 +12,7 @@ import os
 import sys
 import time
 import uuid
-from configparser import ConfigParser
+import configparser
 from functools import reduce
 from requests_futures.sessions import FuturesSession
 from pathlib import Path
@@ -46,36 +46,47 @@ def get_instance_dir(app, file_path):
 def getConfig(cfg_file):
     cpath = Path( cfg_file )
     if not cpath.is_file():
+        error = 'Missing Admin config file : '+ str(cfg_file)
+        app.logger.error(error)
+        print('ERROR: '+error)
+        print('Run the set-mtw-admin tool !')
         return
     try:
-        config = ConfigParser()
+        config = configparser.ConfigParser()
         config.read(cpath, encoding='utf-8')
         return config
     except:
-        return
+        error = 'Problem reading config file : '+ str(cfg_file)
+        app.logger.error(error)
+        print('ERROR: '+error) 
 
 
 def getAdminConfValue(conf, worker_only=False):
-    d = {}
     try:
+        d = {}
         if worker_only:
             d['API_KEY'] = conf.get('worker', 'API_KEY')
         else:    
             d['ADMINNAME']  = conf.get('adminconf', 'ADMINNAME')
             d['ADMINPASS']  = conf.get('adminconf', 'ADMINPASS')
             d['SECRET_KEY'] = conf.get('adminconf', 'SECRET_KEY')
-            d['API_KEY']    = conf.get('worker', 'API_KEY')         
+            d['API_KEY']    = conf.get('worker', 'API_KEY')
+        return d
+
+    except configparser.Error as pe:
+        error = 'Problem parsing Admin config file : '+ app.config['admin_config_file'] + ' : ' + str(pe)
+        app.logger.error(error)
+        print('ERROR: '+error)
 
     except:
-        error = 'Error parsing admin config : '+app.config['admin_config_file']
+        error = 'Problem reading Admin config file : '+ app.config['admin_config_file']
         app.logger.error(error)
-        abort(500)
-    return d
+        print('ERROR: '+error)         
 
 
 def getLocalConfValue(conf):
-    d = {}
     try:
+        d = {}
         section = 'appconf'
         for key, val in json.loads( conf.get(section, 'CACHING', fallback={}) ).items():
             d[key] = val
@@ -134,18 +145,22 @@ def getLocalConfValue(conf):
         if conf.get(section, 'API_AUTH_BASIC_USER', fallback=None) and conf.get(section, 'API_AUTH_BASIC_PWD', fallback=None):
             d['API_AUTH_BASIC'] = (conf.get(section, 'API_AUTH_BASIC_USER'), conf.get(section, 'API_AUTH_BASIC_PWD'))
 
-
         d['MESH_TREE'] = loadJsonFile(get_instance_dir(app, 'conf/mesh_tree_top_'+ d['TARGET_LANG'] +'.json'))
         d['CHAR_NORM_PATH'] = get_instance_dir(app, 'conf/'+ d['CHAR_NORM_FILE'])
 
         char_list = readDataTsv(d['CHAR_NORM_PATH'])
         d['CHAR_NORM_MAP'] = getCharMap(char_list)
+        return d
+
+    except configparser.Error as pe:
+        error = 'Parsing local config file : ' + app.config['local_config_file'] + ' : ' + str(pe)
+        app.logger.error(error)
+        print('ERROR: '+error)
 
     except:
-        error = 'Error parsing local config : '+app.config['local_config_file']
+        error = 'Problem reading local config file : '+ app.config['local_config_file']
         app.logger.error(error)
-        abort(500)
-    return d
+        print('ERROR: '+error)         
 
 
 def refreshStats(stat, force=False):

@@ -3,7 +3,7 @@
 MeSH Traslation Workflow (MTW) - Flask app factory
 """
 import datetime, logging, os, pprint
-from flask import Flask, abort
+from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from pyuca import Collator
 
@@ -83,26 +83,27 @@ def create_app(debug=False, logger=None, port=5900,
     ))   
 
     app.app_context().push()
-    ### Or use: with app.app_context():    
-
-    localConfig = mtu.getConfig(app.config['local_config_file'])
-    if localConfig:
-        d = mtu.getLocalConfValue(localConfig)
-        app.config.update(d)
-    else:
-        error = 'Error reading local config file: ' + app.config['local_config_file']
-        app.logger.error(error)
-        abort(500)
+    ### Or use: with app.app_context():   
 
     adminConfig = mtu.getConfig(app.config['admin_config_file'])
-    if adminConfig:
-        d = mtu.getAdminConfValue(adminConfig)
-        app.config.update(d)
-    else:
-        error = '\n\nNo admin config file: ' + app.config['admin_config_file'] + '\nPlease, run the set-mtw-admin tool...\n\n'
-        app.logger.error(error)
-        abort(503)
+    if not adminConfig:
+        return
 
+    d = mtu.getAdminConfValue(adminConfig)
+    if not d:
+        return
+    
+    app.config.update(d)
+
+    localConfig = mtu.getConfig(app.config['local_config_file'])
+    if not localConfig:
+        return
+
+    d = mtu.getLocalConfValue(localConfig)
+    if not d:
+        return    
+    
+    app.config.update(d)        
 
     ### Server settings
 

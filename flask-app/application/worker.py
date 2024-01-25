@@ -3,10 +3,9 @@
 MeSH Traslation Workflow (MTW) background worker - Flask app factory
 """
 import logging, os
-from flask import Flask, abort
+from flask import Flask
 
 from application.modules import utils as mtu
-
 
 def create_app(debug=False, logger=None, port=5903,
                config_path='conf/mtw.ini',
@@ -50,23 +49,31 @@ def create_app(debug=False, logger=None, port=5903,
     ))
 
     adminConfig = mtu.getConfig(app.config['admin_config_file'])
-    if adminConfig:
-        d = mtu.getAdminConfValue(adminConfig, worker_only=True)
-        app.config.update(d)
-    else:
-        error = '\n\nNo admin config file: ' + app.config['admin_config_file'] + '\nPlease, run the set-mtw-admin tool...\n\n'
-        app.logger.error(error)
-        abort(503)
 
+    if not adminConfig:
+        return
+
+    d = mtu.getAdminConfValue(adminConfig, worker_only=True)
+
+    if not d:
+        return
+
+    app.config.update(d)
+          
     localConfig = mtu.getConfig(app.config['local_config_file'])
-    if localConfig:
-        with app.app_context():
-            d = mtu.getLocalConfValue(localConfig)
-        app.config.update(d)
-    else:
-        error = 'Error reading local config file: ' + app.config['local_config_file']
-        app.logger.error(error)
-        abort(500)
+
+    if not localConfig:
+        return
+
+    with app.app_context():
+        d = mtu.getLocalConfValue(localConfig)
+
+    if not d:
+        return     
+
+    app.config.update(d)
+    
+    ### Server settings
 
     app.config.update({'APP_HOST': app.config.get('SERVER_NAME')})
     app.config.update({'SERVER_NAME': None})  

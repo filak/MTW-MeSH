@@ -56,13 +56,14 @@ def getConfig(cfg_file, admin=False):
         config = configparser.ConfigParser()
         config.read(cpath, encoding='utf-8')
         return config
-    except:
-        error = 'Problem reading config file : '+ str(cfg_file)
+    
+    except Exception as err:
+        error = 'Problem reading config file : '+ str(cfg_file) + ' : ' + str(err)
         app.logger.error(error)
         print('ERROR: '+error) 
 
 
-def getAdminConfValue(conf, worker_only=False):
+def getAdminConfValue(conf, worker_only=False, fp=''):
     try:
         d = {}
         if worker_only:
@@ -75,17 +76,17 @@ def getAdminConfValue(conf, worker_only=False):
         return d
 
     except configparser.Error as pe:
-        error = 'Problem parsing Admin config file : '+ app.config['admin_config_file'] + ' : ' + str(pe)
+        error = 'Problem parsing Admin config file : '+ fp + ' : ' + str(pe)
         app.logger.error(error)
         print('ERROR: '+error)
 
-    except:
-        error = 'Problem reading Admin config file : '+ app.config['admin_config_file']
+    except Exception as err:
+        error = 'Problem reading Admin config file : '+ fp + ' : ' + str(err)
         app.logger.error(error)
         print('ERROR: '+error)         
 
 
-def getLocalConfValue(conf):
+def getLocalConfValue(conf, fp=''):
     try:
         d = {}
         section = 'appconf'
@@ -154,12 +155,12 @@ def getLocalConfValue(conf):
         return d
 
     except configparser.Error as pe:
-        error = 'Parsing local config file : ' + app.config['local_config_file'] + ' : ' + str(pe)
+        error = 'Parsing local config file : ' + fp + ' : ' + str(pe)
         app.logger.error(error)
         print('ERROR: '+error)
 
-    except:
-        error = 'Problem reading local config file : '+ app.config['local_config_file']
+    except Exception as err:
+        error = 'Problem reading local config file : '+ fp + ' : ' + str(err)
         app.logger.error(error)
         print('ERROR: '+error)         
 

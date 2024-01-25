@@ -48,6 +48,8 @@ def create_app(debug=False, logger=None, port=5903,
         admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp')
     ))
 
+    app.app_context().push()
+
     adminConfig = mtu.getConfig(app.config['admin_config_file'], admin=True)
 
     if not adminConfig:
@@ -65,8 +67,7 @@ def create_app(debug=False, logger=None, port=5903,
     if not localConfig:
         return
 
-    with app.app_context():
-        d = mtu.getLocalConfValue(localConfig)
+    d = mtu.getLocalConfValue(localConfig)
 
     if not d:
         return     

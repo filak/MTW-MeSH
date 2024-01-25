@@ -350,36 +350,37 @@ def getLookupJson(lookups, export):
             d['trn'] = []
             trees = item.get('trn','').split('~')
             for trn in trees:
-                if item.get('active','') == 'false':
-                    trn = trn.replace('[OBSOLETE]','').strip()
-                    if 'x' not in d['cat']:
-                        d['cat'].append('x')    
-                    
-                d['trn'].append(trn)
-                cat = trn[:1].lower()
-                if cat not in d['cat']:
-                    d['cat'].append(cat)
+                if trn:
+                    if item.get('active','') == 'false':
+                        trn = trn.replace('[OBSOLETE]','').strip()
+                        if 'x' not in d['cat']:
+                            d['cat'].append('x')    
+                        
+                    d['trn'].append(trn)
+                    cat = trn[:1].lower()
+                    if cat not in d['cat']:
+                        d['cat'].append(cat)
 
-            d['xtr'] = []
+            #d['xtr'] = []
             cui = item.get('cui')
             if cui:
                 d['cui'] = cui
-                d['xtr'].append(cui)
+                #d['xtr'].append(cui)
 
             nlm = item.get('nlm')
             if nlm:
                 d['nlm'] = nlm
-                d['xtr'].append(nlm)
+                #d['xtr'].append(nlm)
 
             rn = item.get('rn','0')
             if rn != '0':
                 d['rn'] = rn
-                d['xtr'].append(rn)
+                #d['xtr'].append(rn)
 
             cas = item.get('cas')
             if cas:
                 d['cas'] = cas
-                d['xtr'].append(cas)
+                #d['xtr'].append(cas)
 
             crt = item.get('crt')
             if crt:
@@ -389,9 +390,9 @@ def getLookupJson(lookups, export):
             if est:
                 d['est'] = est                
 
-            for t in terms:
-                if t:
-                    d['xtr'].append( t.replace('[OBSOLETE]','').strip() )
+            #for t in terms:
+            #    if t:
+            #        d['xtr'].append( t.replace('[OBSOLETE]','').strip() )
                     
 
         if export in ['marc','js_elastic']:
@@ -507,10 +508,13 @@ def getElasticData(data):
         item['heading'].append(item['trx'])
         
         for trn in item.get('trn',[]):
-            ### Add later by running:  grind-data elastic mesh ... 
-            ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
-            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
-                          'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} ) 
+            if trn:
+                ### Add later by running:  grind-data elastic mesh ... 
+                ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
+                resp.append({'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
+                             'eng': item.get('eng',''), 'trx': item.get('trx',''), 
+                             'active': item.get('active')} 
+                           ) 
         
         ### Add later by running:  grind-data elastic mesh ...          
         ##resp.append( {'index': {'_id': dui, '_index': 'mesh'}} )
@@ -528,10 +532,13 @@ def getElasticData(data):
         item['heading'].append(item['trx'])
         
         for trn in item.get('trn',[]):
-            ### Add later by running:  grind-data elastic mesh ...   
-            ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
-            resp.append( {'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
-                          'eng': item.get('eng',''), 'trx': item.get('trx',''), 'active': item.get('active')} )             
+            if trn:
+                ### Add later by running:  grind-data elastic mesh ...   
+                ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
+                resp.append({'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
+                             'eng': item.get('eng',''), 'trx': item.get('trx',''), 
+                             'active': item.get('active')} 
+                           )             
                 
         if qualifs.get(dui):
             qa = []
@@ -854,8 +861,9 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
 
     if treetype == 'def':
         for trn in item.get('trn',[]):
-            trx = '$a' + fw + trn.replace('.', '.' + fw + '$x' + fw)
-            rows.append(lp + '072    ' + trx)
+            if trn:
+                trx = '$a' + fw + trn.replace('.', '.' + fw + '$x' + fw)
+                rows.append(lp + '072    ' + trx)
 
     heading = item.get('trx', '')
     if heading == '':
@@ -948,17 +956,16 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
         anot = '$a' + fw + an + fw
         rows.append(lp + '667    ' + anot )
 
-    scn = xnote.get('scnt')
-    if not scn:
-        scn = xnote.get('scn')
+    scn = xnote.get('scnt', xnote.get('scn'))
     if scn:
         scnf = '$i' + fw + scn + fw
         rows.append(lp + '680    ' + scnf )
 
     if treetype == 'daw':
         for trn in item.get('trn',[]):
-            trx = '$a' + fw + trn + fw
-            rows.append(lp + '686    ' + trx )
+            if trn:
+                trx = '$a' + fw + trn + fw
+                rows.append(lp + '686    ' + trx )
 
     hn = xnote.get('hn')
     if not hn:

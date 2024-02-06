@@ -11,7 +11,7 @@ from waitress import serve
 from application.main import create_app
 
 appname    = 'mtw-server'
-appdesc    = 'MTW Server 1.6.3'
+appdesc    = 'MTW Server 1.6.4'
 appusage   = 'Help:  ' + appname + ' -h \n'
 appauthor  = 'Filip Kriz'
 

@@ -337,7 +337,10 @@ def getLookupJson(lookups, export):
 
         terms = []
         terms_all = []
-        
+        terms_en = []
+        terms_cs = []
+
+        '''
         if export in ['js_elastic','js_parsers']:
             if xterms.get(dui):
                 ### terms termsx nterms ntermsx
@@ -345,7 +348,7 @@ def getLookupJson(lookups, export):
                     if xterms[dui].get(termtype):
                         terms_all += xterms[dui].get(termtype).split('~')
                 terms = list(set(terms_all))
-            
+        '''    
             
         if export == 'marc':
             if xterms.get(dui):
@@ -362,7 +365,7 @@ def getLookupJson(lookups, export):
                     d['terms'].append(t.replace('[OBSOLETE]','').strip())                    
                     
                                                     
-        if export in ['js_elastic','js_parsers', 'marc']:
+        if export in ['js_elastic','js_parsers','marc']:
             d['cat'] = []
             d['trn'] = []
             trees = item.get('trn','').split('~')
@@ -393,11 +396,13 @@ def getLookupJson(lookups, export):
             if rn != '0':
                 d['rn'] = rn
                 #d['xtr'].append(rn)
+                terms_en.append(rn)
 
             cas = item.get('cas')
             if cas:
                 d['cas'] = cas
                 #d['xtr'].append(cas)
+                terms_en.append(cas)
 
             crt = item.get('crt')
             if crt:
@@ -430,9 +435,7 @@ def getLookupJson(lookups, export):
                     d['rtd'].append(t)
 
 
-        if export in ['js_elastic']:
-            terms_en = []
-            terms_cs = []
+        if export in ['js_elastic','js_parsers']:
             if xterms.get(dui):
                 ###  terms nterms    => xtr_en
                 for termtype in ['terms','nterms']:
@@ -450,19 +453,19 @@ def getLookupJson(lookups, export):
             for t in terms_en:
                 terms_en_clean.append( t.replace('[OBSOLETE]','').strip() )
 
-            if terms_en:
+            if terms_en_clean:
                 d['xtr_en'] = []
 
-            for t in sorted(terms_en_clean):
-                if t:
-                    d['xtr_en'].append( t )
+                for t in sorted(terms_en_clean):
+                    if t:
+                        d['xtr_en'].append( t )
 
             if terms_cs:
                 d['xtr_cs'] = []
 
-            for t in sorted(terms_cs, key=coll.sort_key):
-                if t:
-                    d['xtr_cs'].append( t )
+                for t in sorted(terms_cs, key=coll.sort_key):
+                    if t:
+                        d['xtr_cs'].append( t )
 
 
         if dui.startswith('D'):

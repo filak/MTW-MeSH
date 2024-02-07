@@ -1624,7 +1624,7 @@ def exportTsvFile(export, inputFile, outputFile):
             line = line.replace('@'+app.config['TARGET_LANG'], '')
             line = line.replace('^^xsd:boolean', '')
 
-            row  = line.strip().split(tab)
+            row  = line.rstrip('\n').split(tab)
 
             if export in ['umls_all','umls_raw']:
                 if row[1] == 'false':

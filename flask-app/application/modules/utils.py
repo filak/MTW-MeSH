@@ -396,13 +396,13 @@ def getLookupJson(lookups, export):
             if rn != '0':
                 d['rn'] = rn
                 #d['xtr'].append(rn)
-                terms_en.append(rn)
+                #terms_en.append(rn)
 
             cas = item.get('cas')
             if cas:
                 d['cas'] = cas
                 #d['xtr'].append(cas)
-                terms_en.append(cas)
+                #terms_en.append(cas)
 
             crt = item.get('crt')
             if crt:

@@ -2,7 +2,8 @@
 
 {% include 'sparql/_namespaces.sparql' %}
 
-SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?rn ?cas
+SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?cas ?rn 
+      (GROUP_CONCAT(DISTINCT ?rnr ; separator='~') AS ?rrn)
       (GROUP_CONCAT(DISTINCT ?trns ; separator='~') AS ?trn)
       (GROUP_CONCAT(DISTINCT ?pac ; separator='~') AS ?pa)
       (GROUP_CONCAT(DISTINCT ?bd ; separator='~') AS ?btd)
@@ -46,7 +47,8 @@ WHERE {
     ?phac meshv:identifier ?pac
   }
   OPTIONAL { ?c meshv:registryNumber ?rn }
+  OPTIONAL { ?c meshv:relatedRegistryNumber ?rnr }
   OPTIONAL { ?c meshv:casn1_label ?cas }
 }
-GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?rn ?cas
+GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?cas ?rn  
 ###LIMIT 100

@@ -41,7 +41,7 @@ def create_app(debug=False, logger=None, port=5903,
 
     app.config.update(dict(
         APP_NAME = 'MTW Worker',
-        APP_VER = '0.1.9',
+        APP_VER = '0.1.10',
         API_VER = '1.0.0',
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
         local_config_file = mtu.get_instance_dir(app, config_path),

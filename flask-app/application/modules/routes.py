@@ -35,17 +35,23 @@ def ref_redirect():
         return url_for('intro')
 
 
-def show_elapsed(begin, started=None, tag=''):
+def show_elapsed(begin, started=None, tag='', msg=False):
 
-    ### TURN OFF:
-    return
+    ### To turn OFF return here:
+    #return
+
+    ## begin = timer()
+    process = 0
 
     elapsed = timer() - begin
     if started:
         process = timer() - started
+
+    if app.debug:
         print("%.3f" % elapsed, "%.3f" % process, tag)
-    else:
-        print("%.3f" % elapsed, "0.000", tag)
+
+    if msg:
+        return "%.3f" % elapsed + 's'  
 
     return elapsed
 

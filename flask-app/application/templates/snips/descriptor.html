@@ -197,7 +197,7 @@
         {% endif %}
       </dt>
       <dd class="col-sm-8">
-        {{ item['val'] }}
+        {{ item['val'] | safe }}
       </dd>
 
     {% endfor %}

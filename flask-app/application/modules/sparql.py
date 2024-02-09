@@ -327,6 +327,15 @@ def parseDescriptor(descriptor):
 
             result['labels']['prefCui'] = row['o']['value'].replace(app.config['SOURCE_NS'],'')
 
+            if row.get('cas'):
+                details.append({'p': 'CAS N1', 'val': row['cas'].get('value','')})            
+
+            if row.get('rn'):
+                details.append({'p': 'RN', 'val': row['rn'].get('value','')})
+
+            if row.get('rrn'):
+                details.append({'p': 'RN Related', 'val': row['rrn'].get('value','').replace('~','<br>')})                
+
         elif p == 'allowableQualifier':
             ui = row['o']['value']
             ui = ui.replace(app.config['SOURCE_NS'],'')

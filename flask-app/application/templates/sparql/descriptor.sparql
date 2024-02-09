@@ -2,12 +2,17 @@
 
 {% include 'sparql/_namespaces.sparql' %}
 
-SELECT ?p ?o ?label ?tlabel {
-{SELECT ?p ?o
-WHERE {
-  mesh:{{ query }} ?p ?o
-  FILTER (?p NOT IN(meshv:concept,meshv:term,mesht:concept,mesht:term))
-}}
+SELECT ?p ?o ?label ?tlabel ?cas ?rn 
+(GROUP_CONCAT(DISTINCT ?rnr ; separator='~') AS ?rrn)
+{
+  {
+    SELECT ?p ?o
+    WHERE {
+      BIND(mesh:{{ query }} as ?d)
+      ?d ?p ?o .
+      FILTER (?p NOT IN(meshv:concept,meshv:term,mesht:concept,mesht:term))
+    }
+  }
    OPTIONAL {
    ?o rdfs:label ?label
   }
@@ -15,6 +20,19 @@ WHERE {
    ?o mesht:preferredTerm ?t .
    ?t mesht:prefLabel ?tlabel
   }
+   OPTIONAL {
+   ?d meshv:preferredConcept ?o . 
+   ?o meshv:casn1_label ?cas
+  }
+   OPTIONAL {
+   ?d meshv:preferredConcept ?o . 
+   ?o meshv:registryNumber ?rn
+  }  
+   OPTIONAL {
+   ?d meshv:preferredConcept ?o . 
+   ?o meshv:relatedRegistryNumber ?rnr 
+  }  
 }
+GROUP BY ?p ?o ?label ?tlabel ?cas ?rn
 ORDER BY ?p ?label
 

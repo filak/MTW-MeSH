@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "DEV Server",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "justMyCode": true,
@@ -23,7 +23,7 @@
         },
         {
             "name": "DEV Worker",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "justMyCode": true,
@@ -42,7 +42,7 @@
         },
         {
             "name": "MTW Server",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "mtw-server.py",
             "justMyCode": false,
@@ -62,7 +62,7 @@
         },
         {
             "name": "MTW Worker",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "mtw-worker.py",
             "justMyCode": false,
@@ -81,7 +81,7 @@
         },                
         {
             "name": "mesh-trx2nt",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "tools/mesh-trx2nt.py",
             "console": "integratedTerminal",

@@ -27,7 +27,7 @@ def create_app(debug=False, logger=None, port=5900,
     if url_prefix:
         url_prefix = '/' + url_prefix
     else:
-        url_prefix = ''    
+        url_prefix = '/'    
 
     app = Flask(__name__, instance_relative_config=True, static_url_path=static_url_path)
 
@@ -59,7 +59,7 @@ def create_app(debug=False, logger=None, port=5900,
     app.config.update(dict(
         APPLICATION_ROOT = url_prefix,
         APP_NAME = 'MTW',
-        APP_VER = '1.6.4',
+        APP_VER = '1.6.5',
         API_VER = '1.0.0',
         DBVERSION = 1.0,
         CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
@@ -67,10 +67,12 @@ def create_app(debug=False, logger=None, port=5900,
         CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1),
         CSRF_COOKIE_SECURE = True,
         SESSION_COOKIE_HTTPONLY = True,
+        SESSION_COOKIE_PATH = url_prefix,
         SESSION_COOKIE_SAMESITE = 'Lax',
         SESSION_COOKIE_SECURE = True,
         SESSION_FILE_THRESHOLD = 1000,
         SESSION_PERMANENT = False,
+        SESSION_REFRESH_EACH_REQUEST = True,
         SESSION_REVERSE_PROXY = True,
         SESSION_USE_SIGNER = True,
         SESSION_TYPE = 'filesystem',
@@ -111,12 +113,12 @@ def create_app(debug=False, logger=None, port=5900,
         app.config.update({'_RELAXED': True})      
 
     if app.config['SERVER_NAME']:
-        app.config.update({'SESSION_COOKIE_DOMAIN': app.config['SERVER_NAME']})
+        app.config.update({'SESSION_COOKIE_DOMAIN': mtu.getCookieDomain( app.config['SERVER_NAME']) })
 
     ## --fqdn <server_name>
     if server_name:
         app.config.update({'SERVER_NAME': server_name})
-        app.config.update({'SESSION_COOKIE_DOMAIN': server_name}) 
+        app.config.update({'SESSION_COOKIE_DOMAIN': mtu.getCookieDomain(server_name)})
 
     if app.config.get('SERVER_NAME'):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)

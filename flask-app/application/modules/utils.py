@@ -40,6 +40,14 @@ def get_instance_dir(app, file_path):
         return os.path.normpath(os.path.join(datadir, file_path) )
     else:
         return datadir
+    
+
+def getCookieDomain(server_name):
+    if server_name:
+        parts = server_name.split(':')
+        return parts[0]
+    else:
+        return '127.0.0.1'    
 
 
 ### Config loading
@@ -122,6 +130,7 @@ def getLocalConfValue(conf, fp=''):
         d['CSRF_DISABLE'] = conf.getboolean(section, 'DEV_DISABLE_CSRF', fallback=False)
         d['GCSP'] = json.loads(conf.get(section, 'GCSP'))
         d['CHAR_NORM_FILE'] = conf.get(section, 'CHAR_NORM_FILE', fallback='norm_chars_table.tsv.txt')
+        d['MESH_BROWSER'] = conf.get(section, 'MESH_BROWSER', fallback='https://meshb.nlm.nih.gov/record/ui?ui=')
 
         section = 'sparqlconf'
         d['SPARQL_HOST'] = conf.get(section, 'SPARQL_HOST', fallback='http://127.0.0.1:3030/')
@@ -338,17 +347,7 @@ def getLookupJson(lookups, export):
         terms = []
         terms_all = []
         terms_en = []
-        terms_cs = []
-
-        '''
-        if export in ['js_elastic','js_parsers']:
-            if xterms.get(dui):
-                ### terms termsx nterms ntermsx
-                for termtype in ['terms','termsx','nterms','ntermsx']:
-                    if xterms[dui].get(termtype):
-                        terms_all += xterms[dui].get(termtype).split('~')
-                terms = list(set(terms_all))
-        '''    
+        terms_cs = []  
             
         if export == 'marc':
             if xterms.get(dui):
@@ -833,10 +832,12 @@ def getMarc(lookups, export, params, as_string=True):
             if xnote.get('pm'):
                 msh += fw + '$p' + fw + xnote.get('pm')
     
+            ### Remove after moving to 450 field # https://github.com/filak/MTW-MeSH/issues/48
             if item.get('rn'):
                 if item.get('rn','0') != 0:
                     msh += fw + '$r' + fw + item.get('rn')
     
+            ### Remove after moving to 450 field # https://github.com/filak/MTW-MeSH/issues/48
             if item.get('cas'):
                 msh += fw + '$s' + fw + item.get('cas')
     
@@ -906,6 +907,8 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     for xt in sorted(terms, key=coll.sort_key):
         xtr = '$w' + fw + 'i' + fw + '$a' + fw + xt + fw + '$i' + fw + 'UF'
         rows.append(lp + '4' + htag + '    ' + xtr)
+
+    ### TBD: Add item.rn, item.cas as 450 fields # https://github.com/filak/MTW-MeSH/issues/48    
 
     btd = {}
     btdx = []

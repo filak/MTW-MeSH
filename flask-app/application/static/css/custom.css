@@ -1,4 +1,9 @@
 /* MTW Custom CSS */
+html {
+  position: relative;
+  min-height: 100%;
+  box-sizing: border-box;
+}
 
 body {
   padding-top: 4.5rem;
@@ -124,15 +129,50 @@ body {
   margin: 0;
 }
 
+.theme-slate body  {
+  font-size: 1rem;
+}  
+
+.theme-slate .navbar-brand  {
+  border: 0;
+} 
+
 .theme-slate .nav-link {
   background-image: none;
   border: 0;
+  padding: 0.5rem 1rem;
 }
 
-.theme-slate .navbar-btn {
-  margin-top: 3px;
-  margin-right: 3px;
+.theme-slate .navbar  {
+  border-bottom: 1px solid #515960;
+  padding: 0.5rem 1rem;
 }
 
+.theme-slate .btn {
+  padding: .375rem .75rem;
+}
+
+.theme-slate .input-group-text {
+  padding: .375rem .75rem;
+}
+
+.theme-slate .form-control {
+  height: calc(1.5em + 0.75rem + 2px);
+  padding: .375rem .75rem;
+}
+
+.theme-slate .col-form-label {
+    padding-top: calc(0.375rem + 1px);
+    padding-bottom: calc(0.375rem + 1px);
+}
+
+.theme-slate .custom-select {
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+}
+
+.theme-slate code {
+  color: #e9ecef;
+}
 
 

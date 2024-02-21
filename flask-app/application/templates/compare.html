@@ -19,7 +19,7 @@ Compare {{ dui }} - {{ year }}
     <div class="col-xl-4 col-lg-6 col-md-6">
       <ul class="list-inline mb-1">
         <li class="list-inline-item align-middle">
-          <h4 class="">Current <small class="text-info">{{ dui }}</small>
+          <h4 class="">Current <a href="{{ url_for('search', dui=dui) }}"><small class="text-info">{{ dui }}</small></a>
           </h4>
         </li>
         <li class="list-inline-item float-right align-middle">

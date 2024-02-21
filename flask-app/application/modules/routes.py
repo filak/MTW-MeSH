@@ -169,7 +169,10 @@ def todo(tlist):
 def update_clipboard(dui):
 
     if request.form.get('action'):
+        
+        session.modified = True
         db = get_db()
+
         dui = dui.replace('?','').strip()
         duri = app.config['SOURCE_NS'] + dui
         locked_by = get_locked_by(session['userid'], session['uname'])

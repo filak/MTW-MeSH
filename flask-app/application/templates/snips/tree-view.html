@@ -1,30 +1,41 @@
 {% if dui and tree %}
-<h4>
-  {{ dui }}
+<ul class="list-inline mb-3">
+  <li class="list-inline-item">
+    <h4>
+      {{ dui }}
+    </h4>
+  </li>
+  <li class="list-inline-item">    
+      <a class="btn btn-secondary ml-1 mr-1" role="button" href="{{ url_for('audit', dui=dui) }}" 
+         title="Show Audit" aria-label="Show Audit">
+        <i class="fas fa-bars"></i></a>
 
-  <a class="btn btn-secondary ml-3" role="button" href="{{ url_for('audit', dui=dui) }}" title="Show Audit" aria-label="Show Audit">
-    <i class="fas fa-bars"></i></a>
+      <button class="btn btn-info mr-1" type="button" 
+              title="Show Descriptor view" aria-label="Show Descriptor view"
+              data-toggle="modal" data-target="#showDescView">
+        <i class="fas fa-info-circle"></i>
+      </button>
 
-  <a class="btn btn-info" role="button" href="{{ url_for('compare', dui=dui) }}" title="Compare versions" aria-label="Compare versions">
-    <i class="fas fa-not-equal"></i></a>
+      <a class="btn btn-light mr-1" role="button" href="{{ url_for('compare', dui=dui) }}" 
+         title="Compare versions" aria-label="Compare versions">
+        <i class="fas fa-not-equal"></i></a>
 
-  <button class="btn btn-link" type="button" title="Show Descriptor view" aria-label="Show Descriptor view"
-    data-toggle="modal" data-target="#showDescView">
-    <i class="fas fa-info-circle"></i>
-  </button>
+      <a href="{{ config.AUT_LINK }}{{ dui }}" target="_blank" rel="noopener noreferrer" 
+         title="Show Authority" role="button" class="btn btn-outline-info mr-1">
+         <i class="fas fa-link"></i></a>
 
-  <a href="{{ config.AUT_LINK }}{{ dui }}" target="_blank" rel="noopener noreferrer" title="Show Authority" role="button" class="btn btn-link">
-    <i class="fas fa-link"></i></a>
+      <a href="{{ config.MESH_WEB }}{{ dui }}" target="_blank" rel="noopener noreferrer" 
+         title="Show Source" role="button" class="btn btn-outline-info mr-1">
+         <i class="fas fa-external-link-alt"></i></a>
 
-  <a href="{{ config.MESH_WEB }}{{ dui }}" target="_blank" rel="noopener noreferrer" title="Show Source" role="button" class="btn btn-link">
-    <i class="fas fa-external-link-alt"></i></a>
+      <a href="{{ config.MESH_BROWSER }}{{ dui }}" target="_blank" rel="noopener noreferrer" 
+         title="MeSH Browser" role="button" class="btn btn-outline-info">
+         <i class="fas fa-leaf" aria-hidden="true"></i></a>        
+  </li>
+</ul>
 
-</h4>
-
-  <ul class="list-unstyled">
-
+<ul class="list-unstyled">
     {% for row in tree['results']['bindings'] %}
-
       <li class="mb-1">
       {% if dui == row['d']['repr'] %}
         {% set TEXT_COLOR_TRN = '' %}
@@ -69,6 +80,6 @@
 
         </li>
     {% endfor %}
-  </ul>
+</ul>
 
 {% endif %}

@@ -40,6 +40,14 @@ def get_instance_dir(app, file_path):
         return os.path.normpath(os.path.join(datadir, file_path) )
     else:
         return datadir
+    
+
+def getCookieDomain(server_name):
+    if server_name:
+        parts = server_name.split(':')
+        return parts[0]
+    else:
+        return '127.0.0.1'    
 
 
 ### Config loading
@@ -122,6 +130,7 @@ def getLocalConfValue(conf, fp=''):
         d['CSRF_DISABLE'] = conf.getboolean(section, 'DEV_DISABLE_CSRF', fallback=False)
         d['GCSP'] = json.loads(conf.get(section, 'GCSP'))
         d['CHAR_NORM_FILE'] = conf.get(section, 'CHAR_NORM_FILE', fallback='norm_chars_table.tsv.txt')
+        d['MESH_BROWSER'] = conf.get(section, 'MESH_BROWSER', fallback='https://meshb.nlm.nih.gov/record/ui?ui=')
 
         section = 'sparqlconf'
         d['SPARQL_HOST'] = conf.get(section, 'SPARQL_HOST', fallback='http://127.0.0.1:3030/')

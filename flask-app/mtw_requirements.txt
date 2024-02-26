@@ -23,7 +23,7 @@ pip_audit==2.7.1 ## Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -
 pyuca==1.2
 requests==2.31.0
 requests_futures==1.0.1
-setuptools==69.1.0
+setuptools==69.1.1
 urllib3==1.26.18
 waitress==3.0.0
 Werkzeug==3.0.1

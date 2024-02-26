@@ -79,17 +79,18 @@ def validateBasicAuth():
     if has_app_context():
         app.logger.error('Basic Auth failed')   
 
-
+ 
 def getReqHost():
     if has_request_context():
         return str(request.host).strip().split(':')[0]
-    
-    
+
+
 def getReqOrigin():
     if has_request_context():
         if request.origin:
-            origin = str(request.origin).strip().strip('https://').strip('http://')
-            return origin.split(':')[0]     
+            origin = str(request.origin).strip().replace('https://','').replace('http://','').strip()
+            return origin.split(':')[0] 
+        return getReqHost()    
   
 
 def validateRequest(scope=None, token=None):

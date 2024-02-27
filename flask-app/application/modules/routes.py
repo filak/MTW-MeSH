@@ -1885,7 +1885,7 @@ def get_db():
             g.sqlite_db = connect_db()
             ##g.sqlite_db.execute('pragma foreign_keys=on')
         except sqlite3.Error as e:
-            error = 'Flask get_db error : '+str(e.args[0])
+            error = 'Flask get_db error : ' + str(e.args[0])
             flash(error, 'danger')
             app.logger.error(error)
             return None

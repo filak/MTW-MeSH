@@ -84,7 +84,7 @@ def create_app(debug=False, logger=None, port=5900,
         pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json')        
     ))   
 
-    app.app_context().push()   
+    app.app_context().push()
 
     adminConfig = mtu.getConfig(app.config['admin_config_file'], admin=True)
     if not adminConfig:

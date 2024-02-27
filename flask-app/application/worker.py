@@ -82,7 +82,6 @@ def create_app(debug=False, logger=None, port=5903,
     if relax:
         app.config.update({'APP_RELAXED': True}) 
 
-    app.app_context().push()
     from application.modules.worker_api import endpoints
 
     return app

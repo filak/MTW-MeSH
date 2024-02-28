@@ -5,7 +5,7 @@ from secrets import compare_digest
 from flask import abort, request, session, redirect, url_for, has_app_context, has_request_context
 from flask import current_app as app
 
-from application.main import WORKER_TOKEN_HEADER
+WORKER_TOKEN_HEADER = 'x-mdv-api-token'
 
 
 def login_required(f):
@@ -19,27 +19,7 @@ def login_required(f):
     return secure_function 
 
 
-def authorized(scope=None):
-    def decorator(f):
-        @wraps(f)
-        def check_authorized(*args, **kwargs):
-
-            if not app.config.get('APP_RELAXED'):
-                if not validateBasicAuth():
-                    abort(403)
-
-                code, msg = validateRequest(scope=scope)
-                if code != 200:
-                    app.logger.error(msg)
-                    abort(403)
-        
-            return f(*args, **kwargs)  
-        
-        return check_authorized
-    return decorator
-
-
-def public_api_only(scope=None):
+def public_api_only():
     def decorator(f):
         @wraps(f)
         def check_public(*args, **kwargs):
@@ -50,7 +30,11 @@ def public_api_only(scope=None):
                     if not validateBasicAuth():
                         abort(403)
 
-                    code, msg = validateRequest(scope=scope)
+                    code, msg = validateRequest()
+
+                    if app.debug:
+                        print(code, msg)
+
                     if code != 200:
                         app.logger.error(msg)
                         abort(403)
@@ -93,7 +77,7 @@ def getReqOrigin():
         return getReqHost()    
   
 
-def validateRequest(scope=None, token=None):
+def validateRequest(token=None):
 
     if not has_app_context():
         return (418, 'No app context') 
@@ -113,7 +97,7 @@ def validateRequest(scope=None, token=None):
         return (403, errmsg)  
 
     token_data = decodeApiToken(token, app.config.get('API_KEY'), 
-                                        salt=scope, 
+                                        salt=app.config.get('API_SCOPE'),  
                                         max_age=app.config.get('API_MAX_AGE') )
 
     if not token_data:
@@ -167,23 +151,11 @@ def genApiToken(secret, salt='', data=''):
     return s.dumps(data) 
 
 
-def genApiHeaders(scope=None, data=''):
+def genApiHeaders(data='check'):
     api_token = genApiToken(app.config['API_KEY'], 
-                            salt=scope,
+                            salt=app.config['API_SCOPE'],
                             data=data)
-    hdr = WORKER_TOKEN_HEADER
-    headers = {hdr: api_token}    
+    headers = {WORKER_TOKEN_HEADER: api_token}    
 
     return headers
     
-
-def setToken(scope=None, data=''):
-    return genApiToken(app.config['API_KEY'], 
-                            salt=scope,
-                            data=data) 
-
-
-def getToken(token, max_age=None, scope=None):
-    return decodeApiToken(token, app.config['API_KEY'], 
-                                    salt=scope, 
-                                    max_age=max_age)

@@ -149,8 +149,9 @@ def getLocalConfValue(conf, fp=''):
         d['TRX_NOTES'] = conf.get(section, 'TRX_NOTES').replace('\n','').strip().split(',')
 
         section = 'worker'
-        d['WORKER_HOST'] = conf.get(section, 'WORKER_HOST', fallback='http://127.0.0.1:55933/')  
-        d['API_STATUS'] = conf.get(section, 'API_STATUS', fallback='private')
+        d['WORKER_HOST'] = conf.get(section, 'WORKER_HOST', fallback='http://127.0.0.1:55933/')
+        d['API_SCOPE']   = conf.get(section, 'API_SCOPE', fallback='mtw_api_worker')
+        d['API_STATUS']  = conf.get(section, 'API_STATUS', fallback='private')
         d['API_MAX_AGE'] = int( conf.get(section, 'API_TOKEN_MAX_AGE', fallback=10) )
         d['API_TIMEOUT'] = int( conf.get(section, 'API_TIMEOUT', fallback=10) )
         if conf.get(section, 'API_AUTH_BASIC_USER', fallback=None) and conf.get(section, 'API_AUTH_BASIC_PWD', fallback=None):

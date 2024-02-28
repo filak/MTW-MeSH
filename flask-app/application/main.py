@@ -10,8 +10,6 @@ from pyuca import Collator
 coll = Collator()
 pp = pprint.PrettyPrinter(indent=2)
 
-WORKER_TOKEN_HEADER = 'x-mdv-api-token'
-
 from application.modules.extensions import Talisman, cache, csrf, paranoid, sess
 from application.modules import utils as mtu
 
@@ -63,6 +61,8 @@ def create_app(debug=False, logger=None, port=5900,
         API_VER = '1.0.0',
         DBVERSION = 1.0,
         CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
+        CACHE_THRESHOLD = 1000,
+        CACHE_TYPE = 'FileSystemCache',
         CSRF_COOKIE_HTTPONLY = True,
         CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1),
         CSRF_COOKIE_SECURE = True,

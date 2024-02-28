@@ -150,6 +150,7 @@ def getLocalConfValue(conf, fp=''):
 
         section = 'worker'
         d['WORKER_HOST'] = conf.get(section, 'WORKER_HOST', fallback='http://127.0.0.1:55933/')
+        d['WORKER_HEADER'] = conf.get(section, 'WORKER_HEADER', fallback='x-mdv-api-token')
         d['API_SCOPE']   = conf.get(section, 'API_SCOPE', fallback='mtw_api_worker')
         d['API_STATUS']  = conf.get(section, 'API_STATUS', fallback='private')
         d['API_MAX_AGE'] = int( conf.get(section, 'API_TOKEN_MAX_AGE', fallback=10) )

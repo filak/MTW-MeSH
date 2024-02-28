@@ -5,8 +5,6 @@ from secrets import compare_digest
 from flask import abort, request, session, redirect, url_for, has_app_context, has_request_context
 from flask import current_app as app
 
-WORKER_TOKEN_HEADER = 'x-mdv-api-token'
-
 
 def login_required(f):
     @wraps(f)
@@ -90,7 +88,7 @@ def validateRequest(token=None):
             token = request.args.get('token')
 
         if not token:
-            token = request.headers.get(WORKER_TOKEN_HEADER)    
+            token = request.headers.get(app.config['WORKER_HEADER'])
         
     if not token:
         errmsg = 'Missing token'
@@ -155,7 +153,8 @@ def genApiHeaders(data='check'):
     api_token = genApiToken(app.config['API_KEY'], 
                             salt=app.config['API_SCOPE'],
                             data=data)
-    headers = {WORKER_TOKEN_HEADER: api_token}    
+    hdr = app.config['WORKER_HEADER']
+    headers = {hdr: api_token}
 
     return headers
     

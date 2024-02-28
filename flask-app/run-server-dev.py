@@ -12,7 +12,7 @@ def start():
         config_path = DEFAULT_CONFIG
 
     app = create_app(debug=True, config_path=config_path, port=DEFAULT_PORT)
-    app.run(port=DEFAULT_PORT, debug=True, threaded=True)
+    app.run(port=DEFAULT_PORT, debug=True, threaded=False)
 
 
 if __name__ == "__main__":

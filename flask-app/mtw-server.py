@@ -19,7 +19,7 @@ def start():
     parser = argparse.ArgumentParser(description=appdesc, prog=appname, usage='%(prog)s [options]')
     parser.add_argument('--config', type=str, help='Config file path - default: '+DEFAULT_CONFIG, default=DEFAULT_CONFIG)
     parser.add_argument('--debug', help='Run in debug mode - DO NOT use in production !', action='store_true')
-    parser.add_argument('--fqdn', type=str, help='Fully qualified domain name - MUST be in sync with config !', default=None)
+    parser.add_argument('--fqdn', type=str, help='Fully qualified domain name', default=None)
     parser.add_argument('--host', type=str, help='Host - default: '+DEFAULT_HOST, default=DEFAULT_HOST)
     parser.add_argument('--port', type=int, help='Port number - default: '+str(DEFAULT_PORT), default=DEFAULT_PORT)
     parser.add_argument('--prefix', type=str, help='Path prefix - default: '+str(DEFAULT_PREFIX), default=DEFAULT_PREFIX)
@@ -71,5 +71,3 @@ def start():
 
 if __name__ == "__main__":
     start()
-    
-    

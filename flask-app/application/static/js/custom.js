@@ -282,9 +282,10 @@ $(document).ready(function(){
 
 // Functions
 
-/* 
+/*
 Wrap a string with <pre> tag
 */
+
 function wrapStrPre(mystr) {
     if (mystr) {
         return '<pre>' + mystr + '</pre>';

@@ -8,7 +8,7 @@
 @prefix meshv:   <http://id.nlm.nih.gov/mesh/vocab#> .
 @prefix mesht:   <http://www.medvik.cz/schema/mesh/vocab/#> .
 
-### Version 1.0.4
+### Version 1.0.5
 
 ## Initialize text query
 [] ja:loadClass       "org.apache.jena.query.text.TextQuery" .
@@ -50,6 +50,8 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
     text:queryParser text:AnalyzingQueryParser ;
     ##text:defineAnalyzers [ . . . ] ;
     text:multilingualSupport true ;
+    ## TBD https://jena.apache.org/documentation/query/text-query.html#lists-of-indexed-properties :
+    ## text:propLists ( [ . . . ] . . . ) ;
  .
 
 <#entMap> 
@@ -68,6 +70,8 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
          [ text:field "ftext" ; text:predicate meshv:prefLabel ]
          [ text:field "ftext" ; text:predicate meshv:altLabel ]
          [ text:field "ftext" ; text:predicate meshv:casn1_label ]
+         [ text:field "ftext" ; text:predicate meshv:registryNumber ]
+         [ text:field "ftext" ; text:predicate meshv:relatedRegistryNumber ]
          [ text:field "ftext" ; text:predicate meshv:note ]
          [ text:field "ftext" ; text:predicate meshv:onlineNote ]
          [ text:field "ftext" ; text:predicate meshv:publicMeSHNote ]

@@ -1,4 +1,4 @@
-/* MTW Custom CSS */
+/* MTW Custom CSS - v1.6.5 */
 html {
   position: relative;
   min-height: 100%;
@@ -86,6 +86,7 @@ progress {
   width: 100%;
 	display: inline-block;
 	-webkit-appearance: none;
+        appearance: none;
 	border: none;
 }
 
@@ -127,6 +128,10 @@ body {
 .footer p {
   padding: 5px;
   margin: 0;
+}
+
+#scopeNoteTrx, #noteTrx {
+  height: auto;
 }
 
 .theme-slate body  {

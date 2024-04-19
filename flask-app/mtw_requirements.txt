@@ -10,8 +10,11 @@ diff_match_patch==20230430
 Flask==3.0.2
 Flask-Caching==2.1.0
 Flask-Paranoid==0.3.0
-#Flask-SeaSurf==1.1.1 # Broken with Flask 3+
-#Run: pip install https://github.com/maxcountryman/flask-seasurf/archive/refs/heads/main.zip
+# Flask-SeaSurf==1.1.1 is broken with Flask 3+
+# The last version of Flask-Seasurf on PyPi (v1.1.1) is outdated
+# We install from the last commit on GitHub instead
+# See: https://github.com/maxcountryman/flask-seasurf/issues/135
+Flask-SeaSurf @ https://github.com/maxcountryman/flask-seasurf/archive/refs/heads/main.tar.gz#sha256=64048ed1f01d6bf6ae369112eb70a21dcbbb6612eddd3a9069d8f49353c35400
 Flask-Session==0.6.0
 flask-talisman==1.1.0
 future==0.18.3
@@ -29,9 +32,9 @@ waitress==3.0.0
 Werkzeug==3.0.1
 wheel==0.42.0
 ### (optional) If building for Windows:
-pyinstaller==6.4.0
-pyinstaller-hooks-contrib==2024.1
+pyinstaller==6.4.0; sys_platform == "win32"
+pyinstaller-hooks-contrib==2024.1; sys_platform == "win32"
 ## Install pywin32
-pywin32==306
+pywin32==306; sys_platform == "win32"
 ## and run in CMD as Admin with activated VENV (!): 
 ##  python venv\Scripts\pywin32_postinstall.py -install

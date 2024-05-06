@@ -29,7 +29,7 @@ requests_futures==1.0.1
 setuptools==69.1.1
 urllib3==1.26.18
 waitress==3.0.0
-Werkzeug==3.0.1
+Werkzeug==3.0.3
 wheel==0.42.0
 ### (optional) If building for Windows:
 pyinstaller==6.4.0; sys_platform == "win32"

@@ -13,50 +13,52 @@ import sys
 import time
 import uuid
 import configparser
+import pprint
+import arrow
+import diff_match_patch as dmp_module
+
 from functools import reduce
 from requests_futures.sessions import FuturesSession
 from pathlib import Path
 from urllib import parse as uparse
+from pyuca import Collator
 
-import arrow
-import diff_match_patch as dmp_module
-
-from flask import abort
 from flask import current_app as app
 
-from application.main import coll, pp 
 from application.modules import sparql
 from application.modules.auth import genApiHeaders, getReqHost
 
+coll = Collator()
 fsession = FuturesSession()
+pp = pprint.PrettyPrinter(indent=2)
 
 
 def get_instance_dir(app, file_path):
     if getattr(sys, 'frozen', False):
-        datadir = os.path.normpath(os.path.join(os.path.dirname(sys.executable), 'instance') )
+        datadir = os.path.normpath(os.path.join(os.path.dirname(sys.executable), 'instance'))
     else:
         datadir = os.path.normpath(app.instance_path)
     if file_path:
-        return os.path.normpath(os.path.join(datadir, file_path) )
+        return os.path.normpath(os.path.join(datadir, file_path))
     else:
         return datadir
-    
+
 
 def getCookieDomain(server_name):
     if server_name:
         parts = server_name.split(':')
         return parts[0]
     else:
-        return '127.0.0.1'    
+        return '127.0.0.1'
 
 
-### Config loading
+# Config loading
 def getConfig(cfg_file, admin=False):
-    cpath = Path( cfg_file )
+    cpath = Path(cfg_file)
     if not cpath.is_file():
-        error = 'Missing config file : '+ str(cfg_file)
+        error = 'Missing config file : ' + str(cfg_file)
         app.logger.error(error)
-        print('ERROR: '+error)
+        print('ERROR: ' + error)
         if admin:
             print('Run the set-mtw-admin tool !')
         return
@@ -64,11 +66,11 @@ def getConfig(cfg_file, admin=False):
         config = configparser.ConfigParser()
         config.read(cpath, encoding='utf-8')
         return config
-    
+
     except Exception as err:
-        error = 'Problem reading config file : '+ str(cfg_file) + ' : ' + str(err)
+        error = 'Problem reading config file : ' + str(cfg_file) + ' : ' + str(err)
         app.logger.error(error)
-        print('ERROR: '+error) 
+        print('ERROR: ' + error)
 
 
 def getAdminConfValue(conf, worker_only=False, fp=''):
@@ -76,54 +78,54 @@ def getAdminConfValue(conf, worker_only=False, fp=''):
         d = {}
         if worker_only:
             d['API_KEY'] = conf.get('worker', 'API_KEY')
-        else:    
-            d['ADMINNAME']  = conf.get('adminconf', 'ADMINNAME')
-            d['ADMINPASS']  = conf.get('adminconf', 'ADMINPASS')
+        else:
+            d['ADMINNAME'] = conf.get('adminconf', 'ADMINNAME')
+            d['ADMINPASS'] = conf.get('adminconf', 'ADMINPASS')
             d['SECRET_KEY'] = conf.get('adminconf', 'SECRET_KEY')
-            d['API_KEY']    = conf.get('worker', 'API_KEY')
+            d['API_KEY'] = conf.get('worker', 'API_KEY')
         return d
 
     except configparser.Error as pe:
-        error = 'Problem parsing Admin config file : '+ fp + ' : ' + str(pe)
+        error = 'Problem parsing Admin config file : ' + fp + ' : ' + str(pe)
         app.logger.error(error)
-        print('ERROR: '+error)
+        print('ERROR: ' + error)
 
     except Exception as err:
-        error = 'Problem reading Admin config file : '+ fp + ' : ' + str(err)
+        error = 'Problem reading Admin config file : ' + fp + ' : ' + str(err)
         app.logger.error(error)
-        print('ERROR: '+error)         
+        print('ERROR: ' + error)
 
 
 def getLocalConfValue(conf, fp=''):
     try:
         d = {}
         section = 'appconf'
-        for key, val in json.loads( conf.get(section, 'CACHING', fallback={}) ).items():
+        for key, val in json.loads(conf.get(section, 'CACHING', fallback={})).items():
             d[key] = val
 
-        for key, val in json.loads( conf.get(section, 'SESSIONS', fallback={}) ).items():
+        for key, val in json.loads(conf.get(section, 'SESSIONS', fallback={})).items():
             d[key] = val
 
         d['SERVER_NAME'] = conf.get(section, 'SERVER_NAME', fallback=None)
         d['DATABASE_NAME'] = conf.get(section, 'DATABASE_NAME', fallback='mtw.db')
-        d['DATABASE'] = get_instance_dir( app, 'db/'+d['DATABASE_NAME'] )
+        d['DATABASE'] = get_instance_dir(app, 'db/' + d['DATABASE_NAME'])
         d['DEFAULT_THEME'] = conf.get(section, 'DEFAULT_THEME', fallback='slate')
-        d['SRC_DIR'] = conf.get(section, 'SRC_DIR', fallback=get_instance_dir(app, '_data/in') )
-        d['EXP_DIR'] = conf.get(section, 'EXP_DIR', fallback=get_instance_dir(app, '_data/out') )
+        d['SRC_DIR'] = conf.get(section, 'SRC_DIR', fallback=get_instance_dir(app, '_data/in'))
+        d['EXP_DIR'] = conf.get(section, 'EXP_DIR', fallback=get_instance_dir(app, '_data/out'))
         d['TARGET_YEAR'] = conf.get(section, 'TARGET_YEAR')
         d['PREV_YEAR_DEF'] = conf.get(section, 'PREV_YEAR_DEF')
         d['PREV_YEARS'] = conf.get(section, 'PREV_YEARS').strip().split(',')
         d['REVISED_AFTER'] = conf.get(section, 'REVISED_AFTER')
         d['CREATED_AFTER'] = conf.get(section, 'CREATED_AFTER')
-        d['MARC_LIBCODE']  = conf.get(section, 'MARC_LIBCODE', fallback='LIB')
-        d['MARC_CATCODE']  = conf.get(section, 'MARC_CATCODE', fallback='CAT')
+        d['MARC_LIBCODE'] = conf.get(section, 'MARC_LIBCODE', fallback='LIB')
+        d['MARC_CATCODE'] = conf.get(section, 'MARC_CATCODE', fallback='CAT')
         d['MARC_MESHCODE'] = conf.get(section, 'MARC_MESHCODE', fallback='xxmesh')
         d['MARC_LINE'] = conf.get(section, 'MARC_LINE', fallback='mrk')
         d['MARC_TREE'] = conf.get(section, 'MARC_TREE', fallback='def')
         d['MARC_ANGLO'] = conf.get(section, 'MARC_ANGLO', fallback='no')
-        d['REFRESH_AFTER'] = int( conf.get(section, 'REFRESH_AFTER', fallback=30) )
-        d['LOGOUT_AFTER']  = int( conf.get(section, 'LOGOUT_AFTER', fallback=30) )
-        d['CLIPBOARD_SIZE'] = int( conf.get(section, 'CLIPBOARD_SIZE', fallback=20) )
+        d['REFRESH_AFTER'] = int(conf.get(section, 'REFRESH_AFTER', fallback=30))
+        d['LOGOUT_AFTER'] = int(conf.get(section, 'LOGOUT_AFTER', fallback=30))
+        d['CLIPBOARD_SIZE'] = int(conf.get(section, 'CLIPBOARD_SIZE', fallback=20))
         d['AUT_LINK'] = conf.get(section, 'AUT_LINK', fallback='/mtw/search/dui:')
         d['PID_PREFIX_CONCEPT'] = conf.get(section, 'PID_PREFIX_CONCEPT', fallback='F')
         d['CSRF_COOKIE_SECURE'] = conf.getboolean(section, 'CSRF_COOKIE_SECURE', fallback=True)
@@ -144,22 +146,22 @@ def getLocalConfValue(conf, fp=''):
         d['TRX_NS_VOCAB'] = conf.get(section, 'TRX_NS_VOCAB', fallback='http://www.medvik.cz/schema/mesh/vocab/#')
 
         section = 'flowconf'
-        d['ROLES'] = conf.get(section, 'ROLES').replace('\n','').strip().split(',')
-        d['DESC_NOTES'] = conf.get(section, 'DESC_NOTES').replace('\n','').strip().split(',')
-        d['TRX_NOTES'] = conf.get(section, 'TRX_NOTES').replace('\n','').strip().split(',')
+        d['ROLES'] = conf.get(section, 'ROLES').replace('\n', '').strip().split(',')
+        d['DESC_NOTES'] = conf.get(section, 'DESC_NOTES').replace('\n', '').strip().split(',')
+        d['TRX_NOTES'] = conf.get(section, 'TRX_NOTES').replace('\n', '').strip().split(',')
 
         section = 'worker'
         d['WORKER_HOST'] = conf.get(section, 'WORKER_HOST', fallback='http://127.0.0.1:55933/')
         d['WORKER_HEADER'] = conf.get(section, 'WORKER_HEADER', fallback='x-mdv-api-token')
-        d['API_SCOPE']   = conf.get(section, 'API_SCOPE', fallback='mtw_api_worker')
-        d['API_STATUS']  = conf.get(section, 'API_STATUS', fallback='private')
-        d['API_MAX_AGE'] = int( conf.get(section, 'API_TOKEN_MAX_AGE', fallback=10) )
-        d['API_TIMEOUT'] = int( conf.get(section, 'API_TIMEOUT', fallback=10) )
+        d['API_SCOPE'] = conf.get(section, 'API_SCOPE', fallback='mtw_api_worker')
+        d['API_STATUS'] = conf.get(section, 'API_STATUS', fallback='private')
+        d['API_MAX_AGE'] = int(conf.get(section, 'API_TOKEN_MAX_AGE', fallback=10))
+        d['API_TIMEOUT'] = int(conf.get(section, 'API_TIMEOUT', fallback=10))
         if conf.get(section, 'API_AUTH_BASIC_USER', fallback=None) and conf.get(section, 'API_AUTH_BASIC_PWD', fallback=None):
             d['API_AUTH_BASIC'] = (conf.get(section, 'API_AUTH_BASIC_USER'), conf.get(section, 'API_AUTH_BASIC_PWD'))
 
-        d['MESH_TREE'] = loadJsonFile(get_instance_dir(app, 'conf/mesh_tree_top_'+ d['TARGET_LANG'] +'.json'))
-        d['CHAR_NORM_PATH'] = get_instance_dir(app, 'conf/'+ d['CHAR_NORM_FILE'])
+        d['MESH_TREE'] = loadJsonFile(get_instance_dir(app, 'conf/mesh_tree_top_' + d['TARGET_LANG'] + '.json'))
+        d['CHAR_NORM_PATH'] = get_instance_dir(app, 'conf/' + d['CHAR_NORM_FILE'])
 
         char_list = readDataTsv(d['CHAR_NORM_PATH'])
         d['CHAR_NORM_MAP'] = getCharMap(char_list)
@@ -168,12 +170,12 @@ def getLocalConfValue(conf, fp=''):
     except configparser.Error as pe:
         error = 'Parsing local config file : ' + fp + ' : ' + str(pe)
         app.logger.error(error)
-        print('ERROR: '+error)
+        print('ERROR: ' + error)
 
     except Exception as err:
-        error = 'Problem reading local config file : '+ fp + ' : ' + str(err)
+        error = 'Problem reading local config file : ' + fp + ' : ' + str(err)
         app.logger.error(error)
-        print('ERROR: '+error)         
+        print('ERROR: ' + error)
 
 
 def refreshStats(stat, force=False):
@@ -181,7 +183,7 @@ def refreshStats(stat, force=False):
     lpath = getLockFpath('stats')
 
     if stat == 'all':
-        for s in ['initial','actual']:
+        for s in ['initial', 'actual']:
             fpath = getStatsFpath(s)
             if s == 'initial':
                 if not fpath.is_file() and not lpath.is_file():
@@ -201,10 +203,10 @@ def refreshStats(stat, force=False):
 def exportData(export):
     lpath = getLockFpath('stats')
     ext = 'json'
-    if export in ['umls','umls_all','umls_raw']:
-        ext = 'tsv'  
+    if export in ['umls', 'umls_all', 'umls_raw']:
+        ext = 'tsv'
 
-    if export in ['umls_all','umls_raw']:
+    if export in ['umls_all', 'umls_raw']:
         fpath = getTempFpath('umls', ext=ext)
         epath = getStatsFpath(export, ext=ext)
         exportTsvFile(export, fpath, epath)
@@ -247,7 +249,7 @@ def exportLookup(export, params=None):
 
     output = ''
     gzip = False
-        
+
     if export.startswith('js_'):
         output = 'json'
         gzip = True
@@ -270,16 +272,16 @@ def exportLookup(export, params=None):
         return
 
     fpath = getStatsFpath(export, ext=output, params=params)
-    
+
     if output == 'json' and export == 'js_elastic':
         data = getLookupJson(lookups, export)
-        jdata = getElasticData(data) 
-        writeJsonFile(fpath, jdata, comp=gzip)           
+        jdata = getElasticData(data)
+        writeJsonFile(fpath, jdata, comp=gzip)
 
     elif output == 'json':
-        data = getLookupJson(lookups, export)        
+        data = getLookupJson(lookups, export)
         writeJsonFile(fpath, data, comp=gzip)
-        
+
     elif output == 'xml':
         data = getLookupXml(lookups, export)
         writeTextFile(fpath, data, comp=gzip)
@@ -301,13 +303,13 @@ def getLookupJson(lookups, export):
     xterms = {}
     if export in ['js_elastic', 'js_parsers', 'marc']:
         xdata = getBaseTerms()
-        xterms = xdata.get('desc_terms',{})
+        xterms = xdata.get('desc_terms', {})
 
     data['mesh_year'] = lookup.get('mesh_year', app.config['TARGET_YEAR'])
-    data['trx_lang']  = lookup.get('trx_lang',  app.config['TARGET_LANG'])
+    data['trx_lang'] = lookup.get('trx_lang', app.config['TARGET_LANG'])
     utc = arrow.utcnow()
     ts = lookup.get('fdate', utc.timestamp)
-    data['timestamp'] = str(arrow.get(ts) )
+    data['timestamp'] = str(arrow.get(ts))
 
     qualifiers = {}
     qualifiers_eng = {}
@@ -320,90 +322,89 @@ def getLookupJson(lookups, export):
     desc_cnt = 0
     qual_cnt = 0
 
-    for item in lookup.get('lookups_base',[]):
+    for item in lookup.get('lookups_base', []):
         dui = item['dui']
-                
+
         d = {}
-        if item.get('active','') == 'false':
+        if item.get('active', '') == 'false':
             d['active'] = False
-            d['eng'] = item.get('den','').replace('[OBSOLETE]','').strip()
+            d['eng'] = item.get('den', '').replace('[OBSOLETE]', '').strip()
         else:
             d['active'] = True
-            d['eng'] = item.get('den','')
+            d['eng'] = item.get('den', '')
 
-        if item.get('notrx','') != '':
+        if item.get('notrx', '') != '':
             d['notrx'] = True
-            d['trx'] = item.get('den','').replace('[OBSOLETE]','').strip()
+            d['trx'] = item.get('den', '').replace('[OBSOLETE]', '').strip()
         else:
-            d['trx'] = item.get('trx','')
+            d['trx'] = item.get('trx', '')
 
-        dtype = item.get('dtype','')
+        dtype = item.get('dtype', '')
         d['dc'] = getDescClass(dtype)
 
         if item.get('pa'):
             d['pa'] = []
-            for pa in item.get('pa','').split('~'):
+            for pa in item.get('pa', '').split('~'):
                 if pa:
                     d['pa'].append(pa)
 
         terms = []
         terms_all = []
         terms_en = []
-        terms_cs = []  
-            
+        terms_cs = []
+
         if export == 'marc':
             if xterms.get(dui):
                 if xterms[dui].get('active') == 'true':
-                    ### terms termsx nterms ntermsx
-                    for termtype in ['terms','termsx','nterms','ntermsx']:
+                    # terms termsx nterms ntermsx
+                    for termtype in ['terms', 'termsx', 'nterms', 'ntermsx']:
                         if xterms[dui].get(termtype):
                             terms_all += xterms[dui].get(termtype).split('~')
                     terms = list(set(terms_all))
-                    
+
             d['terms'] = []
             for t in terms:
                 if t:
-                    d['terms'].append(t.replace('[OBSOLETE]','').strip())                    
-                    
-                                                    
-        if export in ['js_elastic','js_parsers','marc']:
+                    d['terms'].append(t.replace('[OBSOLETE]', '').strip())
+
+        if export in ['js_elastic', 'js_parsers', 'marc']:
             d['cat'] = []
             d['trn'] = []
-            trees = item.get('trn','').split('~')
+            trees = item.get('trn', '').split('~')
             for trn in trees:
                 if trn:
-                    if item.get('active','') == 'false':
-                        trn = trn.replace('[OBSOLETE]','').strip()
+                    if item.get('active', '') == 'false':
+                        trn = trn.replace('[OBSOLETE]', '').strip()
                         if 'x' not in d['cat']:
-                            d['cat'].append('x')    
-                        
+                            d['cat'].append('x')
+
                     d['trn'].append(trn)
                     cat = trn[:1].lower()
                     if cat not in d['cat']:
                         d['cat'].append(cat)
 
-            #d['xtr'] = []
+            # d['xtr'] = []
             cui = item.get('cui')
             if cui:
                 d['cui'] = cui
-                #d['xtr'].append(cui)
+                # d['xtr'].append(cui)
 
             nlm = item.get('nlm')
             if nlm:
                 d['nlm'] = nlm
-                #d['xtr'].append(nlm)
+                # d['xtr'].append(nlm)
 
-            rn = item.get('rn','0')
+            rn = item.get('rn', '0')
             if rn != '0':
                 d['rn'] = rn
-                #d['xtr'].append(rn)
+                # d['xtr'].append(rn)
                 if export in ['js_parsers']:
                     terms_en.append(rn)
 
             cas = item.get('cas')
             if cas:
                 d['cas'] = cas
-                #d['xtr'].append(cas)
+                # d['xtr'].append(cas)
                 if export in ['js_parsers']:
                     terms_en.append(cas)
 
@@ -413,63 +414,60 @@ def getLookupJson(lookups, export):
 
             est = item.get('est')
             if est:
-                d['est'] = est                
+                d['est'] = est
 
-            #for t in terms:
-            #    if t:
-            #        d['xtr'].append( t.replace('[OBSOLETE]','').strip() )
-                    
+            # for t in terms:
+            #     if t:
+            #         d['xtr'].append(t.replace('[OBSOLETE]', '').strip())
 
-        if export in ['marc','js_elastic']:
+        if export in ['marc', 'js_elastic']:
 
             d['btd'] = []
-            for t in item.get('btd','').split('~'):
+            for t in item.get('btd', '').split('~'):
                 if t:
                     d['btd'].append(t)
 
             d['ntd'] = []
-            for t in item.get('ntd','').split('~'):
+            for t in item.get('ntd', '').split('~'):
                 if t:
                     d['ntd'].append(t)
 
             d['rtd'] = []
-            for t in item.get('rtd','').split('~'):
+            for t in item.get('rtd', '').split('~'):
                 if t:
                     d['rtd'].append(t)
 
-
-        if export in ['js_elastic','js_parsers']:
+        if export in ['js_elastic', 'js_parsers']:
             if xterms.get(dui):
-                ###  terms nterms    => xtr_en
-                for termtype in ['terms','nterms']:
+                #  terms nterms    => xtr_en
+                for termtype in ['terms', 'nterms']:
                     if xterms[dui].get(termtype):
                         terms_en += xterms[dui].get(termtype).split('~')
                 terms_en = list(set(terms_en))
 
-                ###  termsx ntermsx  => xtr_cs
-                for termtype in ['termsx','ntermsx']:
+                #  termsx ntermsx  => xtr_cs
+                for termtype in ['termsx', 'ntermsx']:
                     if xterms[dui].get(termtype):
                         terms_cs += xterms[dui].get(termtype).split('~')
                 terms_cs = list(set(terms_cs))
 
             terms_en_clean = []
             for t in terms_en:
-                terms_en_clean.append( t.replace('[OBSOLETE]','').strip() )
+                terms_en_clean.append(t.replace('[OBSOLETE]', '').strip())
 
             if terms_en_clean:
                 d['xtr_en'] = []
 
                 for t in sorted(terms_en_clean):
                     if t:
-                        d['xtr_en'].append( t )
+                        d['xtr_en'].append(t)
 
             if terms_cs:
                 d['xtr_cs'] = []
 
                 for t in sorted(terms_cs, key=coll.sort_key):
                     if t:
-                        d['xtr_cs'].append( t )
-
+                        d['xtr_cs'].append(t)
 
         if dui.startswith('D'):
             desc_cnt += 1
@@ -487,41 +485,41 @@ def getLookupJson(lookups, export):
             qualifiers_eng[lookup] = d
             if d.get('trx'):
                 qualifiers_trx[d['trx']] = d
-  
+
     if export == 'js_elastic':
         data['qualifiers'] = dict(sorted(qualifiers.items()))
         data['descriptors'] = dict(sorted(descriptors.items()))
-        
+
         xdata = getBaseRest()
-        data['desc_qualifs'] = xdata.get('desc_qualifs',{})
-        data['desc_notes'] = xdata.get('desc_notes',{})
-        data['desc_use'] = xdata.get('desc_use',{})
-    
+        data['desc_qualifs'] = xdata.get('desc_qualifs', {})
+        data['desc_notes'] = xdata.get('desc_notes', {})
+        data['desc_use'] = xdata.get('desc_use', {})
+
     else:
         data['desc_cnt'] = desc_cnt
         data['qual_cnt'] = qual_cnt
-        
+
         data['qualifiers'] = dict(sorted(qualifiers.items()))
         data['qualifiers_eng'] = dict(sorted(qualifiers_eng.items()))
         data['qualifiers_trx'] = dict(sorted(qualifiers_trx.items()))
-        
+
         data['descriptors'] = dict(sorted(descriptors.items()))
         data['descriptors_eng'] = dict(sorted(descriptors_eng.items()))
         data['descriptors_trx'] = dict(sorted(descriptors_trx.items()))
 
     return data
-    
-    
-def getElasticData(data):    
 
-    descriptors = data.get('descriptors',{})
-    qualifiers = data.get('qualifiers',{})
-    qualifs = data.get('desc_qualifs',{})
-    notes = data.get('desc_notes',{})
-    use_instead = data.get('desc_use',{})
-    
+
+def getElasticData(data):
+
+    descriptors = data.get('descriptors', {})
+    qualifiers = data.get('qualifiers', {})
+    qualifs = data.get('desc_qualifs', {})
+    notes = data.get('desc_notes', {})
+    use_instead = data.get('desc_use', {})
+
     resp = []
-    
+
     for dui in qualifiers:
         item = qualifiers[dui]
         item['db'] = 'mesh'
@@ -529,23 +527,21 @@ def getElasticData(data):
         item['heading'] = []
         item['heading'].append(item['eng'])
         item['heading'].append(item['trx'])
-        
-        for trn in item.get('trn',[]):
+
+        for trn in item.get('trn', []):
             if trn:
-                ### Add later by running:  grind-data elastic mesh ... 
-                ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
-                resp.append({'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
-                             'eng': item.get('eng',''), 'trx': item.get('trx',''), 
-                             'active': item.get('active')} 
-                           ) 
-        
-        ### Add later by running:  grind-data elastic mesh ...          
-        ##resp.append( {'index': {'_id': dui, '_index': 'mesh'}} )
-                
-        xnote = notes.get(dui, {})            
-        resp.append( getElasticDoc(dui, item, qualifiers, xnote) )  
-        
-                
+                # Add later by running:  grind-data elastic mesh ...
+                # resp.append({'index': {'_id': trn, '_index': 'mesht'}})
+                resp.append({'id': dui, 'db': 'mesht', 'trn': trn.replace('.', '-'),
+                             'eng': item.get('eng', ''), 'trx': item.get('trx', ''),
+                             'active': item.get('active')})
+
+        # Add later by running:  grind-data elastic mesh ...
+        # resp.append({'index': {'_id': dui, '_index': 'mesh'}})
+
+        xnote = notes.get(dui, {})
+        resp.append(getElasticDoc(dui, item, qualifiers, xnote))
+
     for dui in descriptors:
         item = descriptors[dui]
         item['db'] = 'mesh'
@@ -553,68 +549,67 @@ def getElasticData(data):
         item['heading'] = []
         item['heading'].append(item['eng'])
         item['heading'].append(item['trx'])
-        
-        for trn in item.get('trn',[]):
+
+        for trn in item.get('trn', []):
             if trn:
-                ### Add later by running:  grind-data elastic mesh ...   
-                ##resp.append( {'index': {'_id': trn, '_index': 'mesht'}} )
-                resp.append({'id': dui, 'db': 'mesht', 'trn': trn.replace('.','-'), 
-                             'eng': item.get('eng',''), 'trx': item.get('trx',''), 
-                             'active': item.get('active')} 
-                           )             
-                
+                # Add later by running:  grind-data elastic mesh ...
+                # resp.append({'index': {'_id': trn, '_index': 'mesht'}})
+                resp.append({'id': dui, 'db': 'mesht', 'trn': trn.replace('.', '-'),
+                             'eng': item.get('eng', ''), 'trx': item.get('trx', ''),
+                             'active': item.get('active')})
+
         if qualifs.get(dui):
             qa = []
             qlist = qualifs.get(dui).split('~')
             for q in qlist:
                 rel = qualifiers.get(q)
-                eng = rel.get('eng')                
-                r = rel.get('trx', eng) + '~' + eng + '|' + q            
+                eng = rel.get('eng')
+                r = rel.get('trx', eng) + '~' + eng + '|' + q
                 qa.append(r)
-                
+
             if qa:
-                item['qa'] = qa    
-        
-        ### Add later by running:  grind-data elastic mesh ...               
-        ##resp.append( {'index': {'_id': dui, '_index': 'mesh'}} )
+                item['qa'] = qa
+
+        # Add later by running:  grind-data elastic mesh ...
+        # resp.append({'index': {'_id': dui, '_index': 'mesh'}})
 
         qua_use = []
         usein = use_instead.get(dui, {})
         if usein:
             ecin = usein.get('qn')
-            for qd in sorted( ecin.split('|') ):
+            for qd in sorted(ecin.split('|')):
                 parts = qd.split('~')
                 q = parts[0]
-                qen = qualifiers[q].get('eng','EMPTY')
-                qtr = qualifiers[q].get('trx','MISSING')
+                qen = qualifiers[q].get('eng', 'EMPTY')
+                qtr = qualifiers[q].get('trx', 'MISSING')
 
                 d = parts[1]
-                den = descriptors[d].get('eng','EMPTY')
-                dtr = descriptors[d].get('trx','MISSING')
+                den = descriptors[d].get('eng', 'EMPTY')
+                dtr = descriptors[d].get('trx', 'MISSING')
 
                 qout = {}
                 qout['qtr'] = qtr + '~' + qen + '|' + q
                 qout['dtr'] = dtr + '~' + den + '|' + d
 
-                qua_use.append( qout )
+                qua_use.append(qout)
 
         if qua_use:
             item['qua_use'] = qua_use
-                
-        xnote = notes.get(dui, {})            
-        resp.append( getElasticDoc(dui, item, descriptors, xnote) ) 
-                              
+
+        xnote = notes.get(dui, {})
+        resp.append(getElasticDoc(dui, item, descriptors, xnote))
+
     return resp
-    
-    
+
+
 def getElasticDoc(dui, item, lookup, xnote=None):
 
-    for key in ['pa','ntd','btd','rtd']:
+    for key in ['pa', 'ntd', 'btd', 'rtd']:
         if item.get(key):
             rels = []
-            for d in item.get(key,[]):
+            for d in item.get(key, []):
                 rel = lookup.get(d)
-                eng = rel.get('eng')                
+                eng = rel.get('eng')
                 r = rel.get('trx', eng) + '~' + eng + '|' + d
                 rels.append(r)
             if rels:
@@ -624,9 +619,9 @@ def getElasticDoc(dui, item, lookup, xnote=None):
         del xnote['dui']
         del xnote['cui']
         item['notes'] = xnote
-        
-    return item         
-    
+
+    return item
+
 
 def getBaseTerms():
     data = {}
@@ -637,18 +632,18 @@ def getBaseTerms():
         return data
 
     data['mesh_year'] = xrest.get('mesh_year', app.config['TARGET_YEAR'])
-    data['trx_lang']  = xrest.get('trx_lang', app.config['TARGET_LANG'])
+    data['trx_lang'] = xrest.get('trx_lang', app.config['TARGET_LANG'])
 
-    ##lookups_terms
+    # lookups_terms
     desc_terms = {}
 
-    for item in xrest.get('lookups_terms',[]):
+    for item in xrest.get('lookups_terms', []):
         dui = item['dui']
         desc_terms[dui] = {}
         for k in item:
             desc_terms[dui][k] = item[k]
 
-    data['desc_terms'] = dict( sorted( desc_terms.items() ))
+    data['desc_terms'] = dict(sorted(desc_terms.items()))
     return data
 
 
@@ -661,35 +656,35 @@ def getBaseRest():
         return data
 
     data['mesh_year'] = xrest.get('mesh_year', app.config['TARGET_YEAR'])
-    data['trx_lang']  = xrest.get('trx_lang', app.config['TARGET_LANG'])
+    data['trx_lang'] = xrest.get('trx_lang', app.config['TARGET_LANG'])
 
-    ## lookups_notes
-    ## lookups_use_instead
-    ## lookups_qualifs
+    # lookups_notes
+    # lookups_use_instead
+    # lookups_qualifs
 
     desc_notes = {}
     desc_use = {}
     desc_qualifs = {}
 
-    for item in xrest.get('lookups_notes',[]):
+    for item in xrest.get('lookups_notes', []):
         dui = item['dui']
         desc_notes[dui] = {}
         for k in item:
             desc_notes[dui][k] = item[k]
 
-    for item in xrest.get('lookups_use_instead',[]):
+    for item in xrest.get('lookups_use_instead', []):
         dui = item['dui']
         desc_use[dui] = {}
         for k in item:
             desc_use[dui][k] = item[k]
 
-    for item in xrest.get('lookups_qualifs',[]):
+    for item in xrest.get('lookups_qualifs', []):
         dui = item['dui']
         desc_qualifs[dui] = item['qa']
 
-    data['desc_qualifs'] = dict( sorted( desc_qualifs.items() ))
-    data['desc_use'] = dict( sorted( desc_use.items() ))
-    data['desc_notes'] = dict( sorted( desc_notes.items() ))
+    data['desc_qualifs'] = dict(sorted(desc_qualifs.items()))
+    data['desc_use'] = dict(sorted(desc_use.items()))
+    data['desc_notes'] = dict(sorted(desc_notes.items()))
     return data
 
 
@@ -697,10 +692,10 @@ def getLookupXml(lookups, export, as_string=True):
     data = getLookupJson(lookups, export)
 
     mesh_year = data.get('mesh_year')
-    trx_lang = data.get('trx_lang','')
-    timestamp = data.get('timestamp','')
-    desc_cnt = data.get('desc_cnt',0)
-    qual_cnt = data.get('qual_cnt',0)
+    trx_lang = data.get('trx_lang', '')
+    timestamp = data.get('timestamp', '')
+    desc_cnt = data.get('desc_cnt', 0)
+    qual_cnt = data.get('qual_cnt', 0)
 
     if not mesh_year:
         return ''
@@ -724,22 +719,22 @@ def getLookupXml(lookups, export, as_string=True):
     items = data.get(root)
 
     for k in sorted(items):
-        eng = html.escape(items[k].get('eng','') )
-        trx = html.escape(items[k].get('trx','') )
-        dclass = items[k].get('dc','-1')
+        eng = html.escape(items[k].get('eng', ''))
+        trx = html.escape(items[k].get('trx', ''))
+        dclass = items[k].get('dc', '-1')
 
-        if items[k].get('active') == False:
+        if items[k].get('active') is False:
             line = '<%s id="%s" eng="%s" trx="%s" dclass="%s" active="0" />\n' % (tag, k, eng, trx, dclass)
         else:
             line = '<%s id="%s" eng="%s" trx="%s" dclass="%s" />\n' % (tag, k, eng, trx, dclass)
         xml.write(line)
 
-    xml.write('</'+root+'>\n')
+    xml.write('</' + root + '>\n')
 
     if as_string:
         return xml.getvalue()
     else:
-        return xml  
+        return xml
 
 
 def getMarc(lookups, export, params, as_string=True):
@@ -749,20 +744,20 @@ def getMarc(lookups, export, params, as_string=True):
     if not mesh_year:
         return ''
 
-    descriptors = data.get('descriptors',{})
-    qualifiers = data.get('qualifiers',{})
+    descriptors = data.get('descriptors', {})
+    qualifiers = data.get('qualifiers', {})
     xdata = getBaseRest()
-    qualifs = xdata.get('desc_qualifs',{})
-    notes = xdata.get('desc_notes',{})
+    qualifs = xdata.get('desc_qualifs', {})
+    notes = xdata.get('desc_notes', {})
 
-    timestamp = data.get('timestamp','')
-    
+    timestamp = data.get('timestamp', '')
+
     if timestamp:
         tsa = arrow.get(timestamp)
     else:
-        tsa = arrow.get()   
+        tsa = arrow.get()
 
-    gen_date = tsa.format('YYYYMMDDHHmmss.S')    
+    gen_date = tsa.format('YYYYMMDDHHmmss.S')
 
     line_pref = '='
     ldr_pref = 'LDR  '
@@ -770,7 +765,7 @@ def getMarc(lookups, export, params, as_string=True):
     fw = ''
 
     treetype = params.get('tree_style')
-    ecin = params.get('anglo_style')  
+    ecin = params.get('anglo_style')
 
     if params.get('line_style') == 'line':
         line_pref = ''
@@ -785,94 +780,94 @@ def getMarc(lookups, export, params, as_string=True):
     items = data.get('descriptors')
 
     if ecin == 'yes':
-        d_items = data.get('descriptors') 
+        d_items = data.get('descriptors')
         q_items = data.get('qualifiers')
         items = {**d_items, **q_items}
     else:
-        items = data.get('descriptors')    
+        items = data.get('descriptors')
 
     for mid in sorted(items):
 
         item = items[mid]
-                
-        if item.get('active') == True:
+
+        if item.get('active') is True:
             cnt += 1
             marc.write(leader)
             marc.write(line_pref + '001' + code_pref + mid + '\n')
             marc.write(line_pref + '003' + code_pref + app.config['MARC_LIBCODE'] + '\n')
-            marc.write(line_pref + '005' + code_pref + gen_date + '\n')        
-                        
+            marc.write(line_pref + '005' + code_pref + gen_date + '\n')
+
             xnote = notes.get(mid, {})
-    
-            fields = getMarcFields(mid, item, descriptors, qualifiers, qualifs, xnote, 
+
+            fields = getMarcFields(mid, item, descriptors, qualifiers, qualifs, xnote,
                                    lp=line_pref, cp=code_pref, fw=fw, treetype=treetype, ecin=ecin)
             if fields:
                 marc.write(fields + '\n')
-    
+
             bas = line_pref + 'BAS    $a' + fw + 'MeSH' + str(mesh_year)
             marc.write(bas + '\n')
-    
+
             if item.get('trx'):
                 translated = 'Y'
             elif item.get('notrx'):
                 translated = 'X'
             else:
                 translated = 'N'
-    
+
             msh = line_pref + 'MSH    $a' + fw + str(item.get('dc')) + fw + '$b' + fw + item.get('cui') + fw + '$d' + fw + translated
-    
+
             if item.get('nlm'):
                 msh += fw + '$h' + fw + item.get('nlm')
-    
+
             if xnote.get('pi'):
                 for p in xnote.get('pi').split('~'):
                     msh += fw + '$i' + fw + p
-    
+
             if xnote.get('on'):
                 msh += fw + '$o' + fw + xnote.get('on')
-    
+
             if xnote.get('pm'):
                 msh += fw + '$p' + fw + xnote.get('pm')
-    
-            ### Remove after moving to 450 field # https://github.com/filak/MTW-MeSH/issues/48
+
+            # Remove after moving to 450 field # https://github.com/filak/MTW-MeSH/issues/48
             if item.get('rn'):
-                if item.get('rn','0') != 0:
+                if item.get('rn', '0') != 0:
                     msh += fw + '$r' + fw + item.get('rn')
-    
-            ### Remove after moving to 450 field # https://github.com/filak/MTW-MeSH/issues/48
+
+            # Remove after moving to 450 field # https://github.com/filak/MTW-MeSH/issues/48
             if item.get('cas'):
                 msh += fw + '$s' + fw + item.get('cas')
-    
+
             marc.write(msh + '\n')
             marc.write('\n')
-    
+
         qa = qualifs.get(mid)
-        if item.get('active') == True and qa and ecin == 'yes':
+        if item.get('active') is True and qa and ecin == 'yes':
             for qui in qa.split('~'):
                 cnt += 1
                 marc.write(leader)
                 marc.write(line_pref + '001' + code_pref + mid + qui + '\n')
                 marc.write(line_pref + '003' + code_pref + app.config['MARC_LIBCODE'] + '\n')
-                marc.write(line_pref + '005' + code_pref + gen_date + '\n')    
+                marc.write(line_pref + '005' + code_pref + gen_date + '\n')
 
                 ecin_rec = getEcinRecord(item, mid, qui, qualifiers, lp=line_pref, cp=code_pref, fw=fw)
 
                 marc.write(ecin_rec + '\n')
                 marc.write('\n')
-            
-        ### Testing only   
-        ''' 
+
+        # Testing only
+        '''
         if cnt >= 50:
             if as_string:
                 return marc.getvalue()
             else:
                 return marc
-        '''        
+        '''
 
     if as_string:
         return marc.getvalue()
     else:
-        return marc    
+        return marc
 
 
 def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp='  ', fw='', treetype='def', ecin='no'):
@@ -880,12 +875,12 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
 
     htag, dt, crt = getMarcCommons(item)
 
-    rows.append(lp + '008' + cp + crt + '#n#ancnnbab'+ dt + '##########||#ana#####d')
-    rows.append(lp + '035    $a' + fw + '(DNLM)' + dui )
-    rows.append(lp + '040    $a' + fw + app.config['MARC_CATCODE'] + fw + '$b' + fw + getLangCodeUmls(app.config['TARGET_LANG'], lower=True) )
+    rows.append(lp + '008' + cp + crt + '#n#ancnnbab' + dt + '##########||#ana#####d')
+    rows.append(lp + '035    $a' + fw + '(DNLM)' + dui)
+    rows.append(lp + '040    $a' + fw + app.config['MARC_CATCODE'] + fw + '$b' + fw + getLangCodeUmls(app.config['TARGET_LANG'], lower=True))
 
     if treetype == 'def':
-        for trn in item.get('trn',[]):
+        for trn in item.get('trn', []):
             if trn:
                 trx = '$a' + fw + trn.replace('.', '.' + fw + '$x' + fw)
                 rows.append(lp + '072    ' + trx)
@@ -899,100 +894,100 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     else:
         fx = getQualifSubfield(dui, qualifiers, qualifs, fw)
 
-    rows.append(lp + '1' + htag + '    $a' + fw + heading + fx + fw + '$2' + fw + app.config['MARC_MESHCODE'] )
+    rows.append(lp + '1' + htag + '    $a' + fw + heading + fx + fw + '$2' + fw + app.config['MARC_MESHCODE'])
 
     if xnote.get('cx'):
-        rows.append(lp + '360    $i' + fw + xnote.get('cx') )
+        rows.append(lp + '360    $i' + fw + xnote.get('cx'))
 
-    ## "$wi" & "$a" & descname & "$iUF"
-    terms = item.get('terms',[])
+    # "$wi" & "$a" & descname & "$iUF"
+    terms = item.get('terms', [])
     for xt in sorted(terms, key=coll.sort_key):
         xtr = '$w' + fw + 'i' + fw + '$a' + fw + xt + fw + '$i' + fw + 'UF'
         rows.append(lp + '4' + htag + '    ' + xtr)
 
-    ### TBD: Add item.rn, item.cas as 450 fields # https://github.com/filak/MTW-MeSH/issues/48    
+    # TBD: Add item.rn, item.cas as 450 fields # https://github.com/filak/MTW-MeSH/issues/48
 
     btd = {}
     btdx = []
-    for d in item.get('btd',[]):
+    for d in item.get('btd', []):
         des = descriptors.get(d)
-        if des.get('active') == True:  
+        if des.get('active') is True:
             trx = des.get('trx')
             if not trx:
                 trx = des.get('eng')
-            
+
             btd[trx] = d
             btdx.append(trx)
-        
-    for x in sorted(btdx, key=coll.sort_key):        
+
+    for x in sorted(btdx, key=coll.sort_key):
         xtr = '$w' + fw + 'g' + fw + '$a' + fw + x + fw + '$7' + fw + btd[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
-        
+
     ntd = {}
-    ntdx = []        
-    for d in item.get('ntd',[]):
+    ntdx = []
+    for d in item.get('ntd', []):
         des = descriptors.get(d)
-        if des.get('active') == True:       
+        if des.get('active') is True:
             trx = des.get('trx')
             if not trx:
                 trx = des.get('eng')
-            
+
             ntd[trx] = d
             ntdx.append(trx)
-            
+
     for x in sorted(ntdx, key=coll.sort_key):
         xtr = '$w' + fw + 'h' + fw + '$a' + fw + x + fw + '$7' + fw + ntd[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
-        
+
     rtd = {}
-    rtdx = []         
-    for d in item.get('rtd',[]):
+    rtdx = []
+    for d in item.get('rtd', []):
         des = descriptors.get(d)
-        if des.get('active') == True: 
+        if des.get('active') is True:
             trx = des.get('trx')
             if not trx:
                 trx = des.get('eng')
-                
+
             rtd[trx] = d
             rtdx.append(trx)
-            
-    for x in sorted(rtdx, key=coll.sort_key):            
+
+    for x in sorted(rtdx, key=coll.sort_key):
         xtr = '$w' + fw + 'i' + fw + '$a' + fw + x + fw + '$i' + fw + 'RT' + fw + '$7' + fw + rtd[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
-        
+
     pa = {}
-    pax = []         
-    for d in item.get('pa',[]):
+    pax = []
+    for d in item.get('pa', []):
         des = descriptors.get(d)
-        if des.get('active') == True: 
+        if des.get('active') is True:
             trx = des.get('trx')
             if not trx:
                 trx = des.get('eng')
-                
+
             pa[trx] = d
             pax.append(trx)
-            
-    for x in sorted(pax, key=coll.sort_key):             
+
+    for x in sorted(pax, key=coll.sort_key):
         xtr = '$w' + fw + 'i' + fw + '$a' + fw + x + fw + '$i' + fw + 'PA' + fw + '$7' + fw + pa[x]
         rows.append(lp + '5' + htag + '    ' + xtr)
-        
+
     an = xnote.get('an')
     if not an:
         an = xnote.get('an')
     if an:
         anot = '$a' + fw + an + fw
-        rows.append(lp + '667    ' + anot )
+        rows.append(lp + '667    ' + anot)
 
     scn = xnote.get('scnt', xnote.get('scn'))
     if scn:
         scnf = '$i' + fw + scn + fw
-        rows.append(lp + '680    ' + scnf )
+        rows.append(lp + '680    ' + scnf)
 
     if treetype == 'daw':
-        for trn in item.get('trn',[]):
+        for trn in item.get('trn', []):
             if trn:
                 trx = '$a' + fw + trn + fw
-                rows.append(lp + '686    ' + trx )
+                rows.append(lp + '686    ' + trx)
 
     hn = xnote.get('hn')
     if not hn:
@@ -1000,10 +995,10 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
 
     if hn:
         hist = '$a' + fw + hn + fw
-        rows.append(lp + '688    ' + hist )
+        rows.append(lp + '688    ' + hist)
 
-    #=750  /2$aCalcimycin$7D000001
-    # 750 /2 $a Calcimycin $7 D000001
+    # =750  /2$aCalcimycin$7D000001
+    #  750 /2 $a Calcimycin $7 D000001
 
     rows.append(lp + '7' + htag + cp + ' 2' + fw + '$a' + fw + item.get('eng', '') + fw + '$7' + fw + dui)
 
@@ -1013,20 +1008,20 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
 def getQualifSubfield(dui, qualifiers, allowed_qualifs, fw):
     qa = allowed_qualifs.get(dui)
     if not qa:
-        return ''   
+        return ''
 
     qui_list = qa.split('~')
     qn_list = []
     qualifs = ''
-       
+
     for qui in qui_list:
         qualif = qualifiers.get(qui)
-        qn = qualif.get('trx','')
+        qn = qualif.get('trx', '')
         if qn == '':
             qn = qualif['eng']
-    
+
         qn_list.append(qn)
-        
+
     for qn in sorted(qn_list, key=coll.sort_key):
         qualifs += fw + '$x' + fw + qn
 
@@ -1038,17 +1033,17 @@ def getEcinRecord(item, dui, qui, qualifiers, lp='=', cp='  ', fw=''):
 
     htag, dt, crt = getMarcCommons(item)
 
-    rows.append(lp + '008' + cp + crt + '#n#ancnnbab'+ dt + '##########||#ana#####d')
-    rows.append(lp + '040    $a' + fw + app.config['MARC_CATCODE'] + fw + '$b' + fw + getLangCodeUmls(app.config['TARGET_LANG'], lower=True) )
+    rows.append(lp + '008' + cp + crt + '#n#ancnnbab' + dt + '##########||#ana#####d')
+    rows.append(lp + '040    $a' + fw + app.config['MARC_CATCODE'] + fw + '$b' + fw + getLangCodeUmls(app.config['TARGET_LANG'], lower=True))
 
     heading = item.get('trx', '')
     if heading == '':
         heading = item.get('eng', '')
 
     qualif = qualifiers.get(qui)
-    qn = qualif.get('trx', qualif['eng'] )
+    qn = qualif.get('trx', qualif['eng'])
 
-    rows.append(lp + '1' + htag + '    $a' + fw + heading + fw + '$x' + fw + qn + fw + '$2' + fw + app.config['MARC_MESHCODE'] )
+    rows.append(lp + '1' + htag + '    $a' + fw + heading + fw + '$x' + fw + qn + fw + '$2' + fw + app.config['MARC_MESHCODE'])
 
     if item.get('eng'):
         rows.append(lp + '7' + htag + cp + ' 2' + fw + '$a' + fw + item['eng'] + fw + '$x' + fw + qualif['eng'] + fw + '$7' + fw + dui + qui)
@@ -1060,24 +1055,24 @@ def getMarcCommons(item):
     htag = '50'
     dt = 'a'
 
-    if item.get('dc')   == '1': ## 150 - topical
+    if item.get('dc') == '1':  # 150 - topical
         htag = '50'
-    elif item.get('dc') == '2': ## 155 - publ
+    elif item.get('dc') == '2':  # 155 - publ
         htag = '55'
         dt = 'b'
-    elif item.get('dc') == '3': ## 150 - checktag
+    elif item.get('dc') == '3':  # 150 - checktag
         htag = '50'
-    elif item.get('dc') == '4': ## 151 - geo
+    elif item.get('dc') == '4':  # 151 - geo
         htag = '51'
         dt = 'd'
-    elif item.get('dc') == '0': ## 150 - qualifiers
+    elif item.get('dc') == '0':  # 150 - qualifiers
         htag = '50'
 
-    crt = item.get('crt','000000')
-    crt = crt.replace('-','')
-    crt = crt[2:8]        
+    crt = item.get('crt', '000000')
+    crt = crt.replace('-', '')
+    crt = crt[2:8]
 
-    return (htag, dt, crt)                
+    return (htag, dt, crt)
 
 
 def getFpathDate(fpath):
@@ -1090,17 +1085,17 @@ def getStatsFpath(stat, ext='json', params=None, target_year=None):
         params = {}
 
     if ext == 'marc':
-        ext = params.get('tree_style','') + '.txt'
-        stat += '_' +  params.get('line_style','')
+        ext = params.get('tree_style', '') + '.txt'
+        stat += '_' + params.get('line_style', '')
 
     if not target_year:
         target_year = app.config['TARGET_YEAR']
 
-    return Path( app.config['EXP_DIR'], target_year + '_' + stat + '.' + ext )
+    return Path(app.config['EXP_DIR'], target_year + '_' + stat + '.' + ext)
 
 
 def getLockFpath(stat):
-    return Path( app.config['TEMP_DIR'], '_' + stat + '.lock' )
+    return Path(app.config['TEMP_DIR'], '_' + stat + '.lock')
 
 
 def getTempFpath(fname, ext='json', subdir='', year=True):
@@ -1110,7 +1105,7 @@ def getTempFpath(fname, ext='json', subdir='', year=True):
     else:
         target_year = ''
 
-    return Path( app.config['TEMP_DIR'], subdir, target_year + fname + '.' + ext )
+    return Path(app.config['TEMP_DIR'], subdir, target_year + fname + '.' + ext)
 
 
 def backStatsProcess(fpath, lpath, stat):
@@ -1130,11 +1125,11 @@ def backStatsProcess(fpath, lpath, stat):
 
     if stat == 'initial':
         template_subdir = 'stats/'
-        templates = ['descriptor','meshv_pref','meshv_nonPref','meshv_scopeNote','mesht_pref','mesht_nonPref','mesht_concept','mesht_concept_terms','mesht_scopeNote','mesht_concept_scopeNote']
+        templates = ['descriptor', 'meshv_pref', 'meshv_nonPref', 'meshv_scopeNote', 'mesht_pref', 'mesht_nonPref', 'mesht_concept', 'mesht_concept_terms', 'mesht_scopeNote', 'mesht_concept_scopeNote']
 
     elif stat == 'actual':
         template_subdir = 'stats/'
-        templates = ['mesht_pref','mesht_nonPref','mesht_concept','mesht_concept_terms','mesht_scopeNote','mesht_concept_scopeNote']
+        templates = ['mesht_pref', 'mesht_nonPref', 'mesht_concept', 'mesht_concept_terms', 'mesht_scopeNote', 'mesht_concept_scopeNote']
 
     elif stat == 'duplicates':
         template_subdir = 'stats/'
@@ -1152,11 +1147,11 @@ def backStatsProcess(fpath, lpath, stat):
 
     elif stat == 'lookups_rest':
         template_subdir = 'exports/'
-        templates = ['lookups_notes','lookups_qualifs','lookups_terms','lookups_use_instead']
+        templates = ['lookups_notes', 'lookups_qualifs', 'lookups_terms', 'lookups_use_instead']
         gzip = True
 
     for t in templates:
-        resp = sparql.getSparqlData(template_subdir+t, output=output)
+        resp = sparql.getSparqlData(template_subdir + t, output=output)
 
         if resp:
             if stat == 'umls':
@@ -1175,7 +1170,7 @@ def backStatsProcess(fpath, lpath, stat):
     else:
         writeTextFile(fpath, data_text, comp=gzip)
 
-    if stat in ['lookups','lookups_rest']:
+    if stat in ['lookups', 'lookups_rest']:
         tpath = getTempFpath(stat)
         writeJsonFile(tpath, data)
 
@@ -1188,34 +1183,34 @@ def fileOld(fpath, interval_min):
             now = time.time()
             elapsed_min = (now - updated) / 60
 
-            if elapsed_min >= interval_min :
+            if elapsed_min >= interval_min:
                 return True
     else:
         return True
 
 
 def writeTempLock(lpath, stat):
-    ##print('writing lock')
+    # print('writing lock')
     try:
         with open(str(lpath), mode='w', encoding='utf-8') as ft:
             ft.write(stat)
         return True
-    except:
+    except:  # noqa: E722
         return False
 
 
 def delTempLock(lpath):
-    ##print('removing lock')
+    # print('removing lock')
     try:
         lpath.unlink()
         return True
-    except:
+    except:  # noqa: E722
         return False
 
 
 def writeJsonFile(fpath, data, comp=False):
     if comp:
-        with gzip.open(str(fpath)+'.gz', mode='wt', encoding='utf-8') as ft:
+        with gzip.open(str(fpath) + '.gz', mode='wt', encoding='utf-8') as ft:
             ft.write(json.dumps(data))
     else:
         with open(str(fpath), mode='w', encoding='utf-8') as ft:
@@ -1224,68 +1219,68 @@ def writeJsonFile(fpath, data, comp=False):
 
 def writeTextFile(fpath, data, comp=False, stream=False):
     if comp:
-        with gzip.open(str(fpath)+'.gz', mode='wt', encoding='utf-8') as ft:
+        with gzip.open(str(fpath) + '.gz', mode='wt', encoding='utf-8') as ft:
             if stream:
-                #TBD
+                # TBD
                 data.close()
-            else:    
+            else:
                 ft.writelines(data)
                 data = {}
     else:
         with open(str(fpath), mode='w', encoding='utf-8') as ft:
             if stream:
-                #TBD
+                # TBD
                 data.close()
-            else:    
+            else:
                 ft.writelines(data)
                 data = {}
-            
+
 
 def writeNDJson(fpath, data, comp=False):
     err_msg = ''
     s = io.StringIO()
-    try:        
+    try:
         for o in data:
             s.write(json.dumps(o, sort_keys=True) + '\n')
         s.write('\n')
 
     except Exception as err:
-        err_msg = '  Dumping data to JSON : ' + fpath + ' : ' + str(err) 
+        err_msg = '  Dumping data to JSON : ' + fpath + ' : ' + str(err)
 
     try:
         if comp:
-            with gzip.open(str(fpath)+'.gz', mode='wt', encoding='utf-8') as ft:
+            with gzip.open(str(fpath) + '.gz', mode='wt', encoding='utf-8') as ft:
                 ft.write(s.getvalue())
         else:
             with open(str(fpath), mode='w', encoding='utf-8') as ft:
                 ft.write(s.getvalue())
-    
+
     except Exception as err:
-        err_msg += '  Writing file (NDJson) : ' + fpath + ' : ' + str(err)        
-        
+        err_msg += '  Writing file (NDJson) : ' + fpath + ' : ' + str(err)
+
     finally:
         s.close()
-        data = {} 
-    
+        data = {}
+
     return err_msg
-        
+
 
 def writeOutputGzip(fpath, data, mode='wt'):
-    with gzip.open(str(fpath)+'.gz', mode=mode, encoding='utf-8') as ft:
+    with gzip.open(str(fpath) + '.gz', mode=mode, encoding='utf-8') as ft:
         ft.write(data)
 
 
 def writeOutputGzipTsv(fpath, lines, mode='wt'):
-    with gzip.open(str(fpath)+'.gz', mode=mode, encoding='utf-8', newline='') as ft:
+    with gzip.open(str(fpath) + '.gz', mode=mode, encoding='utf-8', newline='') as ft:
         writer = csv.writer(ft, delimiter='\t', doublequote=True, quoting=1)
-        writer.writerows(lines)       
+        writer.writerows(lines)
 
 
 def loadJsonFile(fpath, default=None):
     try:
         with open(str(fpath), mode='r', encoding='utf-8') as json_file:
             return json.load(json_file)
-    except:
+    except:  # noqa: E722
         return default
 
 
@@ -1293,30 +1288,30 @@ def loadTextFile(fpath):
     try:
         with open(str(fpath), mode='r', encoding='utf-8') as text_file:
             return text_file.read()
-    except:
+    except:  # noqa: E722
         return ''
 
 
 def deep_get(dictionary, keys, default=None):
-    return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."), dictionary)
+    return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split('.'), dictionary)
 
 
 def sanitize_input(text, normalize=True):
     t = text.strip()
     if t:
         t = ' '.join(t.split())
-        t = t.replace('?','')
+        t = t.replace('?', '')
         if normalize:
             t = normalize_str(t, clear_escaping=True)
-        t = t.replace('"','\\"')
+        t = t.replace('"', '\\"')
     return t
 
 
 def sanitize_text_query(text):
     t = text.strip()
-    if t:    
+    if t:
         t = ' '.join(t.split())
-        t = t.replace('\\','')
+        t = t.replace('\\', '')
     return t
 
 
@@ -1326,8 +1321,8 @@ def normalize_str(text, skip_normalization=False, clear_escaping=False):
             for src, trg in app.config['CHAR_NORM_MAP']:
                 text = text.replace(src, trg)
         if clear_escaping:
-            text = text.replace('\\"','"')     
-    return text    
+            text = text.replace('\\"', '"')
+    return text
 
 
 def getCui(concept):
@@ -1335,8 +1330,8 @@ def getCui(concept):
         new_cui = str(uuid.uuid4())
         return new_cui
     else:
-        con = concept.replace(app.config['SOURCE_NS'],'')
-        con = con.replace(app.config['TARGET_NS'],'')
+        con = concept.replace(app.config['SOURCE_NS'], '')
+        con = con.replace(app.config['TARGET_NS'], '')
         return con
 
 
@@ -1364,13 +1359,13 @@ def get_dui_labels(f, action, with_values=True):
 
 def getParamsForAudit(dui, concept, cui):
     par = {}
-    con = concept.replace(app.config['SOURCE_NS'],'mesh:')
-    con = con.replace(app.config['TARGET_NS'],'meshx:')
+    con = concept.replace(app.config['SOURCE_NS'], 'mesh:')
+    con = con.replace(app.config['TARGET_NS'], 'meshx:')
 
     concept_data = sparql.getSparqlData('concepts_terms', query=dui, concept=con)
     concept_orig = sparql.parseConcept(concept_data)
 
-    ##pp.pprint(concept_orig)
+    # pp.pprint(concept_orig)
 
     citem = concept_orig['concepts'].get(cui)
 
@@ -1477,7 +1472,7 @@ def getTermList(f, concept, dui):
 
             if len(items) > 1:
                 it = items[0]
-                sub = items[1].replace('?','')
+                sub = items[1].replace('?', '')
 
                 if dform.get(it):
                     dform[it][sub] = sanitize_input(value)
@@ -1530,21 +1525,21 @@ def encodeMeshRdfQuery(query):
 def getTreeQuery(top, tn=None):
 
     query = []
-    ##roots = app.config['MESH_TREE']
+    # roots = app.config['MESH_TREE']
 
-    if top in ('B','E','H'):
-        query.append(top+'0?')
+    if top in ('B', 'E', 'H'):
+        query.append(top + '0?')
     else:
-        query.append(top+'0?')
-        query.append(top+'1?')
-        query.append(top+'2?')
+        query.append(top + '0?')
+        query.append(top + '1?')
+        query.append(top + '2?')
 
-    if top in ('K','L','M','Z'):
-        query.append(top+'01.???')
+    if top in ('K', 'L', 'M', 'Z'):
+        query.append(top + '01.???')
 
     if tn:
         query.append(tn)
-        query.append(tn+'.???')
+        query.append(tn + '.???')
 
         parts = tn.split('.')
         branch = []
@@ -1552,7 +1547,7 @@ def getTreeQuery(top, tn=None):
             if len(p) != 3:
                 return
             branch.append(p)
-            query.append(('.').join(branch)+'.???')
+            query.append(('.').join(branch) + '.???')
 
     if query:
         q = (' OR ').join(query)
@@ -1561,28 +1556,28 @@ def getTreeQuery(top, tn=None):
 
 def getLangTag(lang_code):
     lang_dict = {
-        'cze' : 'cs',
-        'fre' : 'fr',
-        'ger' : 'de',
-        'ita' : 'it',
-        'nor' : 'no',
-        'por' : 'pt',
-        'scr' : 'hr',
-        'spa' : 'es'
+        'cze': 'cs',
+        'fre': 'fr',
+        'ger': 'de',
+        'ita': 'it',
+        'nor': 'no',
+        'por': 'pt',
+        'scr': 'hr',
+        'spa': 'es'
     }
     return lang_dict.get(lang_code, 'xx')
 
 
 def getLangCodeUmls(lang_tag, lower=False):
     lang_dict = {
-        'cs' : 'CZE',
-        'fr' : 'FRE',
-        'de' : 'GER',
-        'it' : 'ITA',
-        'no' : 'NOR',
-        'pt' : 'POR',
-        'hr' : 'HRV',
-        'es' : 'SPA'
+        'cs': 'CZE',
+        'fr': 'FRE',
+        'de': 'GER',
+        'it': 'ITA',
+        'no': 'NOR',
+        'pt': 'POR',
+        'hr': 'HRV',
+        'es': 'SPA'
     }
     if lower:
         return lang_dict.get(lang_tag, 'XXX').lower()
@@ -1590,7 +1585,7 @@ def getLangCodeUmls(lang_tag, lower=False):
         return lang_dict.get(lang_tag, 'XXX')
 
 
-### meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier
+# meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier
 def getDescClass(dtype):
     dtype_dict = {
         'Qualifier': '0',
@@ -1609,11 +1604,11 @@ def exportTsvFile(export, inputFile, outputFile):
     tab = '\t'
 
     if export == 'umls':
-        ###    ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
+        #    ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
 
-    elif export in ['umls_all','umls_raw']:
-        ###    ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
+    elif export in ['umls_all', 'umls_raw']:
+        #    ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'Dstatus,Tstatus,DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
 
     writeOutputGzipTsv(outputFile, [cols], mode='wt')
@@ -1628,32 +1623,32 @@ def exportTsvFile(export, inputFile, outputFile):
 
     for line in fh:
         if count > 0:
-            line = line.replace('@'+app.config['TARGET_LANG'], '')
+            line = line.replace('@' + app.config['TARGET_LANG'], '')
             line = line.replace('^^xsd:boolean', '')
 
-            row  = line.rstrip('\n').split(tab)
+            row = line.rstrip('\n').split(tab)
 
-            if export in ['umls_all','umls_raw']:
+            if export in ['umls_all', 'umls_raw']:
                 if row[1] == 'false':
-                    #print(line)
+                    # print(line)
                     pass
                 else:
-                    clean_row = (tab).join( clearQuotes(row) )
+                    clean_row = (tab).join(clearQuotes(row))
 
                     if export == 'umls_raw':
-                        docs.append( normalize_str( clean_row, clear_escaping=True, skip_normalization=True ).split(tab) )
-                    else:    
-                        docs.append( normalize_str( clean_row, clear_escaping=True ).split(tab) )
+                        docs.append(normalize_str(clean_row, clear_escaping=True, skip_normalization=True).split(tab))
+                    else:
+                        docs.append(normalize_str(clean_row, clear_escaping=True).split(tab))
 
             elif export == 'umls':
                 if row[0] == 'false' or row[1] == 'false':
-                    #print(line)
+                    # print(line)
                     pass
                 else:
-                    clean_row = (tab).join( clearQuotes(row[2:]) )
-                    docs.append( normalize_str( clean_row, clear_escaping=True ).split(tab) )            
+                    clean_row = (tab).join(clearQuotes(row[2:]))
+                    docs.append(normalize_str(clean_row, clear_escaping=True).split(tab))
 
-        count += 1                
+        count += 1
 
     writeOutputGzipTsv(outputFile, docs, mode='at')
 
@@ -1665,7 +1660,7 @@ def clearQuotes(row):
             cleaned.append(item[1:-1])
         else:
             cleaned.append(item)
-    return cleaned        
+    return cleaned
 
 
 def cleanDescView(dview):
@@ -1678,12 +1673,12 @@ def cleanDescView(dview):
     for line in dview.split('\n'):
         count += 1
         if count > 1:
-            line = line.replace('http://id.nlm.nih.gov/mesh/vocab#','').replace('http://www.w3.org/2000/01/rdf-schema#','').replace('http://www.w3.org/1999/02/22-rdf-syntax-ns#','')
-            line = line.replace('http://www.medvik.cz/schema/mesh/vocab/#','*** ')
-            line = line.replace('http://aaa','')
-            line = line.replace('"','')
-            line = line.replace('<','')
-            line = line.replace('>',':')
+            line = line.replace('http://id.nlm.nih.gov/mesh/vocab#', '').replace('http://www.w3.org/2000/01/rdf-schema#', '').replace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', '')
+            line = line.replace('http://www.medvik.cz/schema/mesh/vocab/#', '*** ')
+            line = line.replace('http://aaa', '')
+            line = line.replace('"', '')
+            line = line.replace('<', '')
+            line = line.replace('>', ':')
             line = line.strip()
 
             if line.startswith('type:'):
@@ -1721,16 +1716,16 @@ class diff_match_patch(dmp_module.diff_match_patch):
         """
         html = []
         for (op, data) in diffs:
-          text = (data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>"))
-          if op == self.DIFF_INSERT:
-            html.append("<span class=\"text-success\"><ins>%s</ins></span>" % text)
-          elif op == self.DIFF_DELETE:
-            html.append("<span class=\"text-warning\"><del>%s</del></span>" % text)
-          elif op == self.DIFF_EQUAL:
-            html.append("<span>%s</span>" % text)
+            text = (data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>"))
+            if op == self.DIFF_INSERT:
+                html.append("<span class=\"text-success\"><ins>%s</ins></span>" % text)
+            elif op == self.DIFF_DELETE:
+                html.append("<span class=\"text-warning\"><del>%s</del></span>" % text)
+            elif op == self.DIFF_EQUAL:
+                html.append("<span>%s</span>" % text)
 
         return ''.join(html)
-    
+
 
 def readDataTsv(input_file):
 
@@ -1747,7 +1742,7 @@ def readDataTsv(input_file):
                         if line[0].startswith('#') or line[0].startswith('Code'):
                             pass
                         else:
-                            data.append(line)                
+                            data.append(line)
 
         if fext == '.txt':
             with open(input_file, mode='r', encoding='utf-8') as fh:
@@ -1757,9 +1752,9 @@ def readDataTsv(input_file):
                         if line[0].startswith('#') or line[0].startswith('Code'):
                             pass
                         else:
-                            data.append(line)                
+                            data.append(line)
 
-    except:
+    except:  # noqa: E722
         print('ERROR reading file : ', input_file)
         raise
 
@@ -1767,7 +1762,7 @@ def readDataTsv(input_file):
 
 
 def getChar(code):
-    return chr( int(code[2:], 16) )
+    return chr(int(code[2:], 16))
 
 
 def getCharMap(char_list):
@@ -1775,16 +1770,16 @@ def getCharMap(char_list):
     for item in char_list:
         Code, CharName, ReplCode, ReplChar = item
         src = getChar(Code)
-        trg = None        
+        trg = None
         if ReplCode == 'None':
             trg = ''
         elif ReplCode == 'str':
             trg = ReplChar
         else:
             trg = getChar(ReplCode)
-        char_map.append((src, trg)) 
+        char_map.append((src, trg))
 
-    return char_map   
+    return char_map
 
 
 def callWorker(export=None, stat=None, force=False, params=None):
@@ -1798,14 +1793,13 @@ def callWorker(export=None, stat=None, force=False, params=None):
         endpoint = worker + '/export_data/' + export
 
     if force:
-        endpoint += '?force=1'  
+        endpoint += '?force=1'
 
-    bauth   = app.config.get('API_AUTH_BASIC', None)
-    headers = genApiHeaders( data=getReqHost() )
+    bauth = app.config.get('API_AUTH_BASIC', None)
+    headers = genApiHeaders(data=getReqHost())
 
     if endpoint:
-        fsession.post(endpoint, 
-                      headers=headers, 
-                      auth=bauth, 
-                      json=params)                
-
+        fsession.post(endpoint,
+                      headers=headers,
+                      auth=bauth,
+                      json=params)

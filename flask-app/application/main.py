@@ -2,18 +2,17 @@
 """
 MeSH Traslation Workflow (MTW) - Flask app factory
 """
-import datetime, logging, os, pprint
+import datetime
+import logging
+import os
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
-from pyuca import Collator
-
-coll = Collator()
-pp = pprint.PrettyPrinter(indent=2)
 
 from application.modules.extensions import Talisman, cache, csrf, paranoid, sess
 from application.modules import utils as mtu
 
-def create_app(debug=False, logger=None, port=5900, 
+
+def create_app(debug=False, logger=None, port=5900,
                config_path='conf/mtw.ini',
                server_name=None,
                url_prefix='',
@@ -25,7 +24,7 @@ def create_app(debug=False, logger=None, port=5900,
     if url_prefix:
         url_prefix = '/' + url_prefix
     else:
-        url_prefix = '/'    
+        url_prefix = '/'
 
     app = Flask(__name__, instance_relative_config=True, static_url_path=static_url_path)
 
@@ -38,10 +37,10 @@ def create_app(debug=False, logger=None, port=5900,
         app.debug = True
 
     if app.debug:
-        print('config:', config_path, '- port:', port) 
+        print('config:', config_path, '- port:', port)
 
     if logger:
-        app.logger = logger        
+        app.logger = logger
 
     if not app.debug:
         file_handler = logging.FileHandler(mtu.get_instance_dir(app, 'logs/mtw_server.log'))
@@ -57,7 +56,7 @@ def create_app(debug=False, logger=None, port=5900,
     app.config.update(dict(
         APPLICATION_ROOT = url_prefix,
         APP_NAME = 'MTW',
-        APP_VER = '1.6.5',
+        APP_VER = '1.6.6',
         API_VER = '1.0.0',
         DBVERSION = 1.0,
         CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
@@ -81,8 +80,8 @@ def create_app(debug=False, logger=None, port=5900,
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
         local_config_file = mtu.get_instance_dir(app, config_path),
         admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp'),
-        pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json')        
-    ))   
+        pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json')
+    ))
 
     app.app_context().push()
 
@@ -93,7 +92,7 @@ def create_app(debug=False, logger=None, port=5900,
     d = mtu.getAdminConfValue(adminConfig, fp=app.config['admin_config_file'])
     if not d:
         return
-    
+
     app.config.update(d)
 
     localConfig = mtu.getConfig(app.config['local_config_file'])
@@ -102,20 +101,20 @@ def create_app(debug=False, logger=None, port=5900,
 
     d = mtu.getLocalConfValue(localConfig, fp=app.config['local_config_file'])
     if not d:
-        return    
-    
-    app.config.update(d)        
+        return
 
-    ### Server settings
+    app.config.update(d)
+
+    # Server settings
 
     if relax:
         app.config.update({'SERVER_NAME': None})
-        app.config.update({'_RELAXED': True})      
+        app.config.update({'_RELAXED': True})
 
     if app.config['SERVER_NAME']:
-        app.config.update({'SESSION_COOKIE_DOMAIN': mtu.getCookieDomain( app.config['SERVER_NAME']) })
+        app.config.update({'SESSION_COOKIE_DOMAIN': mtu.getCookieDomain(app.config['SERVER_NAME'])})
 
-    ## --fqdn <server_name>
+    # --fqdn <server_name>
     if server_name:
         app.config.update({'SERVER_NAME': server_name})
         app.config.update({'SESSION_COOKIE_DOMAIN': mtu.getCookieDomain(server_name)})
@@ -123,30 +122,28 @@ def create_app(debug=False, logger=None, port=5900,
     if app.config.get('SERVER_NAME'):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)
 
+    # Flask Extensions init
 
-    ###  Flask Extensions init
-
-    ## Cache, Session
+    # Cache, Session
     cache.init_app(app)
     sess.init_app(app)
 
-    ##  SeaSurf (csrf) & Talisman
-    csrf.init_app(app)    
+    # SeaSurf (csrf) & Talisman
+    csrf.init_app(app)
 
     if not relax and not app.debug:
-        ## Paranoid
+        # Paranoid
         paranoid.init_app(app)
         paranoid.redirect_view = ('/')
 
-        talisman = Talisman(
-                    app,
-                    session_cookie_secure=app.config['SESSION_COOKIE_SECURE'],
-                    force_https=app.config['SESSION_COOKIE_SECURE'],
-                    strict_transport_security=False,
-                    content_security_policy=app.config['GCSP'],
-                    content_security_policy_nonce_in=['script-src','style-src']
-                )
+        talisman = Talisman(  # noqa: F841
+            app,
+            session_cookie_secure=app.config['SESSION_COOKIE_SECURE'],
+            force_https=app.config['SESSION_COOKIE_SECURE'],
+            strict_transport_security=False,
+            content_security_policy=app.config['GCSP'],
+            content_security_policy_nonce_in=['script-src', 'style-src'])
 
-    from application.modules import routes
+    from application.modules import routes  # noqa: F401
 
-    return app    
+    return app

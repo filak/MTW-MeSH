@@ -14,7 +14,7 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
 
-    return secure_function 
+    return secure_function
 
 
 def public_api_only():
@@ -36,8 +36,8 @@ def public_api_only():
                     if code != 200:
                         app.logger.error(msg)
                         abort(403)
-            
-            return f(*args, **kwargs)  
+
+            return f(*args, **kwargs)
 
         return check_public
     return decorator
@@ -45,23 +45,24 @@ def public_api_only():
 
 def validateBasicAuth():
     if has_request_context():
-        if app.config.get('API_AUTH_BASIC'): 
+        if app.config.get('API_AUTH_BASIC'):
             user, pwd = app.config.get('API_AUTH_BASIC')
             if user and pwd:
                 auth = request.authorization
-                if (auth is not None
-                    and auth.type == "basic"
-                    and auth.username == user
-                    and compare_digest(auth.password, pwd)
+                if (
+                    auth is not None and
+                    auth.type == 'basic' and
+                    auth.username == user and
+                    compare_digest(auth.password, pwd)
                 ):
                     return True
         else:
             return True
-        
-    if has_app_context():
-        app.logger.error('Basic Auth failed')   
 
- 
+    if has_app_context():
+        app.logger.error('Basic Auth failed')
+
+
 def getReqHost():
     if has_request_context():
         return str(request.host).strip().split(':')[0]
@@ -70,15 +71,15 @@ def getReqHost():
 def getReqOrigin():
     if has_request_context():
         if request.origin:
-            origin = str(request.origin).strip().replace('https://','').replace('http://','').strip()
-            return origin.split(':')[0] 
-        return getReqHost()    
-  
+            origin = str(request.origin).strip().replace('https://', '').replace('http://', '').strip()
+            return origin.split(':')[0]
+        return getReqHost()
+
 
 def validateRequest(token=None):
 
     if not has_app_context():
-        return (418, 'No app context') 
+        return (418, 'No app context')
 
     if not has_request_context():
         return (418, 'No request context')
@@ -89,14 +90,15 @@ def validateRequest(token=None):
 
         if not token:
             token = request.headers.get(app.config['WORKER_HEADER'])
-        
+
     if not token:
         errmsg = 'Missing token'
-        return (403, errmsg)  
+        return (403, errmsg)
 
-    token_data = decodeApiToken(token, app.config.get('API_KEY'), 
-                                        salt=app.config.get('API_SCOPE'),  
-                                        max_age=app.config.get('API_MAX_AGE') )
+    token_data = decodeApiToken(token,
+                                app.config.get('API_KEY'),
+                                salt=app.config.get('API_SCOPE'),
+                                max_age=app.config.get('API_MAX_AGE'))
 
     if not token_data:
         errmsg = 'Invalid token'
@@ -115,46 +117,44 @@ def validateRequest(token=None):
 
 def check_hostnames(host, host_token, ttype='request'):
 
-    if host_token not in ['localhost','127.0.0.1']:
-        
+    if host_token not in ['localhost', '127.0.0.1']:
+
         app_host = app.config.get('SERVER_NAME', app.config.get('APP_HOST'))
 
         if app_host and host_token != app_host:
             errmsg = 'Invalid ' + ttype + ' from : ' + host
             if ttype == 'request':
-                errmsg += ' : ' + get_headers_log() 
+                errmsg += ' : ' + get_headers_log()
             return errmsg
 
 
 def get_headers_log():
     headers = ''
     try:
-        headers = request.headers.environ     
-    except:
+        headers = request.headers.environ
+    except:  # noqa: E722
         headers = 'NO_HEADERS'
-    return str(headers)       
+    return str(headers)
 
 
 def decodeApiToken(token, secret, salt=None, max_age=10):
     s = URLSafeTimedSerializer(secret, salt=salt)
-
     try:
         return s.loads(token, max_age=max_age)
-    except:
+    except:  # noqa: E722
         return False
-    
+
 
 def genApiToken(secret, salt='', data=''):
     s = URLSafeTimedSerializer(secret, salt=salt)
-    return s.dumps(data) 
+    return s.dumps(data)
 
 
 def genApiHeaders(data='check'):
-    api_token = genApiToken(app.config['API_KEY'], 
+    api_token = genApiToken(app.config['API_KEY'],
                             salt=app.config['API_SCOPE'],
                             data=data)
     hdr = app.config['WORKER_HEADER']
     headers = {hdr: api_token}
 
     return headers
-    

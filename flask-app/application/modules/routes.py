@@ -6,10 +6,8 @@ import bcrypt
 import json
 import pprint
 import requests
-import uuid
 
 from contextlib import closing
-from sqlite3 import dbapi2 as sqlite3
 from timeit import default_timer as timer
 from urllib.parse import urlparse
 
@@ -27,6 +25,12 @@ from flask import (abort, flash, g, make_response, redirect, render_template,
 
 requests.packages.urllib3.disable_warnings()
 pp = pprint.PrettyPrinter(indent=2)
+
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'sqlite_db'):
+        g.sqlite_db.close()
 
 
 def ref_redirect():
@@ -69,9 +73,8 @@ def intro():
 
     t0 = timer()
 
-    db = get_db()
     stats_user = []
-    stats_user = mdb.getAuditUserStatus(db, userid=session['userid'], route='intro')
+    stats_user = mdb.getAuditUserStatus(userid=session['userid'], route='intro')
 
     show_elapsed(t0, tag='stats_user')
 
@@ -117,8 +120,8 @@ def intro():
             mtu.callWorker(stat='all')
 
     if session['ugroup'] in ['admin', 'manager', 'editor']:
-        status = mdb.getAuditStatus(db)
-        events = mdb.getAuditEvent(db)
+        status = mdb.getAuditStatus()
+        events = mdb.getAuditEvent()
 
         show_elapsed(t0, tag='getAudit')
 
@@ -177,23 +180,22 @@ def update_clipboard(dui):
     if request.form.get('action'):
 
         session.modified = True
-        db = get_db()
 
         dui = dui.replace('?', '').strip()
         duri = app.config['SOURCE_NS'] + dui
-        locked_by = get_locked_by(session['userid'], session['uname'])
+        locked_by = mtu.get_locked_by(session['userid'], session['uname'])
         label = request.form.get('label')
 
         if request.form['action'] == 'clear':
             session.pop('visited', {})
             session.pop('visited_check', [])
 
-            params = get_uparams_skeleton()
-            mdb.updateUserParams(db, session['userid'], json.dumps(params))
+            params = mtu.get_uparams_skeleton()
+            mdb.updateUserParams(session['userid'], json.dumps(params))
 
         elif request.form['action'] == 'add':
 
-            params = get_uparams(session['userid'])
+            params = mtu.get_uparams(session['userid'])
             switch = False
 
             if dui not in params['selected_check']:
@@ -206,11 +208,11 @@ def update_clipboard(dui):
                 del params['selected'][rem]
 
             if switch:
-                mdb.updateUserParams(db, session['userid'], json.dumps(params))
+                mdb.updateUserParams(session['userid'], json.dumps(params))
 
         elif request.form['action'] == 'append':
 
-            params = get_uparams(session['userid'])
+            params = mtu.get_uparams(session['userid'])
             dlist = mtu.get_dui_labels(request.form, 'append', with_values=False)
             ddict = mtu.get_dui_labels(request.form, 'append')
             switch = False
@@ -227,34 +229,34 @@ def update_clipboard(dui):
                     switch = True
 
             if switch:
-                mdb.updateUserParams(db, session['userid'], json.dumps(params))
+                mdb.updateUserParams(session['userid'], json.dumps(params))
 
         elif request.form['action'] == 'remove' and session['ugroup'] != 'admin':
 
             dlist = mtu.get_dui_labels(request.form, 'remove', with_values=False)
 
             if dlist:
-                params = get_uparams(session['userid'])
+                params = mtu.get_uparams(session['userid'])
                 for dui in dlist:
                     params['selected_check'].remove(dui)
                     del params['selected'][dui]
 
-                mdb.updateUserParams(db, session['userid'], json.dumps(params))
+                mdb.updateUserParams(session['userid'], json.dumps(params))
 
         elif request.form['action'] == 'lock' and dui:
             resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='lock', value=locked_by, dui=dui, cache=cache)
             if resp_ok:
-                mdb.addAudit(db, session['uname'],
+                mdb.addAudit(session['uname'],
                              userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label,
                              event='lock', tstate='locked')
 
         elif request.form['action'] == 'unlock' and dui:
             resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='unlock', dui=dui, cache=cache)
             if resp_ok:
-                audit = mdb.getAuditLocked(db, dui)
+                audit = mdb.getAuditLocked(dui)
                 if audit:
                     if audit.get('apid'):
-                        mdb.updateAuditResolved(db, audit['apid'], tstate='unlocked', resolvedby=session['uname'])
+                        mdb.updateAuditResolved(audit['apid'], tstate='unlocked', resolvedby=session['uname'])
 
     else:
         flash('Bad request !', 'danger')
@@ -365,7 +367,6 @@ def update_concept(dui, pref):
         # pp.pprint(term_list)
 
         if form_changed == 'true':
-            db = get_db()
 
             # result_ok = False
             result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=term_list, dui=dui, cache=cache)
@@ -388,7 +389,7 @@ def update_concept(dui, pref):
                 else:
                     tstate = 'updated'
 
-                mdb.addAudit(db, session['uname'],
+                mdb.addAudit(session['uname'],
                              userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
                              event=event, tstate=tstate, params=json.dumps(params))
 
@@ -468,7 +469,7 @@ def add_cpid(dui, cui):
 
         if updated:
             mtu.writeJsonFile(fpath, pid_counter)
-            mdb.addAudit(get_db(), session['uname'],
+            mdb.addAudit(session['uname'],
                          userid=session['userid'], otype='concept', detail=dui, label=cpid, opid=cui, dui=dui,
                          event='create_pid', tstate='updated')
             msg = 'CUI generated: ' + cpid
@@ -499,7 +500,6 @@ def update_note(dui):
         dui = dui.replace('?', '').strip()
         predicate = request.form['predicate'].replace('?', '').strip()
         label = request.form['label'].replace('?', '').strip()
-        db = get_db()
 
         if predicate not in app.config['DESC_NOTES']:
             msg = 'Update note: Unknown mesht predicate'
@@ -538,7 +538,7 @@ def update_note(dui):
 
                 msg = predicate + ' UPDATED : ' + dui
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'],
+                mdb.addAudit(session['uname'],
                              userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail,
                              event=event, params=json.dumps(params))
             elif resp_ok:
@@ -548,7 +548,7 @@ def update_note(dui):
 
                 msg = predicate + ' DELETED : ' + dui
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'],
+                mdb.addAudit(session['uname'],
                              userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail,
                              event='delete_note', tstate='deleted', params=json.dumps(params))
             else:
@@ -582,8 +582,6 @@ def update_scopenote(dui):
 
         predicate = 'scopeNote'
 
-        db = get_db()
-
         if request.form['scnt_changed'] == 'true' or request.form.get('scnt_update_force') == 'on':
             scnt = mtu.sanitize_input(request.form['scnt'])
             scnto = mtu.sanitize_input(request.form['scnt_original'], normalize=False)
@@ -613,7 +611,7 @@ def update_scopenote(dui):
 
                 msg = 'ScopeNoteTrx UPDATED'
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'],
+                mdb.addAudit(session['uname'],
                              userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
                              event=event, tstate=tstate, params=json.dumps(params))
 
@@ -627,7 +625,7 @@ def update_scopenote(dui):
 
                 msg = 'ScopeNoteTrx DELETED'
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'],
+                mdb.addAudit(session['uname'],
                              userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
                              event='delete_scopeNoteTrx', tstate=tstate, params=json.dumps(params))
 
@@ -667,7 +665,7 @@ def update_scopenote(dui):
 
                 msg = 'English ScopeNote UPDATED'
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'],
+                mdb.addAudit(session['uname'],
                              userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
                              event=event, tstate=tstate, params=json.dumps(params))
 
@@ -681,7 +679,7 @@ def update_scopenote(dui):
 
                 msg = 'English ScopeNote DELETED'
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'],
+                mdb.addAudit(session['uname'],
                              userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
                              event='delete_scopeNote', tstate=tstate, params=json.dumps(params))
 
@@ -711,8 +709,7 @@ def update_audit():
         note = request.form.get('anote', '').strip()
         backlink = request.form.get('backlink', '').strip()
 
-        db = get_db()
-        audit = mdb.getAuditRecord(db, apid)
+        audit = mdb.getAuditRecord(apid)
 
         if not audit:
             msg = 'Update FAILED : No Audit record found for : ' + apid
@@ -731,7 +728,7 @@ def update_audit():
             tstate = 'rejected'
 
         upd_err = None
-        upd_err = mdb.updateAuditResolved(db, apid, tstate=tstate, resolvedby=session['uname'], note=note)
+        upd_err = mdb.updateAuditResolved(apid, tstate=tstate, resolvedby=session['uname'], note=note)
 
         if upd_err:
             msg = 'Audit FAILED for : ' + event + ' | cui: ' + cui + ' | tstate: ' + tstate
@@ -868,8 +865,7 @@ def audit(dui, cui):
         session.pop('adui', None)
 
     audit = {}
-    db = get_db()
-    target_years = mdb.getTargetYears(db)
+    target_years = mdb.getTargetYears()
 
     year = None
     if request.args.get('year'):
@@ -881,7 +877,7 @@ def audit(dui, cui):
         if cui:
             cui = cui.replace('?', '').strip()
         dui = dui.replace('?', '').strip()
-        audit = mdb.getAuditForItem(db, dui, cui=cui, targetyear=year)
+        audit = mdb.getAuditForItem(dui, cui=cui, targetyear=year)
         mtu.getAuditDict(audit)
         # pp.pprint(audit)
 
@@ -927,35 +923,34 @@ def approve(status, event, userid, username):
 
     statuses = []
     users = []
-    db = get_db()
 
     year = None
     if request.args.get('year'):
-        target_years = mdb.getTargetYears(db)
+        target_years = mdb.getTargetYears()
         yr = int(request.args.get('year'))
         if yr in target_years:
             year = yr
 
     if event:
         if session['ugroup'] not in ['admin', 'manager', 'editor']:
-            statuses = mdb.getAuditUserStatus(db, userid=userid, targetyear=year)
+            statuses = mdb.getAuditUserStatus(userid=userid, targetyear=year)
         else:
-            statuses = mdb.getAuditEventStatus(db, event, targetyear=year)
-        users = mdb.getAuditUsersEvent(db, event, userid=userid, tstate=status, targetyear=year, route='approve')
+            statuses = mdb.getAuditEventStatus(event, targetyear=year)
+        users = mdb.getAuditUsersEvent(event, userid=userid, tstate=status, targetyear=year, route='approve')
     else:
-        statuses = mdb.getAuditUserStatus(db, userid=userid, targetyear=year)
-        users = mdb.getAuditUserStatus(db, userid=userid, tstate=status, targetyear=year, route='approve')
+        statuses = mdb.getAuditUserStatus(userid=userid, targetyear=year)
+        users = mdb.getAuditUserStatus(userid=userid, tstate=status, targetyear=year, route='approve')
 
     pending = {}
     if userid:
-        pending = mdb.getAuditPending(db, userid=userid, event=event)
+        pending = mdb.getAuditPending(userid=userid, event=event)
         mtu.getAuditDict(pending)
 
     resolved = {}
     if userid and status != 'pending':
-        resolved = mdb.getAuditResolved(db, userid, tstate=status, event=event, targetyear=year)
+        resolved = mdb.getAuditResolved(userid, tstate=status, event=event, targetyear=year)
     elif userid:
-        resolved = mdb.getAuditResolved(db, userid, event=event, targetyear=year)
+        resolved = mdb.getAuditResolved(userid, event=event, targetyear=year)
 
     mtu.getAuditDict(resolved)
 
@@ -1142,8 +1137,7 @@ def search(dui, action):
             store_visited(dui, descriptor['labels']['en'])
             show_elapsed(t0, started=desc_started, tag='desc_data processed')
 
-            db = get_db()
-            audit = mtu.getAuditDict(mdb.getAuditForItem(db, dui))
+            audit = mtu.getAuditDict(mdb.getAuditForItem(dui))
 
         else:
             msg = 'Item not found : ' + str(dui)
@@ -1222,8 +1216,7 @@ def report(userid, year):
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    db = get_db()
-    target_years = mdb.getTargetYears(db)
+    target_years = mdb.getTargetYears()
 
     if not year:
         if request.args.get('year'):
@@ -1234,7 +1227,7 @@ def report(userid, year):
     if int(year) not in target_years:
         year = app.config['TARGET_YEAR']
 
-    months = mdb.getReportMonth(db, targetyear=year)
+    months = mdb.getReportMonth(targetyear=year)
     month = None
     if request.args.get('month'):
         mon = request.args.get('month')
@@ -1246,9 +1239,9 @@ def report(userid, year):
 
     if session['ugroup'] not in ['admin', 'manager']:
         userid = session['userid']
-        users = mdb.getUsers(db, userid=userid)
+        users = mdb.getUsers(userid=userid)
     else:
-        users = mdb.getUsers(db)
+        users = mdb.getUsers()
 
     if request.args.get('report'):
         xrep = request.args.get('report').split('--')
@@ -1265,7 +1258,7 @@ def report(userid, year):
             else:
                 abort(403)
 
-            report = mdb.getReport(db, suf, targetyear=year, userid=userid, mon=month)
+            report = mdb.getReport(suf, targetyear=year, userid=userid, mon=month)
             if fmt in ['csv', 'tsv']:
                 if fmt == 'csv':
                     resp = make_response(render_template('report-csv.txt', head=head, report=report))
@@ -1283,8 +1276,8 @@ def report(userid, year):
         else:
             abort(400)
     else:
-        events = mdb.getReport(db, 'created', targetyear=year, userid=userid, mon=month)
-        resolved = mdb.getReport(db, 'resolved', targetyear=year, userid=userid, mon=month)
+        events = mdb.getReport('created', targetyear=year, userid=userid, mon=month)
+        resolved = mdb.getReport('resolved', targetyear=year, userid=userid, mon=month)
         # pp.pprint(report)
         return render_template('report.html',
                                users=users, target_years=target_years, year=year,
@@ -1331,7 +1324,7 @@ def manage(action):
 
         return redirect(ref_redirect())
 
-    users = mdb.getUsers(get_db())
+    users = mdb.getUsers()
 
     exports = {}
     exp_files = {}
@@ -1532,15 +1525,14 @@ def add_user():
         params['insert'].update({'lastname': lastname})
         params['insert'].update({'role': ugroup})
 
-        db = get_db()
-        res = mdb.addUser(db, username, firstname, lastname, passwd_hashed.decode('utf-8'), ugroup, phone=phone, email=email)
+        res = mdb.addUser(username, firstname, lastname, passwd_hashed.decode('utf-8'), ugroup, phone=phone, email=email)
 
         if res:
             flash(res, 'danger')
             app.logger.error(res + ' - uname: ' + username)
         else:
             flash('New user successfully added', 'info')
-            mdb.addAudit(db, session['uname'], userid=session['userid'], otype='user', opid=username, event='insert', params=json.dumps(params))
+            mdb.addAudit(session['uname'], userid=session['userid'], otype='user', opid=username, event='insert', params=json.dumps(params))
 
         return redirect(url_for('manage'))
 
@@ -1574,12 +1566,10 @@ def update_user():
             passwd = passwd.decode('utf-8')
             params['changed'].append('password')
 
-        db = get_db()
-
         if action == 'delete':
-            res = mdb.deleteUser(db, uid)
+            res = mdb.deleteUser(uid)
         else:
-            res = mdb.updateUser(db, username, firstname, lastname, passwd, ugroup, uid, phone=phone, email=email)
+            res = mdb.updateUser(username, firstname, lastname, passwd, ugroup, uid, phone=phone, email=email)
 
         opid = str(uid) + '_' + username
 
@@ -1595,11 +1585,11 @@ def update_user():
 
         if action == 'delete':
             flash('User ' + uid + ' successfully DELETED ', 'secondary')
-            mdb.addAudit(db, session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params))
+            mdb.addAudit(session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params))
 
         elif action == 'update':
             flash('User ' + uid + ' successfully UPDATED ', 'success')
-            mdb.addAudit(db, session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params))
+            mdb.addAudit(session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params))
 
         return redirect(url_for('manage'))
 
@@ -1615,7 +1605,6 @@ def login():
         username = request.form['username']
         password = request.form['password']
         isadmin = request.form['isadmin']
-        db = get_db()
 
         if isadmin == 'yes':
             if username == app.config['ADMINNAME'] and bcrypt.checkpw(password.encode('utf-8'), app.config['ADMINPASS'].encode('utf-8')):
@@ -1624,7 +1613,7 @@ def login():
                 error = 'Invalid admin login or password'
                 app.logger.warning(error + ' - uname: ' + username)
         else:
-            udata = mdb.getUserPwd(db, username)
+            udata = mdb.getUserPwd(username)
 
             if udata:
                 if bcrypt.checkpw(password.encode('utf-8'), udata['passwd'].encode('utf-8')):
@@ -1646,7 +1635,7 @@ def login():
                 session['theme'] = app.config['DEFAULT_THEME']
 
             else:
-                udata = mdb.getUserData(db, username=username)
+                udata = mdb.getUserData(username=username)
                 userid = udata['id']
                 session['uname'] = username
                 session['fname'] = udata['firstname']
@@ -1664,9 +1653,9 @@ def login():
                 flash('Your account has been ' + session['ugroup'] + '.', 'warning')
                 app.logger.warning('Disabled/Locked user login attempt : ' + username + ' - ' + session['ugroup'])
 
-                mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='failed')
+                mdb.addAudit(username, userid=userid, otype='user', event='login', tstate='failed')
             else:
-                mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='success')
+                mdb.addAudit(username, userid=userid, otype='user', event='login', tstate='success')
 
                 return redirect(url_for('intro'))
 
@@ -1689,11 +1678,10 @@ def logout():
         else:
             theme = session['theme']
 
-        db = get_db()
         if usergroup not in ['admin']:
-            mdb.updateUserTheme(db, session['userid'], theme)
+            mdb.updateUserTheme(session['userid'], theme)
 
-        mdb.addAudit(db, username, userid=session['userid'], otype='user', opid=theme, event='logout', tstate='success')
+        mdb.addAudit(username, userid=session['userid'], otype='user', opid=theme, event='logout', tstate='success')
 
     session.pop('logged_in', None)
     session.pop('next', None)
@@ -1741,187 +1729,3 @@ def checkApi(endpoint):
     except requests.RequestException as err:
         app.logger.error('API: %s \n\n %s', endpoint, str(err))
         return 'ERROR'
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def random_id():
-        return uuid.uuid4().hex[:6].upper()
-    return dict(random_id=random_id)
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def isDbLocked():
-        return is_lockdb()
-    return dict(isDbLocked=isDbLocked)
-
-
-def is_lockdb():
-    lpath = mtu.getLockFpath('lockdb')
-    if lpath.is_file():
-        return True
-    else:
-        return False
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def getLockedBy(userid, uname):
-        return get_locked_by(userid, uname)
-    return dict(getLockedBy=getLockedBy)
-
-
-def get_locked_by(userid, uname):
-    return str(userid) + '___' + str(uname)
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def hash_data(data):
-        return str(hash(data))
-    return dict(hash_data=hash_data)
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def app_state():
-        if app.debug:
-            return 'dev'
-        else:
-            return ''
-    return dict(app_state=app_state)
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def get_user_params(userid):
-        return get_uparams(userid)
-    return dict(get_user_params=get_user_params)
-
-
-def get_uparams(userid):
-    uparams = get_uparams_skeleton()
-    if userid != 0:
-        udata = mdb.getUserData(get_db(), userid=userid)
-        params = udata['params']
-        if params:
-            uparams = json.loads(params)
-
-    return uparams
-
-
-def get_uparams_skeleton():
-    params = {}
-    params['selected_check'] = []
-    params['selected'] = {}
-    return params
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def get_adminMsg():
-        mpath = mtu.getTempFpath('admin-msg', year=False)
-        if mpath.is_file():
-            return mtu.loadJsonFile(mpath)
-        else:
-            msg = {}
-            msg['show'] = 'hide'
-            msg['head'] = ''
-            msg['text'] = ''
-            return msg
-    return dict(get_adminMsg=get_adminMsg)
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def get_statusRep(status):
-        return get_statRep(status)
-    return dict(get_statusRep=get_statusRep)
-
-
-def get_statRep(status):
-    status_dict = {
-        'pending': 'info',
-        'rejected': 'danger',
-        'approved': 'success',
-        'updated': 'secondary',
-        'deleted': 'muted',
-        'purged': 'light',
-        'locked': 'warning',
-        'unlocked': 'primary'
-    }
-    return status_dict.get(status, 'secondary')
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def get_userBadgeRep(ugroup):
-        return get_userRep(ugroup)
-    return dict(get_userBadgeRep=get_userBadgeRep)
-
-
-def get_userRep(ugroup):
-    ugroup_dict = {
-        'manager': 'primary',
-        'editor': 'success',
-        'contributor': 'info',
-        'viewer': 'secondary',
-        'disabled': 'danger',
-        'locked': 'warning'
-    }
-    return ugroup_dict.get(ugroup, 'light')
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def langUmls(lang):
-        return mtu.getLangCodeUmls(lang)
-    return dict(langUmls=langUmls)
-
-
-@app.context_processor
-def utility_processor():  # noqa: F811
-    def deepGet(dictionary, keys, default=0):
-        return mtu.deep_get(dictionary, keys, default=default)
-    return dict(deepGet=deepGet)
-
-
-@app.template_filter()
-def numberFormat(value):
-    return format(int(value), ',d')
-
-
-@app.template_filter()
-def getListSplit(value, delim='|'):
-    return value.split(delim)
-
-
-#  Database
-
-def connect_db():
-    rv = sqlite3.connect(app.config['DATABASE'])
-    rv.row_factory = sqlite3.Row
-    return rv
-
-
-def get_db():
-    if not hasattr(g, 'sqlite_db'):
-        try:
-            g.sqlite_db = connect_db()
-            # g.sqlite_db.execute('pragma foreign_keys=on')
-        except sqlite3.Error as e:
-            error = 'Flask get_db error : ' + str(e.args[0])
-            flash(error, 'danger')
-            app.logger.error(error)
-            return None
-        else:
-            return g.sqlite_db
-    else:
-        return g.sqlite_db
-
-
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()

@@ -18,14 +18,15 @@ import arrow
 import diff_match_patch as dmp_module
 
 from functools import reduce
-from requests_futures.sessions import FuturesSession
 from pathlib import Path
-from urllib import parse as uparse
 from pyuca import Collator
+from requests_futures.sessions import FuturesSession
+from urllib import parse as uparse
 
 from flask import current_app as app
 
 from application.modules import sparql
+from application.modules.database import getUserData
 from application.modules.auth import genApiHeaders, getReqHost
 
 coll = Collator()
@@ -50,6 +51,28 @@ def getCookieDomain(server_name):
         return parts[0]
     else:
         return '127.0.0.1'
+
+
+def get_uparams(userid):
+    uparams = get_uparams_skeleton()
+    if userid != 0:
+        udata = getUserData(userid=userid)
+        params = udata['params']
+        if params:
+            uparams = json.loads(params)
+
+    return uparams
+
+
+def get_uparams_skeleton():
+    params = {}
+    params['selected_check'] = []
+    params['selected'] = {}
+    return params
+
+
+def get_locked_by(userid, uname):
+    return str(userid) + '___' + str(uname)
 
 
 # Config loading

@@ -171,7 +171,7 @@
   <div class="row">
     <footer class="footer">
 
-        <p class="text-muted">{{ config.APP_NAME }} {{ config.APP_VER }} {{ app_state()|upper() }}</p>
+        <p class="text-muted">{{ config.APP_NAME }} {{ config.APP_VER }} {{ app_state() | upper() }}</p>
 
     </footer>
   </div>
@@ -184,7 +184,7 @@
   <script src="{{ url_for('static', filename='jq-ui/jquery-ui.min.js') }}" type="text/javascript"></script>
 
   <script src="{{ url_for('static', filename='bootstrap/4.6.0/js/popper.min.js') }}?v=1.16.1" type="text/javascript"></script>
-  <script src="{{ url_for('static', filename='bootstrap/4.6.0/js/bootstrap.min.js') }}" type="text/javascript"></script>  
+  <script src="{{ url_for('static', filename='bootstrap/4.6.0/js/bootstrap.min.js') }}" type="text/javascript"></script>
 
   <script src="{{ url_for('static', filename='js/custom.js')}}?v={{ config.APP_VER }}" type="text/javascript"></script>
 </body>

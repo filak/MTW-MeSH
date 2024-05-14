@@ -1,7 +1,11 @@
 <ul class="list-inline mb-2">
   <li class="list-inline-item">
     <h4 class="mt-2" title="Oldest first">Audit for
-        <small> <span class="text-info">{{ dui }}</span> {{ cui }} </small>
+        <small>
+          <a href="{{ url_for('search', dui=dui) }}">
+          <span class="text-info">{{ dui }}</span></a>
+          {{ cui }}
+        </small>
         <span class="text-info">   <i class="fas fa-sort-numeric-down"></i> </span>
     </h4>
   </li>

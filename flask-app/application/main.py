@@ -144,6 +144,7 @@ def create_app(debug=False, logger=None, port=5900,
             content_security_policy=app.config['GCSP'],
             content_security_policy_nonce_in=['script-src', 'style-src'])
 
+    from application.modules import filters  # noqa: F401
     from application.modules import routes  # noqa: F401
 
     return app

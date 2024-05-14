@@ -1,17 +1,24 @@
 # -*- coding: utf-8 -*-
-import os, argparse, datetime, io, gzip, csv, uuid
+import os
+import argparse
+import datetime
+import io
+import gzip
+import csv
+import uuid
 from timeit import default_timer as timer
 
 appname = 'mesh-trx2nt'
-appversion = '1.1 4-10-2023'
+appversion = '1.1.1 14-5-2024'
 appdesc = 'Extracting translation dataset from NLM UMLS text file [trans_only_2023_expanded.txt]'
-appusage = 'Help:   '+ appname +'.py -h \n'
+appusage = 'Help:   ' + appname + '.py -h \n'
 appauthor = 'Filip Kriz'
 
-mesh_prefix  = 'http://id.nlm.nih.gov/mesh/'
+mesh_prefix = 'http://id.nlm.nih.gov/mesh/'
 mesht_prefix = 'http://www.medvik.cz/schema/mesh/vocab/#'
 
 custom_concepts = {}
+
 
 def main():
 
@@ -24,9 +31,9 @@ def main():
     print('*   Author:  ', appauthor)
     print('********************************************\n')
 
-    parser = argparse.ArgumentParser(description=appdesc, prog=appname, usage='%(prog)s inputFile meshxPrefix [options]')
+    parser = argparse.ArgumentParser(description=appdesc, prog=appname, usage='%(prog)s inputFile langCode meshxPrefix [options]')
     parser.add_argument('inputFile', type=str, help='NLM UMLS text file name (plain or gzipped)')
-    parser.add_argument('langcode', type=str, help='Language code')
+    parser.add_argument('langCode', type=str, help='Language code')
     parser.add_argument('meshxPrefix', type=str, help='MeSH Translation namespace prefix ie. http://my.mesh.com/id/ ')
     parser.add_argument('--out', type=str, default='mesh-trx', help='Output file name prefix')
 
@@ -34,13 +41,13 @@ def main():
 
     if unknown:
         print('ERROR : Uknown arguments : ', unknown)
-        print('Try : '+ appname  +'.py -h')
+        print('Try : ' + appname + '.py -h')
 
     else:
         inFile = os.path.normpath(args.inputFile)
 
         if os.path.isfile(inFile):
-            procFile(inFile, args.meshxPrefix, args.out, args.langcode)
+            procFile(inFile, args.meshxPrefix, args.out, args.langCode)
         else:
             print('ERROR : Input file NOT found : ', args.inputFile)
 
@@ -69,10 +76,9 @@ def procFile(inputFile, meshxPrefix, outputFile, lang_tag):
     result = parse_file(inputFile, outputFile, meshx_prefix, lang_tag, startDate)
     print('\n', result)
 
-    ##endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
+    # endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
     et = ('\nElapsed time : ' + str((timer() - t0) / 60) + ' min\n')
     print(et)
-
 
 
 def parse_file(inputFile, outputFile, meshx_prefix, lang_tag, startDate):
@@ -91,14 +97,14 @@ def parse_file(inputFile, outputFile, meshx_prefix, lang_tag, startDate):
     for line in readData(inputFile):
 
         if recCount == 0 and line[0] == 'DescriptorUI':
-            ## Skip headers if present
+            # Skip headers if present
             pass
         else:
             recCount += 1
             batch += 1
 
             docs += getTriples(line, lang_tag, meshx_prefix, startDate)
-            #docs += line
+            # docs += line
 
             if batch == bsize:
                 flushTriples(outputFile, docs)
@@ -106,8 +112,8 @@ def parse_file(inputFile, outputFile, meshx_prefix, lang_tag, startDate):
                 docs = []
 
     flushTriples(outputFile, docs)
-    ##for row in docs:
-    ##    print(row)
+    # for row in docs:
+    #     print(row)
 
     result['rowCount'] = recCount
 
@@ -121,10 +127,10 @@ def getTriples(line, lang_tag, meshx_prefix, startDate):
     DescriptorUI, ConceptUI, Language, TermType, Term, TermUI, ScopeNote, Tree, Created, Relation, ParentCUI = line
 
     csub = mesh_prefix + ConceptUI
-    obj  = meshx_prefix + str(uuid.uuid4())  
+    obj = meshx_prefix + str(uuid.uuid4())
 
     if not Created:
-        Created = startDate     
+        Created = startDate
 
     if ConceptUI.startswith('F'):
 
@@ -132,37 +138,37 @@ def getTriples(line, lang_tag, meshx_prefix, startDate):
             ccid = custom_concepts.get(ConceptUI)
         else:
             ccid = str(uuid.uuid4())
-            custom_concepts[ConceptUI] = ccid 
+            custom_concepts[ConceptUI] = ccid
 
-        ccsub = meshx_prefix + ccid       
+        ccsub = meshx_prefix + ccid
 
         if TermType == 'PEP':
             dsub = mesh_prefix + DescriptorUI
             csub = mesh_prefix + ParentCUI
 
-            triples.append( getTriple(dsub, 'concept', ccsub) )
-            triples.append( getTriple(csub, getRelationPredicate(Relation), ccsub) )
-            triples.append( getTriple(ccsub, 'identifier', ConceptUI, literal=True) )
-            triples.append( getTriple(ccsub, 'preferredTerm', obj) )
+            triples.append(getTriple(dsub, 'concept', ccsub))
+            triples.append(getTriple(csub, getRelationPredicate(Relation), ccsub))
+            triples.append(getTriple(ccsub, 'identifier', ConceptUI, literal=True))
+            triples.append(getTriple(ccsub, 'preferredTerm', obj))
 
-            if ScopeNote:  
-                triples.append( getTriple(ccsub, 'scopeNote', ScopeNote, literal=True, lang_tag=lang_tag) ) 
+            if ScopeNote:
+                triples.append(getTriple(ccsub, 'scopeNote', ScopeNote, literal=True, lang_tag=lang_tag))
 
         elif TermType == 'ET':
-            triples.append( getTriple(ccsub, 'term', obj) )
-        
+            triples.append(getTriple(ccsub, 'term', obj))
+
     else:
-        if TermType in ['MH','PEP']:
-            triples.append( getTriple(csub, 'preferredTerm', obj) )
+        if TermType in ['MH', 'PEP']:
+            triples.append(getTriple(csub, 'preferredTerm', obj))
 
-            if ScopeNote:  
-                triples.append( getTriple(csub, 'scopeNote', ScopeNote, literal=True, lang_tag=lang_tag) )              
+            if ScopeNote:
+                triples.append(getTriple(csub, 'scopeNote', ScopeNote, literal=True, lang_tag=lang_tag))
 
         elif TermType == 'ET':
-            triples.append( getTriple(csub, 'term', obj) )   
+            triples.append(getTriple(csub, 'term', obj))
 
-    triples.append( getTriple(obj, 'prefLabel', Term, literal=True, lang_tag=lang_tag) )
-    triples.append( getTriple(obj, 'dateCreated', Created, date=True) )                                             
+    triples.append(getTriple(obj, 'prefLabel', Term, literal=True, lang_tag=lang_tag))
+    triples.append(getTriple(obj, 'dateCreated', Created, date=True))
 
     return triples
 
@@ -175,7 +181,7 @@ def getRelationPredicate(Relation):
     elif Relation == 'RO':
         return 'relatedConcept'
     else:
-        return 'narrowerConcept'    
+        return 'narrowerConcept'
 
 
 def getTriple(sub, pred, obj, literal=False, date=False, lang_tag=None):
@@ -183,11 +189,11 @@ def getTriple(sub, pred, obj, literal=False, date=False, lang_tag=None):
     if literal:
         if lang_tag:
             return sub + getMesht(pred) + '"' + sanitize_input(obj) + '"@' + lang_tag
-        else: 
+        else:
             return sub + getMesht(pred) + '"' + sanitize_input(obj) + '"'
 
     if date:
-        return sub + getMesht(pred) + '"' + obj + '"^^<http://www.w3.org/2001/XMLSchema#date>' 
+        return sub + getMesht(pred) + '"' + obj + '"^^<http://www.w3.org/2001/XMLSchema#date>'
 
     return sub + getMesht(pred) + '<' + obj + '>'
 
@@ -198,9 +204,9 @@ def getMesht(predicate):
 
 def sanitize_input(text):
     t = text.strip()
-    t = " ".join(t.split())
-    t = t.replace('?','')
-    t = t.replace('"','\\"')
+    t = ' '.join(t.split())
+    t = t.replace('?', '')
+    t = t.replace('"', '\\"')
     return t
 
 
@@ -219,7 +225,7 @@ def readData(input_file):
                         if line[0].startswith('#'):
                             pass
                         else:
-                            data.append(line)                 
+                            data.append(line)
 
         if fext == '.txt':
             with open(input_file, mode='r', encoding='utf-8') as fh:
@@ -229,9 +235,9 @@ def readData(input_file):
                         if line[0].startswith('#'):
                             pass
                         else:
-                            data.append(line)                
+                            data.append(line)
 
-    except:
+    except:  # noqa: E722
         print('ERROR reading file : ', input_file)
         raise
 

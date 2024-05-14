@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
-import os, argparse, datetime, io, gzip
+import os
+import argparse
+import datetime
+import io
+import gzip
 from timeit import default_timer as timer
 
 appname = 'mesh-nt2trx'
-appversion = '1.5 26-9-2023'
+appversion = '1.5.1 14-5-2024'
 appdesc = 'Extracting translation dataset from Fuseki backup dump'
-appusage = 'Help:   '+ appname +'.py -h \n'
+appusage = 'Help:   ' + appname + '.py -h \n'
 appauthor = 'Filip Kriz'
 
 mesht_prefix = 'http://www.medvik.cz/schema/mesh/vocab/#'
+
 
 def main():
 
@@ -29,7 +34,7 @@ def main():
 
     if unknown:
         print('ERROR : Uknown arguments : ', unknown)
-        print('Try : '+ appname  +'.py -h')
+        print('Try : ' + appname + '.py -h')
 
     else:
         inFile = os.path.normpath(args.inputFile)
@@ -60,7 +65,7 @@ def getSubset(inputFile, outputFile):
     result = getSubsetFrom(inputFile, outputFile)
     print('\n', result)
 
-    ##endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
+    # endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
     et = ('\nElapsed time : ' + str((timer() - t0) / 60) + ' min\n')
     print(et)
 

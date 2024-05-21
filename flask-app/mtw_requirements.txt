@@ -24,7 +24,7 @@ Jinja2==3.1.4
 MarkupSafe==2.1.5
 pip_audit==2.7.1 ## Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt
 pyuca==1.2
-requests==2.31.0
+requests==2.32.0
 requests_futures==1.0.1
 setuptools==69.1.1
 urllib3==1.26.18

@@ -37,7 +37,11 @@ def create_app(debug=False, logger=None, port=5900,
         app.debug = True
 
     if app.debug:
+<<<<<<< Updated upstream
         print('config:', config_path, '- port:', port)
+=======
+        print('MTW Config:  ', config_path, ' - port: ', port)
+>>>>>>> Stashed changes
 
     if logger:
         app.logger = logger
@@ -122,8 +126,17 @@ def create_app(debug=False, logger=None, port=5900,
     if app.config.get('SERVER_NAME'):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)
 
+<<<<<<< Updated upstream
     # Flask Extensions init
 
+=======
+    if app.debug:
+        print('Server host: ', app.config['SERVER_NAME'])
+        print('Worker host: ', app.config['WORKER_HOST'])
+
+    # Flask Extensions init
+
+>>>>>>> Stashed changes
     # Cache, Session
     cache.init_app(app)
     sess.init_app(app)

@@ -598,6 +598,7 @@ def getElasticData(data):
 
         qua_use = []
         usein = use_instead.get(dui, {})
+
         if usein:
             ecin = usein.get('qn')
             for qd in sorted(ecin.split('|')):
@@ -606,14 +607,34 @@ def getElasticData(data):
                 qen = qualifiers[q].get('eng', 'EMPTY')
                 qtr = qualifiers[q].get('trx', 'MISSING')
 
+<<<<<<< Updated upstream
                 d = parts[1]
+=======
+                draw = parts[1]
+                dparts = draw.split('Q')
+                d = dparts[0]
+
+>>>>>>> Stashed changes
                 den = descriptors[d].get('eng', 'EMPTY')
                 dtr = descriptors[d].get('trx', 'MISSING')
 
                 qout = {}
-                qout['qtr'] = qtr + '~' + qen + '|' + q
-                qout['dtr'] = dtr + '~' + den + '|' + d
+                qout['qua'] = qtr + '~' + qen + '|' + q
 
+<<<<<<< Updated upstream
+=======
+                if len(dparts) == 2:
+                    aq = 'Q' + dparts[1]
+                    aqen = qualifiers[aq].get('eng', 'EMPTY')
+                    aqtr = qualifiers[aq].get('trx', 'MISSING')
+
+                    den += '-' + aqen
+                    dtr += '-' + aqtr
+                    qout['qal'] = dtr + '~' + den + '|' + draw
+                else:
+                    qout['dal'] = dtr + '~' + den + '|' + draw
+
+>>>>>>> Stashed changes
                 qua_use.append(qout)
 
         if qua_use:

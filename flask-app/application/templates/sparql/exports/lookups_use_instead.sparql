@@ -1,17 +1,18 @@
-## useInstead Descriptor-qualifs export query v1.0
+## useInstead Descriptor-qualifs export query v1.1
 
 {% include 'sparql/_namespaces.sparql' %}
 
 SELECT ?dui (GROUP_CONCAT(DISTINCT ?o ; separator='|') AS ?qn)
 WHERE {
-  ?dq meshv:hasDescriptor ?d .
-  ?dq meshv:active ?active .
-  FILTER(?active)
+  ?ddq meshv:hasDescriptor ?d .
+  ?ddq meshv:active ?ddqactive .
+  FILTER(?ddqactive) .
   ?d meshv:identifier ?dui .
-  ?dq meshv:useInstead ?ud .
-  ?dq meshv:hasQualifier ?q .
+  ?ddq meshv:useInstead ?adq .
+  ?adq meshv:active ?adqactive .
+  FILTER(?adqactive) .
+  ?ddq meshv:hasQualifier ?q .
   ?q meshv:identifier ?qui .
-  ?ud meshv:identifier ?udui .
-  BIND( CONCAT(STR(?qui), '~', STR(?udui)) AS ?o)
+  BIND( CONCAT(STR(?qui), '~', REPLACE(STR(?adq), str(mesh:), '')) AS ?o)
 }
 GROUP BY ?dui

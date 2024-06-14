@@ -25,11 +25,7 @@ def create_app(debug=False, logger=None, port=5903,
         app.debug = True
 
     if app.debug:
-<<<<<<< Updated upstream
-        print('config:', config_path, '- port:', port)
-=======
         print('MTW Config:  ', config_path, ' - port: ', port)
->>>>>>> Stashed changes
 
     if logger:
         app.logger = logger
@@ -84,12 +80,9 @@ def create_app(debug=False, logger=None, port=5903,
 
     app.config.update({'APP_HOST': app.config.get('SERVER_NAME')})
     app.config.update({'SERVER_NAME': None})
-<<<<<<< Updated upstream
-=======
 
     if app.debug:
         print('Worker host: ', app.config['WORKER_HOST'])
->>>>>>> Stashed changes
 
     if relax:
         app.config.update({'APP_RELAXED': True})

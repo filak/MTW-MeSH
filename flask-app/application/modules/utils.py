@@ -607,22 +607,16 @@ def getElasticData(data):
                 qen = qualifiers[q].get('eng', 'EMPTY')
                 qtr = qualifiers[q].get('trx', 'MISSING')
 
-<<<<<<< Updated upstream
-                d = parts[1]
-=======
                 draw = parts[1]
                 dparts = draw.split('Q')
                 d = dparts[0]
 
->>>>>>> Stashed changes
                 den = descriptors[d].get('eng', 'EMPTY')
                 dtr = descriptors[d].get('trx', 'MISSING')
 
                 qout = {}
                 qout['qua'] = qtr + '~' + qen + '|' + q
 
-<<<<<<< Updated upstream
-=======
                 if len(dparts) == 2:
                     aq = 'Q' + dparts[1]
                     aqen = qualifiers[aq].get('eng', 'EMPTY')
@@ -634,7 +628,6 @@ def getElasticData(data):
                 else:
                     qout['dal'] = dtr + '~' + den + '|' + draw
 
->>>>>>> Stashed changes
                 qua_use.append(qout)
 
         if qua_use:

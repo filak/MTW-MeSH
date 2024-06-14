@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-import os, argparse, datetime, io, gzip
+import os
+import argparse
+import datetime
+import io
+import gzip
 from timeit import default_timer as timer
 import xml.etree.ElementTree as ET
 
 appname = 'mesh-xml2trx'
-appversion = '1.5 26-9-2023'
+appversion = '1.5.1 14-5-2024'
 appdesc = 'Extracting translation dataset from MeSH XML'
-appusage = 'Help:   '+ appname +'.py -h \n'
+appusage = 'Help:   ' + appname + '.py -h \n'
 appauthor = 'Filip Kriz'
 
-mesh_prefix  = 'http://id.nlm.nih.gov/mesh/'
+mesh_prefix = 'http://id.nlm.nih.gov/mesh/'
 mesht_prefix = 'http://www.medvik.cz/schema/mesh/vocab/#'
 
 
@@ -33,7 +37,7 @@ def main():
 
     if unknown:
         print('ERROR : Uknown arguments : ', unknown)
-        print('Try : '+ appname  +'.py -h')
+        print('Try : ' + appname + '.py -h')
 
     else:
         inFile = os.path.normpath(args.inputFile)
@@ -67,10 +71,9 @@ def getSubset(inputFile, meshxPrefix, outputFile):
     result = parse_xml(inputFile, outputFile, meshx_prefix)
     print('\n', result)
 
-    ##endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
+    # endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
     et = ('\nElapsed time : ' + str((timer() - t0) / 60) + ' min\n')
     print(et)
-
 
 
 def parse_xml(inputFile, outputFile, meshx_prefix):
@@ -85,7 +88,7 @@ def parse_xml(inputFile, outputFile, meshx_prefix):
     print('Processing ...')
     try:
         root = getRoot(inputFile)
-    except:
+    except:  # noqa: E722
         raise
 
     lang_code = root.attrib['LanguageCode']
@@ -107,8 +110,8 @@ def parse_xml(inputFile, outputFile, meshx_prefix):
             docs = []
 
     flushTriples(outputFile, docs)
-    ##for row in docs:
-    ##    print(row)
+    # for row in docs:
+    #     print(row)
 
     root.clear()
 
@@ -127,7 +130,7 @@ def getTriples(rec, lang_code, lang_tag, meshx_prefix):
     for concept in rec.findall('ConceptList/Concept'):
 
         cui = concept.find('ConceptUI').text.strip()
-        ##cpref = concept.attrib['PreferredConceptYN']
+        # cpref = concept.attrib['PreferredConceptYN']
 
         cui = concept.find('ConceptUI').text.strip()
         if cui.startswith('F'):
@@ -202,29 +205,29 @@ def getMesht(predicate):
 
 def sanitize_input(text):
     t = text.strip()
-    t = " ".join(t.split())
-    t = t.replace('?','')
-    t = t.replace('"','\\"')
+    t = ' '.join(t.split())
+    t = t.replace('?', '')
+    t = t.replace('"', '\\"')
     return t
 
 
 def getDate(node):
-    year  = node.find('Year').text.strip()
+    year = node.find('Year').text.strip()
     month = node.find('Month').text.strip()
-    day  = node.find('Day').text.strip()
-    return '"' + year +'-'+ month +'-'+ day + '"^^<http://www.w3.org/2001/XMLSchema#date>'
+    day = node.find('Day').text.strip()
+    return '"' + year + '-' + month + '-' + day + '"^^<http://www.w3.org/2001/XMLSchema#date>'
 
 
 def getLangTag(lang_code):
     lang_dict = {
-        'cze' : 'cs',
-        'fre' : 'fr',
-        'ger' : 'de',
-        'ita' : 'it',
-        'nor' : 'no',
-        'por' : 'pt',
-        'scr' : 'hr',
-        'spa' : 'es'
+        'cze': 'cs',
+        'fre': 'fr',
+        'ger': 'de',
+        'ita': 'it',
+        'nor': 'no',
+        'por': 'pt',
+        'scr': 'hr',
+        'spa': 'es'
     }
     return lang_dict.get(lang_code.lower(), 'xx')
 
@@ -243,7 +246,7 @@ def getRoot(input_file):
             with open(input_file, mode='r', encoding='utf-8') as fh:
                 tree = ET.parse(fh)
 
-    except:
+    except:  # noqa: E722
         print('ERROR reading file : ', input_file)
         raise
 

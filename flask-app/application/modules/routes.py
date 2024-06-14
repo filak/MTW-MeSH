@@ -2,16 +2,18 @@
 """
 Routes & pages
 """
-import bcrypt, json, requests, uuid
+import bcrypt
+import json
+import pprint
+import requests
 
 from contextlib import closing
-from sqlite3 import dbapi2 as sqlite3
 from timeit import default_timer as timer
 from urllib.parse import urlparse
 
 from flask import current_app as app
 
-from application.main import cache, pp
+from application.main import cache
 from application.modules import database as mdb
 from application.modules import sparql as sparql
 from application.modules import utils as mtu
@@ -22,6 +24,13 @@ from flask import (abort, flash, g, make_response, redirect, render_template,
                    url_for)
 
 requests.packages.urllib3.disable_warnings()
+pp = pprint.PrettyPrinter(indent=2)
+
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'sqlite_db'):
+        g.sqlite_db.close()
 
 
 def ref_redirect():
@@ -31,16 +40,16 @@ def ref_redirect():
         if purl.query:
             new_url += '?' + purl.query
         return new_url
-    except:
+    except:  # noqa: E722
         return url_for('intro')
 
 
 def show_elapsed(begin, started=None, tag='', msg=False):
 
-    ### To turn OFF return here:
-    #return
+    # To turn OFF return here:
+    # return
 
-    ## begin = timer()
+    # begin = timer()
     process = 0
 
     elapsed = timer() - begin
@@ -51,12 +60,12 @@ def show_elapsed(begin, started=None, tag='', msg=False):
         print("%.3f" % elapsed, "%.3f" % process, tag)
 
     if msg:
-        return "%.3f" % elapsed + 's'  
+        return "%.3f" % elapsed + 's'
 
     return elapsed
 
 
-###  Pages
+#  Pages
 
 @app.route('/', methods=['GET'])
 @login_required
@@ -64,9 +73,8 @@ def intro():
 
     t0 = timer()
 
-    db = get_db()
     stats_user = []
-    stats_user = mdb.getAuditUserStatus(db, userid=session['userid'], route='intro')
+    stats_user = mdb.getAuditUserStatus(userid=session['userid'], route='intro')
 
     show_elapsed(t0, tag='stats_user')
 
@@ -79,10 +87,10 @@ def intro():
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
 
     initial = mtu.getStatsFpath('initial')
-    actual  = mtu.getStatsFpath('actual')
+    actual = mtu.getStatsFpath('actual')
 
     show_elapsed(t0, tag='getStatsFpath finished')
-        
+
     worker_check = checkWorker(worker)
     show_elapsed(t0, tag='worker_check')
 
@@ -95,32 +103,33 @@ def intro():
 
     elif api_check == 'ERROR':
         msg = 'SPARQL endpoint is NOT running/available !'
-        flash(msg, 'warning')             
+        flash(msg, 'warning')
 
     else:
         if initial.is_file() and actual.is_file():
             show_stats = True
             stats_initial = mtu.loadJsonFile(initial)
             stats_actual = mtu.loadJsonFile(actual)
-            
+
             show_elapsed(t0, tag='loadJsonFile')
-    
+
             if mtu.fileOld(actual, app.config['REFRESH_AFTER']):
-                    
+
                 mtu.callWorker(stat='actual')
         else:
             mtu.callWorker(stat='all')
 
-    if session['ugroup'] in ['admin','manager','editor']:
-        status = mdb.getAuditStatus(db)
-        events = mdb.getAuditEvent(db)
+    if session['ugroup'] in ['admin', 'manager', 'editor']:
+        status = mdb.getAuditStatus()
+        events = mdb.getAuditEvent()
 
         show_elapsed(t0, tag='getAudit')
 
     show_elapsed(t0, tag='ready to render')
-    
-    return render_template('intro.html', stats_user=stats_user, status=status, events=events, show_stats=show_stats,
-                                         initial=stats_initial, actual=stats_actual)
+
+    return render_template('intro.html',
+                           stats_user=stats_user, status=status, events=events, show_stats=show_stats,
+                           initial=stats_initial, actual=stats_actual)
 
 
 @app.route('/settings/set_style/', methods=['POST'])
@@ -129,7 +138,7 @@ def settings():
 
     if request.form.get('theme'):
         theme = request.form.get('theme').strip()
-        if theme in ['slate','spacelab','flatly']:
+        if theme in ['slate', 'spacelab', 'flatly']:
             session['theme'] = theme
     else:
         session['theme'] = app.config['DEFAULT_THEME']
@@ -137,7 +146,7 @@ def settings():
     return redirect(ref_redirect())
 
 
-###  Audit
+#  Audit
 
 @app.route('/todo/', defaults={'tlist': 'Preferred'}, methods=['GET'])
 @app.route('/todo/list:<tlist>', methods=['GET'])
@@ -146,16 +155,16 @@ def todo(tlist):
 
     hits = None
     tlist_check = tlist.lower()
-    if tlist_check in ['preferred','nonpreferred', 'preftermmissing',
-                       'scopenote','nonprefscopenote','customconcepts',
-                       'duplicates','duplicates_eng','mesht_predicates']:
+    if tlist_check in ['preferred', 'nonpreferred', 'preftermmissing',
+                       'scopenote', 'nonprefscopenote', 'customconcepts',
+                       'duplicates', 'duplicates_eng', 'mesht_predicates']:
         session['tlist'] = tlist
         template = 'reports/todo_' + tlist
         data = sparql.getSparqlData(template)
         if data:
-            ##pp.pprint(data)
+            # pp.pprint(data)
             hits = sparql.parseSparqlData(data)
-            ##pp.pprint(hits)
+            # pp.pprint(hits)
     else:
         session.pop('tlist', None)
         tlist = 'Select a list'
@@ -163,31 +172,30 @@ def todo(tlist):
     return render_template('todo.html', tlist_check=tlist_check, tlist=tlist, hits=hits)
 
 
-@app.route('/update_clipboard/', defaults={'dui':''}, methods=['POST'])
+@app.route('/update_clipboard/', defaults={'dui': ''}, methods=['POST'])
 @app.route('/update_clipboard/dui:<dui>', methods=['POST'])
 @login_required
 def update_clipboard(dui):
 
     if request.form.get('action'):
-        
-        session.modified = True
-        db = get_db()
 
-        dui = dui.replace('?','').strip()
+        session.modified = True
+
+        dui = dui.replace('?', '').strip()
         duri = app.config['SOURCE_NS'] + dui
-        locked_by = get_locked_by(session['userid'], session['uname'])
+        locked_by = mtu.get_locked_by(session['userid'], session['uname'])
         label = request.form.get('label')
 
         if request.form['action'] == 'clear':
-            session.pop('visited',{})
-            session.pop('visited_check',[])
+            session.pop('visited', {})
+            session.pop('visited_check', [])
 
-            params = get_uparams_skeleton()
-            mdb.updateUserParams(db, session['userid'], json.dumps(params))
+            params = mtu.get_uparams_skeleton()
+            mdb.updateUserParams(session['userid'], json.dumps(params))
 
         elif request.form['action'] == 'add':
 
-            params = get_uparams(session['userid'])
+            params = mtu.get_uparams(session['userid'])
             switch = False
 
             if dui not in params['selected_check']:
@@ -200,18 +208,18 @@ def update_clipboard(dui):
                 del params['selected'][rem]
 
             if switch:
-                mdb.updateUserParams(db, session['userid'], json.dumps(params))
+                mdb.updateUserParams(session['userid'], json.dumps(params))
 
         elif request.form['action'] == 'append':
 
-            params = get_uparams(session['userid'])
+            params = mtu.get_uparams(session['userid'])
             dlist = mtu.get_dui_labels(request.form, 'append', with_values=False)
             ddict = mtu.get_dui_labels(request.form, 'append')
             switch = False
 
             for dui in dlist:
                 if dui not in params['selected_check']:
-                    params['selected'].update( {dui: ddict[dui]} )
+                    params['selected'].update({dui: ddict[dui]})
                     params['selected_check'].append(dui)
                     switch = True
 
@@ -221,33 +229,34 @@ def update_clipboard(dui):
                     switch = True
 
             if switch:
-                mdb.updateUserParams(db, session['userid'], json.dumps(params))
+                mdb.updateUserParams(session['userid'], json.dumps(params))
 
-        elif request.form['action'] == 'remove' and session['ugroup'] != 'admin' :
+        elif request.form['action'] == 'remove' and session['ugroup'] != 'admin':
 
             dlist = mtu.get_dui_labels(request.form, 'remove', with_values=False)
 
             if dlist:
-                params = get_uparams(session['userid'])
+                params = mtu.get_uparams(session['userid'])
                 for dui in dlist:
                     params['selected_check'].remove(dui)
                     del params['selected'][dui]
 
-                mdb.updateUserParams(db, session['userid'], json.dumps(params))
+                mdb.updateUserParams(session['userid'], json.dumps(params))
 
         elif request.form['action'] == 'lock' and dui:
             resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='lock', value=locked_by, dui=dui, cache=cache)
             if resp_ok:
-                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, 
-                                 event='lock', tstate='locked')
+                mdb.addAudit(session['uname'],
+                             userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label,
+                             event='lock', tstate='locked')
 
         elif request.form['action'] == 'unlock' and dui:
             resp_ok = sparql.updateTriple(template='lock', uri=duri, predicate='unlock', dui=dui, cache=cache)
             if resp_ok:
-                audit = mdb.getAuditLocked(db, dui)
+                audit = mdb.getAuditLocked(dui)
                 if audit:
                     if audit.get('apid'):
-                        mdb.updateAuditResolved(db, audit['apid'], tstate='unlocked', resolvedby=session['uname'])
+                        mdb.updateAuditResolved(audit['apid'], tstate='unlocked', resolvedby=session['uname'])
 
     else:
         flash('Bad request !', 'danger')
@@ -259,32 +268,32 @@ def update_clipboard(dui):
 @login_required
 def update_concept(dui, pref):
 
-    if session['ugroup'] in ['viewer','disabled','locked']:
+    if session['ugroup'] in ['viewer', 'disabled', 'locked']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
     action = request.form['action'].strip()
-    ##pp.pprint(request.form)
+    # pp.pprint(request.form)
 
-    if action == 'purge' and session['ugroup'] not in ['admin','manager']:
+    if action == 'purge' and session['ugroup'] not in ['admin', 'manager']:
         return redirect(url_for('search', dui=dui))
 
-    if action == 'delete' and session['ugroup'] not in ['admin','manager','editor']:
+    if action == 'delete' and session['ugroup'] not in ['admin', 'manager', 'editor']:
         return redirect(url_for('search', dui=dui))
 
-    if request.form.get('concept') and request.form.get('label') and action in ['insert','update','delete','purge']:
+    if request.form.get('concept') and request.form.get('label') and action in ['insert', 'update', 'delete', 'purge']:
 
-        dui = dui.replace('?','').strip()
-        pref_concept = app.config['SOURCE_NS'] + pref.replace('?','').strip()
-        concept = request.form['concept'].replace('?','').strip()
+        dui = dui.replace('?', '').strip()
+        pref_concept = app.config['SOURCE_NS'] + pref.replace('?', '').strip()
+        concept = request.form['concept'].replace('?', '').strip()
         cui = mtu.getCui(concept)
-        label = request.form['label'].replace('?','').strip()
+        label = request.form['label'].replace('?', '').strip()
 
         if concept == 'NEW':
             concept = app.config['TARGET_NS'] + cui
 
-        ##cpid = request.form['cpid'].strip()
+        # cpid = request.form['cpid'].strip()
 
         form_changed = request.form['form_changed'].strip()
         propose = request.form.get('propose')
@@ -304,7 +313,7 @@ def update_concept(dui, pref):
 
         skip_terms = False
 
-        if action in ['delete','purge'] and app.config['TARGET_NS'] in concept:
+        if action in ['delete', 'purge'] and app.config['TARGET_NS'] in concept:
             form_changed = 'true'
             event = action + '_concept'
 
@@ -314,7 +323,7 @@ def update_concept(dui, pref):
             concept_list.append(cd)
             params['old'] = mtu.getParamsForAudit(dui, concept, cui)
 
-        elif action not in ['delete','purge'] and form_changed == 'true':
+        elif action not in ['delete', 'purge'] and form_changed == 'true':
             cd = {}
 
             if action == 'insert':
@@ -326,7 +335,7 @@ def update_concept(dui, pref):
 
             if request.form.get('concept-rel'):
                 rel = request.form['concept-rel'].strip()
-                if rel in ['narrowerConcept','broaderConcept','relatedConcept']:
+                if rel in ['narrowerConcept', 'broaderConcept', 'relatedConcept']:
                     cd['rel'] = rel
                     if action == 'insert':
                         cd['operation'] = 'insert'
@@ -354,22 +363,21 @@ def update_concept(dui, pref):
             if not skip_terms:
                 term_list = mtu.getTermList(request.form, concept, dui)
 
-        ##pp.pprint(concept_list)
-        ##pp.pprint(term_list)
+        # pp.pprint(concept_list)
+        # pp.pprint(term_list)
 
         if form_changed == 'true':
-            db = get_db()
 
-            ##result_ok = False
+            # result_ok = False
             result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=term_list, dui=dui, cache=cache)
 
             if result_ok:
                 params['new'] = mtu.getParamsForAudit(dui, concept, cui)
-                ##pp.pprint(params)
+                # pp.pprint(params)
 
                 try:
                     detail = mtu.getAuditDetail(event, params)
-                except:
+                except:  # noqa: E722
                     detail = event
 
                 if propose == 'true':
@@ -381,31 +389,32 @@ def update_concept(dui, pref):
                 else:
                     tstate = 'updated'
 
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
-                                 event=event, tstate=tstate, params=json.dumps(params))
+                mdb.addAudit(session['uname'],
+                             userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
+                             event=event, tstate=tstate, params=json.dumps(params))
 
             if result_ok and event == 'insert_concept':
-                msg = 'Concept CREATED : '+label
+                msg = 'Concept CREATED : ' + label
                 flash(msg, 'info')
 
             elif result_ok and event == 'update_concept':
-                msg = 'Concept UPDATED : '+label
+                msg = 'Concept UPDATED : ' + label
                 flash(msg, 'success')
 
             elif result_ok and event == 'set_notrx':
-                msg = 'Concept set as NOT Translatable : '+label
+                msg = 'Concept set as NOT Translatable : ' + label
                 flash(msg, 'warning')
 
             elif result_ok and event == 'delete_concept':
-                msg = 'Concept DELETED : '+label
+                msg = 'Concept DELETED : ' + label
                 flash(msg, 'secondary')
 
             elif result_ok and event == 'purge_concept':
-                msg = 'Concept PURGED : '+label
+                msg = 'Concept PURGED : ' + label
                 flash(msg, 'primary')
 
             else:
-                msg = 'Operation FAILED for Concept : '+concept
+                msg = 'Operation FAILED for Concept : ' + concept
                 flash(msg, 'danger')
                 app.logger.error(msg)
 
@@ -424,7 +433,7 @@ def add_cpid(dui, cui):
     if len(cui) != 36 or not dui.startswith('D'):
         msg = 'Action NOT applicable'
         flash(msg, 'danger')
-        return redirect( url_for('search') )
+        return redirect(url_for('search'))
 
     fpath = app.config['pid_counter_file']
     pid_counter = mtu.loadJsonFile(fpath, default={})
@@ -460,8 +469,9 @@ def add_cpid(dui, cui):
 
         if updated:
             mtu.writeJsonFile(fpath, pid_counter)
-            mdb.addAudit(get_db(), session['uname'], userid=session['userid'], otype='concept', detail=dui, label=cpid, opid=cui, dui=dui, 
-                                   event='create_pid', tstate='updated')
+            mdb.addAudit(session['uname'],
+                         userid=session['userid'], otype='concept', detail=dui, label=cpid, opid=cui, dui=dui,
+                         event='create_pid', tstate='updated')
             msg = 'CUI generated: ' + cpid
             flash(msg, 'info')
             app.logger.info(msg + ' for ' + curi)
@@ -481,16 +491,15 @@ def add_cpid(dui, cui):
 @login_required
 def update_note(dui):
 
-    if session['ugroup'] in ['viewer','disabled','locked']:
+    if session['ugroup'] in ['viewer', 'disabled', 'locked']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
     if request.form.get('predicate') and request.form.get('label'):
-        dui = dui.replace('?','').strip()
-        predicate = request.form['predicate'].replace('?','').strip()
-        label = request.form['label'].replace('?','').strip()
-        db = get_db()
+        dui = dui.replace('?', '').strip()
+        predicate = request.form['predicate'].replace('?', '').strip()
+        label = request.form['label'].replace('?', '').strip()
 
         if predicate not in app.config['DESC_NOTES']:
             msg = 'Update note: Unknown mesht predicate'
@@ -501,7 +510,7 @@ def update_note(dui):
         duri = app.config['SOURCE_NS'] + dui
 
         if request.form['tnote_changed'] == 'true':
-            tnote  = mtu.sanitize_input(request.form['tnote'])
+            tnote = mtu.sanitize_input(request.form['tnote'])
             tnoteo = mtu.sanitize_input(request.form['tnote_original'], normalize=False)
 
             insert = True
@@ -515,7 +524,7 @@ def update_note(dui):
             params['duri'] = duri
             params['predicate'] = predicate
 
-            if resp_ok and insert == True:
+            if resp_ok and insert is True:
                 params['new'] = tnote
 
                 if not tnoteo:
@@ -527,21 +536,23 @@ def update_note(dui):
                     detail = predicate
                     params['old'] = tnoteo
 
-                msg = predicate+' UPDATED : '+dui
+                msg = predicate + ' UPDATED : ' + dui
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail, 
-                                 event=event, params=json.dumps(params))
+                mdb.addAudit(session['uname'],
+                             userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail,
+                             event=event, params=json.dumps(params))
             elif resp_ok:
                 detail = predicate + ' DELETE'
                 params['old'] = tnoteo
                 params['new'] = ''
 
-                msg = predicate+' DELETED : '+dui
+                msg = predicate + ' DELETED : ' + dui
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail, 
-                                 event='delete_note', tstate='deleted', params=json.dumps(params))
+                mdb.addAudit(session['uname'],
+                             userid=session['userid'], otype='descriptor', opid=dui, dui=dui, label=label, detail=detail,
+                             event='delete_note', tstate='deleted', params=json.dumps(params))
             else:
-                msg = 'Update note FAILED for : '+dui+' - '+predicate
+                msg = 'Update note FAILED for : ' + dui + ' - ' + predicate
                 flash(msg, 'warning')
                 app.logger.warning(msg)
 
@@ -552,16 +563,16 @@ def update_note(dui):
 @login_required
 def update_scopenote(dui):
 
-    if session['ugroup'] in ['viewer','disabled','locked']:
+    if session['ugroup'] in ['viewer', 'disabled', 'locked']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
     if request.form.get('concept') and request.form.get('label'):
-        dui = dui.replace('?','').strip()
-        concept = request.form['concept'].replace('?','').strip()
+        dui = dui.replace('?', '').strip()
+        concept = request.form['concept'].replace('?', '').strip()
         cui = mtu.getCui(concept)
-        label = request.form['label'].replace('?','').strip()
+        label = request.form['label'].replace('?', '').strip()
         propose = request.form.get('propose')
 
         if propose == 'true':
@@ -571,10 +582,8 @@ def update_scopenote(dui):
 
         predicate = 'scopeNote'
 
-        db = get_db()
-
         if request.form['scnt_changed'] == 'true' or request.form.get('scnt_update_force') == 'on':
-            scnt  = mtu.sanitize_input(request.form['scnt'])
+            scnt = mtu.sanitize_input(request.form['scnt'])
             scnto = mtu.sanitize_input(request.form['scnt_original'], normalize=False)
 
             insert = True
@@ -588,7 +597,7 @@ def update_scopenote(dui):
             params['curi'] = concept
             params['predicate'] = predicate
 
-            if resp_ok and insert == True:
+            if resp_ok and insert is True:
                 params['new'] = scnt
 
                 if not scnto:
@@ -602,8 +611,9 @@ def update_scopenote(dui):
 
                 msg = 'ScopeNoteTrx UPDATED'
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
-                                 event=event, tstate=tstate, params=json.dumps(params))
+                mdb.addAudit(session['uname'],
+                             userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
+                             event=event, tstate=tstate, params=json.dumps(params))
 
             elif resp_ok:
                 detail = 'scopeNoteTrx DELETE'
@@ -615,18 +625,19 @@ def update_scopenote(dui):
 
                 msg = 'ScopeNoteTrx DELETED'
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
-                                 event='delete_scopeNoteTrx', tstate=tstate, params=json.dumps(params))
+                mdb.addAudit(session['uname'],
+                             userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
+                             event='delete_scopeNoteTrx', tstate=tstate, params=json.dumps(params))
 
             else:
-                msg = 'Update ScopeNoteTrx FAILED for : '+concept
+                msg = 'Update ScopeNoteTrx FAILED for : ' + concept
                 flash(msg, 'warning')
                 app.logger.warning(msg)
 
-            ##pp.pprint(params)
+            # pp.pprint(params)
 
         if request.form['scne_changed'] == 'true':
-            scne  = mtu.sanitize_input(request.form['scne'])
+            scne = mtu.sanitize_input(request.form['scne'])
             scneo = mtu.sanitize_input(request.form['scne_original'], normalize=False)
 
             insert = True
@@ -641,7 +652,7 @@ def update_scopenote(dui):
             params['lang'] = 'en'
             params['predicate'] = predicate
 
-            if resp_ok and insert == True:
+            if resp_ok and insert is True:
                 params['old'] = scneo
                 params['new'] = scne
 
@@ -654,8 +665,9 @@ def update_scopenote(dui):
 
                 msg = 'English ScopeNote UPDATED'
                 flash(msg, 'success')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
-                                 event=event, tstate=tstate, params=json.dumps(params) )
+                mdb.addAudit(session['uname'],
+                             userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
+                             event=event, tstate=tstate, params=json.dumps(params))
 
             elif resp_ok:
                 detail = 'scopeNote DELETE'
@@ -667,15 +679,16 @@ def update_scopenote(dui):
 
                 msg = 'English ScopeNote DELETED'
                 flash(msg, 'secondary')
-                mdb.addAudit(db, session['uname'], userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui, 
-                                 event='delete_scopeNote', tstate=tstate, params=json.dumps(params) )
+                mdb.addAudit(session['uname'],
+                             userid=session['userid'], label=label, detail=detail, opid=cui, dui=dui,
+                             event='delete_scopeNote', tstate=tstate, params=json.dumps(params))
 
             else:
-                msg = 'Update EngScopeNote FAILED : '+concept
+                msg = 'Update EngScopeNote FAILED : ' + concept
                 flash(msg, 'warning')
                 app.logger.warning(msg)
 
-            ##pp.pprint(params)
+            # pp.pprint(params)
 
     return redirect(url_for('search', dui=dui))
 
@@ -684,29 +697,28 @@ def update_scopenote(dui):
 @login_required
 def update_audit():
 
-    if session['ugroup'] not in ['admin','manager','editor']:
+    if session['ugroup'] not in ['admin', 'manager', 'editor']:
         abort(403)
 
     if request.form.get('dui') and request.form.get('apid') and request.form.get('approved'):
-        dui  = request.form['dui'].replace('?','').strip()
-        apid = request.form['apid'].replace('?','').strip()
+        dui = request.form['dui'].replace('?', '').strip()
+        apid = request.form['apid'].replace('?', '').strip()
         appr = request.form['approved'].strip()
         event = request.form['event'].strip()
-        cui = request.form.get('cui','')
-        note = request.form.get('anote').strip()
-        backlink = request.form['backlink'].strip()
+        cui = request.form.get('cui', '').strip()
+        note = request.form.get('anote', '').strip()
+        backlink = request.form.get('backlink', '').strip()
 
-        db = get_db()
-        audit = mdb.getAuditRecord(db, apid)
+        audit = mdb.getAuditRecord(apid)
 
         if not audit:
-            msg = 'Update FAILED : No Audit record found for : '+apid
+            msg = 'Update FAILED : No Audit record found for : ' + apid
             flash(msg, 'danger')
             app.logger.error(msg)
             return redirect(url_for('search', dui=dui))
 
         if audit.get('resolvedby'):
-            msg = 'Update CANCELLED : Audit already updated for : '+event
+            msg = 'Update CANCELLED : Audit already updated for : ' + event
             flash(msg, 'warning')
             return redirect(url_for('search', dui=dui))
 
@@ -716,10 +728,10 @@ def update_audit():
             tstate = 'rejected'
 
         upd_err = None
-        upd_err = mdb.updateAuditResolved(db, apid, tstate=tstate, resolvedby=session['uname'], note=note)
+        upd_err = mdb.updateAuditResolved(apid, tstate=tstate, resolvedby=session['uname'], note=note)
 
         if upd_err:
-            msg = 'Audit FAILED for : '+ event + ' | cui: ' + cui + ' | tstate: ' + tstate
+            msg = 'Audit FAILED for : ' + event + ' | cui: ' + cui + ' | tstate: ' + tstate
             flash(msg, 'danger')
             app.logger.error(msg)
             return redirect(url_for('search', dui=dui))
@@ -740,7 +752,7 @@ def update_audit():
                 result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=[], dui=dui, cache=cache)
 
                 if result_ok:
-                    msg = 'Concept RESTORED : '+cui
+                    msg = 'Concept RESTORED : ' + cui
                     flash(msg, 'success')
                     return redirect(url_for('search', dui=dui))
 
@@ -753,7 +765,7 @@ def update_audit():
                 result_ok = sparql.updateSparqlBatch('concept', concept_list=concept_list, term_list=[], dui=dui, cache=cache)
 
                 if result_ok:
-                    msg = 'Concept proposal REJECTED : '+cui
+                    msg = 'Concept proposal REJECTED : ' + cui
                     flash(msg, 'info')
                     return redirect(url_for('search', dui=dui))
 
@@ -770,13 +782,13 @@ def update_audit():
                     flash(msg, 'success')
                     return redirect(url_for('search', dui=dui))
 
-            ###if event in ['update_scopeNote','delete_scopeNote','update_scopeNoteTrx','delete_scopeNoteTrx','insert_scopeNoteTrx']:
-            if event in ['delete_scopeNote','delete_scopeNoteTrx']:
+            # if event in ['update_scopeNote', 'delete_scopeNote', 'update_scopeNoteTrx', 'delete_scopeNoteTrx', 'insert_scopeNoteTrx']:
+            if event in ['delete_scopeNote', 'delete_scopeNoteTrx']:
                 predicate = params.get('predicate')
-                #if event == 'insert_scopeNoteTrx':
-                #    old = ''
-                #else:
-                #    old = params.get('old')
+                # if event == 'insert_scopeNoteTrx':
+                #     old = ''
+                # else:
+                #     old = params.get('old')
                 old = params.get('old')
                 lang = params.get('lang')
                 if not lang:
@@ -784,7 +796,7 @@ def update_audit():
                 if predicate:
                     result_ok = sparql.updateTriple(template='note', insert=True, uri=curi, predicate=predicate, value=old, lang=lang, dui=dui, cache=cache)
                     if result_ok:
-                        msg = 'Concept scopeNote changes REVERTED : '+cui
+                        msg = 'Concept scopeNote changes REVERTED : ' + cui
                         flash(msg, 'success')
                         return redirect(url_for('search', dui=dui))
 
@@ -799,7 +811,7 @@ def update_audit():
             return redirect(url_for('search', dui=dui, tab='history'))
 
 
-###  Compare
+#  Compare
 
 @app.route('/compare/', defaults={'dui': ''}, methods=['GET'])
 @app.route('/compare/dui:<dui>', methods=['GET'])
@@ -820,15 +832,15 @@ def compare(dui):
         year = app.config['PREV_YEAR_DEF']
 
     if not dui:
-        dui = session.get('dui','')
+        dui = session.get('dui', '')
 
     if dui:
-        dui = dui.replace('?','').strip()
-        dview_data = sparql.getSparqlData('descriptor_view', query=dui, output='tsv', key=dui+'_diff', cache=cache)
+        dui = dui.replace('?', '').strip()
+        dview_data = sparql.getSparqlData('descriptor_view', query=dui, output='tsv', key=dui + '_diff', cache=cache)
         if dview_data:
             dview = mtu.cleanDescView(dview_data)
 
-        prev_data = sparql.getSparqlDataExt(dui, 'tsv', year=year, key=dui+'_prev_'+year, cache=cache)
+        prev_data = sparql.getSparqlDataExt(dui, 'tsv', year=year, key=dui + '_prev_' + year, cache=cache)
         if prev_data:
             prev = mtu.cleanDescView(prev_data)
 
@@ -838,7 +850,7 @@ def compare(dui):
     return render_template('compare.html', dui=dui, year=year, dview=dview, prev=prev, dif=dif)
 
 
-###  Audit
+#  Audit
 
 @app.route('/audit/', defaults={'dui': '', 'cui': ''}, methods=['GET'])
 @app.route('/audit/dui:<dui>', defaults={'cui': ''}, methods=['GET'])
@@ -847,14 +859,13 @@ def compare(dui):
 def audit(dui, cui):
 
     if dui:
-        dui = dui.replace('?','').strip()
+        dui = dui.replace('?', '').strip()
         session['adui'] = dui
     else:
         session.pop('adui', None)
 
     audit = {}
-    db = get_db()
-    target_years = mdb.getTargetYears(db)
+    target_years = mdb.getTargetYears()
 
     year = None
     if request.args.get('year'):
@@ -864,16 +875,16 @@ def audit(dui, cui):
 
     if dui:
         if cui:
-            cui = cui.replace('?','').strip()
-        dui = dui.replace('?','').strip()
-        audit = mdb.getAuditForItem(db, dui, cui=cui, targetyear=year)
+            cui = cui.replace('?', '').strip()
+        dui = dui.replace('?', '').strip()
+        audit = mdb.getAuditForItem(dui, cui=cui, targetyear=year)
         mtu.getAuditDict(audit)
-        ##pp.pprint(audit)
+        # pp.pprint(audit)
 
     return render_template('audit.html', dui=dui, cui=cui, audit=audit, target_years=target_years, year=year)
 
 
-###  Approval
+#  Approval
 
 @app.route('/approve/', defaults={'userid': '', 'username': '', 'status': '', 'event': ''}, methods=['GET'])
 @app.route('/approve/status:<status>', defaults={'userid': '', 'username': '', 'event': ''}, methods=['GET'])
@@ -888,7 +899,7 @@ def audit(dui, cui):
 @login_required
 def approve(status, event, userid, username):
 
-    if session['ugroup'] not in ['admin','manager','editor','contributor']:
+    if session['ugroup'] not in ['admin', 'manager', 'editor', 'contributor']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -903,56 +914,56 @@ def approve(status, event, userid, username):
     else:
         session.pop('ausername', None)
 
-    if session['ugroup'] not in ['admin','manager','editor']:
+    if session['ugroup'] not in ['admin', 'manager', 'editor']:
         userid = session['userid']
         username = session['uname']
 
-    if status not in ['pending','approved','rejected','deleted','purged','updated','locked','unlocked']:
+    if status not in ['pending', 'approved', 'rejected', 'deleted', 'purged', 'updated', 'locked', 'unlocked']:
         status = 'pending'
 
     statuses = []
     users = []
-    db = get_db()
 
     year = None
     if request.args.get('year'):
-        target_years = mdb.getTargetYears(db)
+        target_years = mdb.getTargetYears()
         yr = int(request.args.get('year'))
         if yr in target_years:
             year = yr
 
     if event:
-        if session['ugroup'] not in ['admin','manager','editor']:
-            statuses = mdb.getAuditUserStatus(db, userid=userid, targetyear=year)
+        if session['ugroup'] not in ['admin', 'manager', 'editor']:
+            statuses = mdb.getAuditUserStatus(userid=userid, targetyear=year)
         else:
-            statuses = mdb.getAuditEventStatus(db, event, targetyear=year)
-        users = mdb.getAuditUsersEvent(db, event, userid=userid, tstate=status, targetyear=year, route='approve')
+            statuses = mdb.getAuditEventStatus(event, targetyear=year)
+        users = mdb.getAuditUsersEvent(event, userid=userid, tstate=status, targetyear=year, route='approve')
     else:
-        statuses = mdb.getAuditUserStatus(db, userid=userid, targetyear=year)
-        users = mdb.getAuditUserStatus(db, userid=userid, tstate=status, targetyear=year, route='approve')
+        statuses = mdb.getAuditUserStatus(userid=userid, targetyear=year)
+        users = mdb.getAuditUserStatus(userid=userid, tstate=status, targetyear=year, route='approve')
 
     pending = {}
     if userid:
-        pending = mdb.getAuditPending(db, userid=userid, event=event)
+        pending = mdb.getAuditPending(userid=userid, event=event)
         mtu.getAuditDict(pending)
 
     resolved = {}
     if userid and status != 'pending':
-        resolved = mdb.getAuditResolved(db, userid, tstate=status, event=event, targetyear=year)
+        resolved = mdb.getAuditResolved(userid, tstate=status, event=event, targetyear=year)
     elif userid:
-        resolved = mdb.getAuditResolved(db, userid, event=event, targetyear=year)
+        resolved = mdb.getAuditResolved(userid, event=event, targetyear=year)
 
     mtu.getAuditDict(resolved)
 
-    return render_template('approve.html', statuses=statuses, users=users, status=status, event=event, userid=userid, username=username,
-                                           pending=pending, resolved=resolved, year=year)
+    return render_template('approve.html',
+                           statuses=statuses, users=users, status=status, event=event, userid=userid, username=username,
+                           pending=pending, resolved=resolved, year=year)
 
 
-@app.route('/browse/', defaults={'top': '', 'tn': '', 'action':''}, methods=['GET'])
+@app.route('/browse/', defaults={'top': '', 'tn': '', 'action': ''}, methods=['GET'])
 @app.route('/browse/do:<action>', defaults={'top': '', 'tn': ''}, methods=['GET'])
-@app.route('/browse/<top>', defaults={'tn': '', 'action':''}, methods=['GET'])
-@app.route('/browse/<top>/tree:<tn>', defaults={'action':''}, methods=['GET'])
-@app.route('/browse/<top>/do:<action>', defaults={'tn':''}, methods=['GET'])
+@app.route('/browse/<top>', defaults={'tn': '', 'action': ''}, methods=['GET'])
+@app.route('/browse/<top>/tree:<tn>', defaults={'action': ''}, methods=['GET'])
+@app.route('/browse/<top>/do:<action>', defaults={'tn': ''}, methods=['GET'])
 @app.route('/browse/<top>/tree:<tn>/do:<action>', methods=['GET'])
 @login_required
 def browse(top, tn, action):
@@ -981,19 +992,19 @@ def browse(top, tn, action):
 
         if request.args.get('show'):
             show = request.args.get('show').strip()
-            if show in ['all','translated','todo','scn','ntx','notpref']:
+            if show in ['all', 'translated', 'todo', 'scn', 'ntx', 'notpref']:
                 session['show'] = show
 
         if request.args.get('status'):
             status = request.args.get('status').strip()
-            if status in ['all','active','revised','deleted','new','notpref']:
+            if status in ['all', 'active', 'revised', 'deleted', 'new', 'notpref']:
                 session['status'] = status
 
         tree_query = mtu.getTreeQuery(top, tn=tn)
 
         if tree_query:
             data = sparql.getSparqlData('tree-browse', query=tree_query, top=top, tn=tn, show=session.get('show'), status=session.get('status'))
-            ##pp.pprint(data)
+            # pp.pprint(data)
         else:
             msg = 'Browse: Bad input parameters'
             flash(msg, 'danger')
@@ -1002,7 +1013,7 @@ def browse(top, tn, action):
 
         if data:
             tree = sparql.parseSparqlData(data, sort_tree=True)
-            ##pp.pprint(tree)
+            # pp.pprint(tree)
             if tree:
                 hits_cnt = tree['metadata']['hits_cnt']
         else:
@@ -1018,13 +1029,14 @@ def browse(top, tn, action):
     else:
         subtitle = ''
 
-    return render_template('browse.html', hits_cnt=hits_cnt, top=top, tn=tn, subtitle=subtitle, tree=tree, 
-                                          show=session.get('show'), status=session.get('status'))
+    return render_template('browse.html',
+                           hits_cnt=hits_cnt, top=top, tn=tn, subtitle=subtitle, tree=tree,
+                           show=session.get('show'), status=session.get('status'))
 
 
-@app.route('/search/', defaults={'dui':'', 'action':''}, methods=['GET'])
-@app.route('/search/dui:<dui>', defaults={'action':''}, methods=['GET'])
-@app.route('/search/do:<action>', defaults={'dui':''}, methods=['GET'])
+@app.route('/search/', defaults={'dui': '', 'action': ''}, methods=['GET'])
+@app.route('/search/dui:<dui>', defaults={'action': ''}, methods=['GET'])
+@app.route('/search/do:<action>', defaults={'dui': ''}, methods=['GET'])
 @login_required
 def search(dui, action):
 
@@ -1041,22 +1053,22 @@ def search(dui, action):
 
     if request.args.get('show'):
         show = request.args.get('show').strip()
-        if show in ['all','translated','todo','scn','ntx','notpref']:
+        if show in ['all', 'translated', 'todo', 'scn', 'ntx', 'notpref']:
             session['sshow'] = show
 
     if request.args.get('status'):
         status = request.args.get('status').strip()
-        if status in ['all','active','revised','deleted','new','notpref']:
+        if status in ['all', 'active', 'revised', 'deleted', 'new', 'notpref']:
             session['sstatus'] = status
 
     if request.args.get('lang'):
         slang = request.args.get('lang').strip()
-        if slang in ['all','source','target']:
+        if slang in ['all', 'source', 'target']:
             session['slang'] = slang
-          
+
     if request.args.get('scr'):
         scr = request.args.get('scr').strip()
-        if scr in ['yes','no']:
+        if scr in ['yes', 'no']:
             session['scr'] = scr
 
     if action == 'clear':
@@ -1081,11 +1093,11 @@ def search(dui, action):
 
     if request.args.get('tab'):
         ttab = request.args.get('tab').strip()
-        if ttab in ['concepts','notes','details','relations','qualifiers','history']:
-            tab = ttab    
+        if ttab in ['concepts', 'notes', 'details', 'relations', 'qualifiers', 'history']:
+            tab = ttab
 
     if dui:
-        dui = dui.replace('?','').strip()
+        dui = dui.replace('?', '').strip()
 
         started = timer()
         desc_data = sparql.getSparqlData('descriptor', query=dui, key=dui + '_desc', cache=cache)
@@ -1097,11 +1109,11 @@ def search(dui, action):
             msg = 'No response received from backend'
             flash(msg, 'danger')
             app.logger.error(msg)
-            return render_template('errors/error_page.html', errcode=500, error=msg), 500        
+            return render_template('errors/error_page.html', errcode=500, error=msg), 500
 
         descriptor = sparql.parseDescriptor(desc_data)
 
-        if descriptor.get('labels'):   
+        if descriptor.get('labels'):
             session['dui'] = dui
 
             started = timer()
@@ -1111,7 +1123,7 @@ def search(dui, action):
             concepts = sparql.parseConcept(concepts_data)
 
             started = timer()
-            tree_data  = sparql.getSparqlData('tree', query=dui, key=dui + '_tree', cache=cache)
+            tree_data = sparql.getSparqlData('tree', query=dui, key=dui + '_tree', cache=cache)
             show_elapsed(t0, started=started, tag='tree_data')
 
             tree = sparql.parseSparqlData(tree_data)
@@ -1125,24 +1137,24 @@ def search(dui, action):
             store_visited(dui, descriptor['labels']['en'])
             show_elapsed(t0, started=desc_started, tag='desc_data processed')
 
-            db = get_db()
-            audit = mtu.getAuditDict(mdb.getAuditForItem(db, dui))
+            audit = mtu.getAuditDict(mdb.getAuditForItem(dui))
 
         else:
             msg = 'Item not found : ' + str(dui)
             flash(msg, 'warning')
             app.logger.warning(msg)
-            return render_template('errors/error_page.html', errcode=404, error=msg), 404            
+            return render_template('errors/error_page.html', errcode=404, error=msg), 404
 
     if text_query:
-        data = sparql.getSparqlData('search', query=text_query, show=session.get('sshow'), status=session.get('sstatus'), 
-                                              slang=session.get('slang'), scr=session.get('scr'))
-        ##pp.pprint(data)
+        data = sparql.getSparqlData('search',
+                                    query=text_query, show=session.get('sshow'), status=session.get('sstatus'),
+                                    slang=session.get('slang'), scr=session.get('scr'))
+        # pp.pprint(data)
 
         if data:
             started = timer()
             hits = sparql.parseSparqlData(data)
-            ##pp.pprint(hits)
+            # pp.pprint(hits)
             if hits:
                 hits_cnt = hits['metadata']['hits_cnt']
                 cache.set(hits_key, hits)
@@ -1164,13 +1176,14 @@ def search(dui, action):
 
     show_elapsed(t0, started=t0, tag='before_render')
 
-    return render_template('search.html', hits_cnt=hits_cnt, hits=hits, dui=dui, tree=tree, descriptor=descriptor, concepts=concepts, tab=tab, 
-                                          show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), scr=session.get('scr'), 
-                                          audit=audit, dview=dview)
+    return render_template('search.html',
+                           hits_cnt=hits_cnt, hits=hits, dui=dui, tree=tree, descriptor=descriptor, concepts=concepts, tab=tab,
+                           show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), scr=session.get('scr'),
+                           audit=audit, dview=dview)
 
 
 def store_visited(dui, label):
-    dui = dui.replace('?','').strip()
+    dui = dui.replace('?', '').strip()
 
     if not session.get('visited'):
         session['visited'] = {}
@@ -1189,22 +1202,21 @@ def store_visited(dui, label):
                 del session['visited'][rem]
 
 
-###  Reporting
+#  Reporting
 
-@app.route('/report/', defaults={'userid':'', 'year':''}, methods=['GET'])
-@app.route('/report/userid:<userid>', defaults={'year':''}, methods=['GET'])
-@app.route('/report/year:<year>', defaults={'userid':''}, methods=['GET'])
+@app.route('/report/', defaults={'userid': '', 'year': ''}, methods=['GET'])
+@app.route('/report/userid:<userid>', defaults={'year': ''}, methods=['GET'])
+@app.route('/report/year:<year>', defaults={'userid': ''}, methods=['GET'])
 @app.route('/report/userid:<userid>/year:<year>', methods=['GET'])
 @login_required
 def report(userid, year):
 
-    if session['ugroup'] not in ['admin','manager','editor','contributor']:
+    if session['ugroup'] not in ['admin', 'manager', 'editor', 'contributor']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    db = get_db()
-    target_years = mdb.getTargetYears(db)
+    target_years = mdb.getTargetYears()
 
     if not year:
         if request.args.get('year'):
@@ -1215,7 +1227,7 @@ def report(userid, year):
     if int(year) not in target_years:
         year = app.config['TARGET_YEAR']
 
-    months = mdb.getReportMonth(db, targetyear=year)
+    months = mdb.getReportMonth(targetyear=year)
     month = None
     if request.args.get('month'):
         mon = request.args.get('month')
@@ -1225,18 +1237,18 @@ def report(userid, year):
     report = {}
     resolved = {}
 
-    if session['ugroup'] not in ['admin','manager']:
+    if session['ugroup'] not in ['admin', 'manager']:
         userid = session['userid']
-        users = mdb.getUsers(db, userid=userid)
+        users = mdb.getUsers(userid=userid)
     else:
-        users = mdb.getUsers(db)
+        users = mdb.getUsers()
 
     if request.args.get('report'):
         xrep = request.args.get('report').split('--')
         if len(xrep) == 2:
             fmt = xrep[0]
             rep = xrep[1]
-            if rep in ['events','resolved']:
+            if rep in ['events', 'resolved']:
                 if rep == 'events':
                     suf = 'created'
                     head = 'Month,Username,Event,Status,Count,TargetYear: ' + str(year)
@@ -1246,39 +1258,40 @@ def report(userid, year):
             else:
                 abort(403)
 
-            report = mdb.getReport(db, suf, targetyear=year, userid=userid, mon=month)
-            if fmt in ['csv','tsv']:
+            report = mdb.getReport(suf, targetyear=year, userid=userid, mon=month)
+            if fmt in ['csv', 'tsv']:
                 if fmt == 'csv':
-                    resp = make_response(render_template('report-csv.txt', head=head, report=report) )
+                    resp = make_response(render_template('report-csv.txt', head=head, report=report))
                     resp.headers["Content-type"] = 'text/csv'
                 elif fmt == 'tsv':
                     head_list = head.split(',')
                     head = ('\t').join(head_list)
-                    resp = make_response(render_template('report-tsv.txt', head=head, report=report, tab='\t') )
+                    resp = make_response(render_template('report-tsv.txt', head=head, report=report, tab='\t'))
                     resp.headers["Content-type"] = 'text/tab-separated-values'
 
-                resp.headers["Content-Disposition"] = "attachment; filename=mtw-report-"+rep+"."+fmt
+                resp.headers["Content-Disposition"] = 'attachment; filename=mtw-report-' + rep + '.' + fmt
                 return resp
             else:
                 abort(403)
         else:
             abort(400)
     else:
-        events = mdb.getReport(db, 'created', targetyear=year, userid=userid, mon=month)
-        resolved = mdb.getReport(db, 'resolved', targetyear=year, userid=userid, mon=month)
-        ##pp.pprint(report)
-        return render_template('report.html', users=users, target_years=target_years, year=year, 
-                                              userid=userid, months=months, month=month, report=events, resolved=resolved )
+        events = mdb.getReport('created', targetyear=year, userid=userid, mon=month)
+        resolved = mdb.getReport('resolved', targetyear=year, userid=userid, mon=month)
+        # pp.pprint(report)
+        return render_template('report.html',
+                               users=users, target_years=target_years, year=year,
+                               userid=userid, months=months, month=month, report=events, resolved=resolved)
 
 
-###  Management
+#  Management
 
 @app.route('/manage/', defaults={'action': ''}, methods=['GET'])
 @app.route('/manage/action:<action>', methods=['POST'])
 @login_required
 def manage(action):
 
-    if session['ugroup'] not in ['admin','manager']:
+    if session['ugroup'] not in ['admin', 'manager']:
         msg = 'Admin or Manager login required'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
@@ -1288,7 +1301,7 @@ def manage(action):
         msg_text = request.form['amsg']
         msg_show = request.form['action']
 
-        if msg_show not in ['hide','show']:
+        if msg_show not in ['hide', 'show']:
             msg_show = 'hide'
 
         lockdb = None
@@ -1311,51 +1324,51 @@ def manage(action):
 
         return redirect(ref_redirect())
 
-    users = mdb.getUsers(get_db())
+    users = mdb.getUsers()
 
     exports = {}
     exp_files = {}
 
-    ### YYYY_umls.tsv.gz
+    # YYYY_umls.tsv.gz
     exports['umls_tsv'] = mtu.getStatsFpath('umls', ext='tsv.gz')
 
-    ### YYYY_umls_all.tsv.gz
+    # YYYY_umls_all.tsv.gz
     exports['umls_all_tsv'] = mtu.getStatsFpath('umls_all', ext='tsv.gz')
 
-    ### YYYY_umls_raw.tsv.gz
-    exports['umls_raw_tsv'] = mtu.getStatsFpath('umls_raw', ext='tsv.gz')    
+    # YYYY_umls_raw.tsv.gz
+    exports['umls_raw_tsv'] = mtu.getStatsFpath('umls_raw', ext='tsv.gz')
 
-    ### YYYY_lookups.json.gz
+    # YYYY_lookups.json.gz
     exports['lookups'] = mtu.getStatsFpath('lookups', ext='json.gz')
 
-    ### YYYY_lookups_rest.json.gz
+    # YYYY_lookups_rest.json.gz
     exports['lookups_rest'] = mtu.getStatsFpath('lookups_rest', ext='json.gz')
 
-    ### YYYY_js_all.json.gz
+    # YYYY_js_all.json.gz
     exports['js_all'] = mtu.getStatsFpath('js_all', ext='json.gz')
 
-    ### YYYY_js_parsers.json.gz
+    # YYYY_js_parsers.json.gz
     exports['js_parsers'] = mtu.getStatsFpath('js_parsers', ext='json.gz')
-    
-    ### YYYY_js_elastic.json.gz
-    exports['js_elastic'] = mtu.getStatsFpath('js_elastic', ext='json.gz')    
 
-    ### YYYY_xml_desc.xml
+    # YYYY_js_elastic.json.gz
+    exports['js_elastic'] = mtu.getStatsFpath('js_elastic', ext='json.gz')
+
+    # YYYY_xml_desc.xml
     exports['xml_desc'] = mtu.getStatsFpath('xml_desc', ext='xml')
 
-    ### YYYY_xml_qualif.xml
+    # YYYY_xml_qualif.xml
     exports['xml_qualif'] = mtu.getStatsFpath('xml_qualif', ext='xml')
 
-    ### YYYY_marc_mrk.def.txt.gz
+    # YYYY_marc_mrk.def.txt.gz
     exports['marc_mrk_def'] = mtu.getStatsFpath('marc_mrk', ext='def.txt.gz')
 
-    ### YYYY_marc_mrk.daw.txt.gz
+    # YYYY_marc_mrk.daw.txt.gz
     exports['marc_mrk_daw'] = mtu.getStatsFpath('marc_mrk', ext='daw.txt.gz')
 
-    ### YYYY_marc_line.def.txt.gz
+    # YYYY_marc_line.def.txt.gz
     exports['marc_line_def'] = mtu.getStatsFpath('marc_line', ext='def.txt.gz')
 
-    ### YYYY_marc_line.daw.txt.gz
+    # YYYY_marc_line.daw.txt.gz
     exports['marc_line_daw'] = mtu.getStatsFpath('marc_line', ext='daw.txt.gz')
 
     for f in exports:
@@ -1365,12 +1378,11 @@ def manage(action):
             exp_files[f]['fname'] = fp.name
             exp_files[f]['fdate'] = mtu.getFpathDate(fp)
 
-
     # 2024_umls.tsv
     show_umls_exports = False
     umls_tsv = mtu.getTempFpath('umls', ext='tsv')
     if umls_tsv.is_file():
-        show_umls_exports = True    
+        show_umls_exports = True
 
     show_lookups_exports = False
     lookups_base = mtu.getTempFpath('lookups')
@@ -1387,7 +1399,7 @@ def manage(action):
         msg = 'Background worker is RUNNING...'
         flash(msg, 'info')
 
-    return render_template('manage.html', users=users, exports=exp_files, 
+    return render_template('manage.html', users=users, exports=exp_files,
                            show_lookups=show_lookups_exports, show_marc=show_marc_exports, show_umls_exports=show_umls_exports)
 
 
@@ -1395,29 +1407,29 @@ def manage(action):
 @login_required
 def download(fname):
 
-    if session['ugroup'] not in ['admin','manager']:
+    if session['ugroup'] not in ['admin', 'manager']:
         msg = 'Admin or Manager login required'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
     else:
-        return send_from_directory(app.config['EXP_DIR'], fname, as_attachment=True)  
+        return send_from_directory(app.config['EXP_DIR'], fname, as_attachment=True)
 
 
 @app.route('/update_stats/<stat>', methods=['POST'])
 @login_required
 def update_stats(stat):
 
-    if session['ugroup'] not in ['admin','manager']:
+    if session['ugroup'] not in ['admin', 'manager']:
         msg = 'Insufficient priviledges'
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    if stat not in ['initial','actual','umls','umls_all','umls_raw','lookups','lookups_rest','js_all','js_parsers','js_elastic','xml_desc','xml_qualif','marc']:
+    if stat not in ['initial', 'actual', 'umls', 'umls_all', 'umls_raw', 'lookups', 'lookups_rest', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif', 'marc']:
         msg = 'Unknown params for update_stats'
         flash(msg, 'danger')
         return render_template('errors/error_page.html', errcode=404, error=msg), 404
 
-    ##fpath = mtu.getStatsFpath(stat)
+    # fpath = mtu.getStatsFpath(stat)
     lpath = mtu.getLockFpath('stats')
     worker = app.config['WORKER_HOST']
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
@@ -1425,19 +1437,19 @@ def update_stats(stat):
     force = False
     if request.args.get('force'):
         force = True
-    
+
     if lpath.is_file():
         msg = 'Background worker is BUSY - please try again later.'
         flash(msg, 'warning')
-        
+
         return redirect(ref_redirect())
-        
-    worker_check = checkWorker(worker) 
+
+    worker_check = checkWorker(worker)
 
     if worker_check == 'ERROR':
         msg = 'Background worker is NOT running/available !'
         flash(msg, 'danger')
-        
+
         return redirect(ref_redirect())
 
     api_check = checkApi(endpoint)
@@ -1445,10 +1457,10 @@ def update_stats(stat):
     if api_check == 'ERROR':
         msg = 'SPARQL endpoint is NOT running/available !'
         flash(msg, 'warning')
-        
-        return redirect(ref_redirect())       
-    
-    if stat in ['umls','umls_all','umls_raw','js_all','js_parsers','js_elastic','xml_desc','xml_qualif']:
+
+        return redirect(ref_redirect())
+
+    if stat in ['umls', 'umls_all', 'umls_raw', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif']:
 
         mtu.callWorker(export=stat)
 
@@ -1456,21 +1468,21 @@ def update_stats(stat):
         params = {}
         params['marc'] = {}
 
-        line_style = request.form.get('line_style','mrk')
-        if line_style in ['mrk','line']:
+        line_style = request.form.get('line_style', 'mrk')
+        if line_style in ['mrk', 'line']:
             params['marc']['line_style'] = line_style
 
-        tree_style = request.form.get('tree_style','def')
-        if tree_style in ['def','daw']:
+        tree_style = request.form.get('tree_style', 'def')
+        if tree_style in ['def', 'daw']:
             params['marc']['tree_style'] = tree_style
 
-        anglo_style = request.form.get('anglo_style','no')
-        if anglo_style in ['yes','no']:
+        anglo_style = request.form.get('anglo_style', 'no')
+        if anglo_style in ['yes', 'no']:
             params['marc']['anglo_style'] = anglo_style
 
         mtu.callWorker(export=stat, params=params)
 
-    elif stat in ['initial','actual','all','duplicates','lookups','lookups_rest']:
+    elif stat in ['initial', 'actual', 'all', 'duplicates', 'lookups', 'lookups_rest']:
 
         mtu.callWorker(stat=stat, force=force)
 
@@ -1488,10 +1500,10 @@ def update_stats(stat):
 
 @app.route('/user/add', methods=['POST'])
 def add_user():
-    if session['ugroup'] not in ['admin','manager']:
+    if session['ugroup'] not in ['admin', 'manager']:
         abort(403)
     if request.method == 'POST':
-        username = request.form['uname'].replace('_','')
+        username = request.form['uname'].replace('_', '')
         firstname = request.form['firstname']
         lastname = request.form['lastname']
         passwd = request.form['pswd']
@@ -1509,29 +1521,28 @@ def add_user():
 
         params = {}
         params['insert'] = {}
-        params['insert'].update( {'firstname': firstname} )
-        params['insert'].update( {'lastname': lastname} )
-        params['insert'].update( {'role': ugroup} )
+        params['insert'].update({'firstname': firstname})
+        params['insert'].update({'lastname': lastname})
+        params['insert'].update({'role': ugroup})
 
-        db = get_db()
-        res = mdb.addUser(db, username, firstname, lastname, passwd_hashed.decode('utf-8'), ugroup, phone=phone, email=email)
+        res = mdb.addUser(username, firstname, lastname, passwd_hashed.decode('utf-8'), ugroup, phone=phone, email=email)
 
         if res:
             flash(res, 'danger')
-            app.logger.error(res+' - uname: '+username)
+            app.logger.error(res + ' - uname: ' + username)
         else:
             flash('New user successfully added', 'info')
-            mdb.addAudit(db, session['uname'], userid=session['userid'], otype='user', opid=username, event='insert', params=json.dumps(params) )
+            mdb.addAudit(session['uname'], userid=session['userid'], otype='user', opid=username, event='insert', params=json.dumps(params))
 
         return redirect(url_for('manage'))
 
 
 @app.route('/user/update', methods=['POST'])
 def update_user():
-    if session['ugroup'] not in ['admin','manager']:
+    if session['ugroup'] not in ['admin', 'manager']:
         abort(403)
     if request.method == 'POST':
-        username = request.form['uname'].replace('_','')
+        username = request.form['uname'].replace('_', '')
         firstname = request.form['firstname']
         lastname = request.form['lastname']
         passwd = request.form['pswdnew']
@@ -1555,37 +1566,35 @@ def update_user():
             passwd = passwd.decode('utf-8')
             params['changed'].append('password')
 
-        db = get_db()
-
         if action == 'delete':
-            res = mdb.deleteUser(db, uid)
+            res = mdb.deleteUser(uid)
         else:
-            res = mdb.updateUser(db, username, firstname, lastname, passwd, ugroup, uid, phone=phone, email=email)
+            res = mdb.updateUser(username, firstname, lastname, passwd, ugroup, uid, phone=phone, email=email)
 
         opid = str(uid) + '_' + username
 
         if res:
             flash(res, 'danger')
-            app.logger.error(res+' - uname: '+username)
+            app.logger.error(res + ' - uname: ' + username)
 
-        if action in ['delete','update']:
+        if action in ['delete', 'update']:
             params[action] = {}
-            params[action].update( {'firstname': firstname} )
-            params[action].update( {'lastname': lastname} )
-            params[action].update( {'role': ugroup} )
+            params[action].update({'firstname': firstname})
+            params[action].update({'lastname': lastname})
+            params[action].update({'role': ugroup})
 
         if action == 'delete':
-            flash('User '+ uid +' successfully DELETED ', 'secondary')
-            mdb.addAudit(db, session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params) )
+            flash('User ' + uid + ' successfully DELETED ', 'secondary')
+            mdb.addAudit(session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params))
 
         elif action == 'update':
-            flash('User '+ uid +' successfully UPDATED ', 'success')
-            mdb.addAudit(db, session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params) )
+            flash('User ' + uid + ' successfully UPDATED ', 'success')
+            mdb.addAudit(session['uname'], userid=session['userid'], otype='user', opid=opid, event=action, params=json.dumps(params))
 
         return redirect(url_for('manage'))
 
 
-###  Login | Logout
+#  Login | Logout
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -1596,16 +1605,15 @@ def login():
         username = request.form['username']
         password = request.form['password']
         isadmin = request.form['isadmin']
-        db = get_db()
 
         if isadmin == 'yes':
             if username == app.config['ADMINNAME'] and bcrypt.checkpw(password.encode('utf-8'), app.config['ADMINPASS'].encode('utf-8')):
                 login = True
             else:
                 error = 'Invalid admin login or password'
-                app.logger.warning(error+' - uname: '+username)
+                app.logger.warning(error + ' - uname: ' + username)
         else:
-            udata = mdb.getUserPwd(db, username)
+            udata = mdb.getUserPwd(username)
 
             if udata:
                 if bcrypt.checkpw(password.encode('utf-8'), udata['passwd'].encode('utf-8')):
@@ -1613,9 +1621,9 @@ def login():
 
             if not login:
                 error = 'Invalid username or password'
-                app.logger.warning(error+' - uname: '+username)
+                app.logger.warning(error + ' - uname: ' + username)
 
-        if error == None and login:
+        if error is None and login:
             session['logged_in'] = True
             session['logged_user'] = username
 
@@ -1627,7 +1635,7 @@ def login():
                 session['theme'] = app.config['DEFAULT_THEME']
 
             else:
-                udata = mdb.getUserData(db, username=username)
+                udata = mdb.getUserData(username=username)
                 userid = udata['id']
                 session['uname'] = username
                 session['fname'] = udata['firstname']
@@ -1640,14 +1648,14 @@ def login():
 
             session['userid'] = userid
 
-            if session['ugroup'] in ['disabled','locked']:
+            if session['ugroup'] in ['disabled', 'locked']:
                 session.pop('logged_in', None)
-                flash('Your account has been '+ session['ugroup'] +'.', 'warning')
+                flash('Your account has been ' + session['ugroup'] + '.', 'warning')
                 app.logger.warning('Disabled/Locked user login attempt : ' + username + ' - ' + session['ugroup'])
 
-                mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='failed')
+                mdb.addAudit(username, userid=userid, otype='user', event='login', tstate='failed')
             else:
-                mdb.addAudit(db, username, userid=userid, otype='user', event='login', tstate='success')
+                mdb.addAudit(username, userid=userid, otype='user', event='login', tstate='success')
 
                 return redirect(url_for('intro'))
 
@@ -1670,11 +1678,10 @@ def logout():
         else:
             theme = session['theme']
 
-        db = get_db()
         if usergroup not in ['admin']:
-            mdb.updateUserTheme(db, session['userid'], theme)
+            mdb.updateUserTheme(session['userid'], theme)
 
-        mdb.addAudit(db, username, userid=session['userid'], otype='user', opid=theme, event='logout', tstate='success')
+        mdb.addAudit(username, userid=session['userid'], otype='user', opid=theme, event='logout', tstate='success')
 
     session.pop('logged_in', None)
     session.pop('next', None)
@@ -1685,217 +1692,40 @@ def logout():
     return redirect(url_for('login'))
 
 
-### Functions, context_processors, etc.
+# Functions, context_processors, etc.
 
 def checkWorker(worker):
     try:
-        with closing(requests.get(worker, timeout=10) ) as r:
+        with closing(requests.get(worker, timeout=10)) as r:
             if r.status_code == 200:
                 return 'SUCCESS'
             else:
-                app.logger.warning('Worker: %s \n\n %s', worker, r.status_code )
+                app.logger.warning('Worker: %s \n\n %s', worker, r.status_code)
                 return 'ERROR'
-                    
+
     except requests.RequestException as err:
-        app.logger.error('Worker: %s \n\n %s', worker, str(err) )
+        app.logger.error('Worker: %s \n\n %s', worker, str(err))
         return 'ERROR'
 
 
 def checkApi(endpoint):
 
-    headers = {'Content-Type' : 'application/sparql-query; charset=utf-8'}
-    sparql  = '''
+    headers = {'Content-Type': 'application/sparql-query; charset=utf-8'}
+    sparql = '''
                 SELECT ?subject ?predicate ?object
                 WHERE {
                 ?subject ?predicate ?object
-                } LIMIT 5        
-            '''
+                } LIMIT 5
+             '''
 
     try:
-        with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=10) ) as r:
+        with closing(requests.post(endpoint, headers=headers, data=sparql.encode('utf-8'), timeout=10)) as r:
             if r.status_code == 200:
                 return 'SUCCESS'
             else:
-                app.logger.warning('API: %s \n\n %s', endpoint, r.status_code )
+                app.logger.warning('API: %s \n\n %s', endpoint, r.status_code)
                 return 'ERROR'
-                    
+
     except requests.RequestException as err:
-        app.logger.error('API: %s \n\n %s', endpoint, str(err) )
-        return 'ERROR'        
-
-
-@app.context_processor
-def utility_processor():
-    def random_id():
-        return uuid.uuid4().hex[:6].upper()
-    return dict(random_id=random_id)
-
-
-@app.context_processor
-def utility_processor():
-    def isDbLocked():
-        return is_lockdb()
-    return dict(isDbLocked=isDbLocked)
-
-def is_lockdb():
-    lpath = mtu.getLockFpath('lockdb')
-    if lpath.is_file():
-        return True
-    else:
-        return False
-
-
-@app.context_processor
-def utility_processor():
-    def getLockedBy(userid, uname):
-        return get_locked_by(userid, uname)
-    return dict(getLockedBy=getLockedBy)
-
-def get_locked_by(userid, uname):
-    return str(userid) + '___' + str(uname)
-
-
-@app.context_processor
-def utility_processor():
-    def hash_data(data):
-        return str(hash(data))
-    return dict(hash_data=hash_data)
-
-@app.context_processor
-def utility_processor():
-    def app_state():
-        if app.debug:
-            return 'dev'
-        else:
-            return ''
-    return dict(app_state=app_state)
-
-@app.context_processor
-def utility_processor():
-    def get_user_params(userid):
-        return get_uparams(userid)
-    return dict(get_user_params=get_user_params)
-
-def get_uparams(userid):
-    uparams = get_uparams_skeleton()
-    if userid != 0:
-        udata = mdb.getUserData(get_db(), userid=userid)
-        params = udata['params']
-        if params:
-            uparams = json.loads(params)
-
-    return uparams
-
-def get_uparams_skeleton():
-    params = {}
-    params['selected_check'] = []
-    params['selected'] = {}
-    return params
-
-
-@app.context_processor
-def utility_processor():
-    def get_adminMsg():
-        mpath = mtu.getTempFpath('admin-msg', year=False)
-        if mpath.is_file():
-            return mtu.loadJsonFile(mpath)
-        else:
-            msg = {}
-            msg['show'] = 'hide'
-            msg['head'] = ''
-            msg['text'] = ''
-            return msg
-    return dict(get_adminMsg=get_adminMsg)
-
-
-@app.context_processor
-def utility_processor():
-    def get_statusRep(status):
-        return get_statRep(status)
-    return dict(get_statusRep=get_statusRep)
-
-
-def get_statRep(status):
-    status_dict = {
-        'pending'  : "info",
-        'rejected' : "danger",
-        'approved' : "success",
-        'updated'  : "secondary",
-        'deleted'  : "muted",
-        'purged'   : "light",
-        'locked'   : "warning",
-        'unlocked' : "primary"
-    }
-    return status_dict.get(status, 'secondary')
-
-
-@app.context_processor
-def utility_processor():
-    def get_userBadgeRep(ugroup):
-        return get_userRep(ugroup)
-    return dict(get_userBadgeRep=get_userBadgeRep)
-
-def get_userRep(ugroup):
-    ugroup_dict = {
-        'manager'     : "primary",
-        'editor'      : "success",
-        'contributor' : "info",
-        'viewer'      : "secondary",
-        'disabled'    : "danger",
-        'locked'      : "warning"
-    }
-    return ugroup_dict.get(ugroup, 'light')
-
-
-@app.context_processor
-def utility_processor():
-    def langUmls(lang):
-        return mtu.getLangCodeUmls(lang)
-    return dict(langUmls=langUmls)
-
-
-@app.context_processor
-def utility_processor():
-    def deepGet(dictionary, keys, default=0):
-        return mtu.deep_get(dictionary, keys, default=default)
-    return dict(deepGet=deepGet)
-
-
-@app.template_filter()
-def numberFormat(value):
-    return format(int(value), ',d')
-
-
-@app.template_filter()
-def getListSplit(value, delim='|'):
-    return value.split(delim)
-
-
-###  Database
-
-def connect_db():
-    rv = sqlite3.connect(app.config['DATABASE'])
-    rv.row_factory = sqlite3.Row
-    return rv
-
-
-def get_db():
-    if not hasattr(g, 'sqlite_db'):
-        try:
-            g.sqlite_db = connect_db()
-            ##g.sqlite_db.execute('pragma foreign_keys=on')
-        except sqlite3.Error as e:
-            error = 'Flask get_db error : ' + str(e.args[0])
-            flash(error, 'danger')
-            app.logger.error(error)
-            return None
-        else:
-            return g.sqlite_db
-    else:
-        return g.sqlite_db
-
-
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()
+        app.logger.error('API: %s \n\n %s', endpoint, str(err))
+        return 'ERROR'

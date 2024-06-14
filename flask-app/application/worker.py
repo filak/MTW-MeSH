@@ -2,15 +2,17 @@
 """
 MeSH Traslation Workflow (MTW) background worker - Flask app factory
 """
-import logging, os
+import logging
+import os
 from flask import Flask
 
 from application.modules import utils as mtu
 
+
 def create_app(debug=False, logger=None, port=5903,
                config_path='conf/mtw.ini',
-               server_name=None, 
-               relax=False):   
+               server_name=None,
+               relax=False):
 
     app = Flask(__name__, instance_relative_config=True)
 
@@ -23,7 +25,11 @@ def create_app(debug=False, logger=None, port=5903,
         app.debug = True
 
     if app.debug:
-        print('config:', config_path, '- port:', port) 
+<<<<<<< Updated upstream
+        print('config:', config_path, '- port:', port)
+=======
+        print('MTW Config:  ', config_path, ' - port: ', port)
+>>>>>>> Stashed changes
 
     if logger:
         app.logger = logger
@@ -61,7 +67,7 @@ def create_app(debug=False, logger=None, port=5903,
         return
 
     app.config.update(d)
-          
+
     localConfig = mtu.getConfig(app.config['local_config_file'])
 
     if not localConfig:
@@ -70,19 +76,24 @@ def create_app(debug=False, logger=None, port=5903,
     d = mtu.getLocalConfValue(localConfig)
 
     if not d:
-        return     
+        return
 
     app.config.update(d)
-    
-    ### Server settings
+
+    # Server settings
 
     app.config.update({'APP_HOST': app.config.get('SERVER_NAME')})
-    app.config.update({'SERVER_NAME': None})  
+    app.config.update({'SERVER_NAME': None})
+<<<<<<< Updated upstream
+=======
+
+    if app.debug:
+        print('Worker host: ', app.config['WORKER_HOST'])
+>>>>>>> Stashed changes
 
     if relax:
-        app.config.update({'APP_RELAXED': True}) 
+        app.config.update({'APP_RELAXED': True})
 
-    from application.modules.worker_api import endpoints
+    from application.modules.worker_api import endpoints  # noqa: F401
 
     return app
-

@@ -5,21 +5,49 @@ MeSH Traslation Workflow (MTW) - database ops
 import uuid
 from sqlite3 import dbapi2 as sqlite3
 
+from flask import flash, g
 from flask import current_app as app
 
-###   Inserts
 
-def addUser(db, username, firstname, lastname, passwd, ugroup, phone='', email=''):
+#  Database
+
+def connect_db():
+    rv = sqlite3.connect(app.config['DATABASE'])
+    rv.row_factory = sqlite3.Row
+    return rv
+
+
+def get_db():
+    if not hasattr(g, 'sqlite_db'):
+        try:
+            g.sqlite_db = connect_db()
+            # g.sqlite_db.execute('pragma foreign_keys=on')
+        except sqlite3.Error as e:
+            error = 'Flask get_db error : ' + str(e.args[0])
+            flash(error, 'danger')
+            app.logger.error(error)
+            return None
+        else:
+            return g.sqlite_db
+    else:
+        return g.sqlite_db
+
+
+#   Inserts
+
+def addUser(username, firstname, lastname, passwd, ugroup, phone='', email=''):
+    db = get_db()
     try:
         db.execute('insert into users (username, passwd, firstname, lastname, ugroup, phone, email) values (?, ?, ?, ?, ?, ?, ?)',
-                  [username, passwd, firstname, lastname, ugroup, phone, email])
+                   [username, passwd, firstname, lastname, ugroup, phone, email])
         db.commit()
 
     except sqlite3.Error as e:
-        return 'Database error : '+str(e.args[0])
+        return 'Database error : ' + str(e.args[0])
 
 
-def addAudit(db, username, userid=0, otype='concept', detail='', label='', opid='', dui='', event='', tstate='updated', params=''):
+def addAudit(username, userid=0, otype='concept', detail='', label='', opid='', dui='', event='', tstate='updated', params=''):
+    db = get_db()
     res = {}
     apid = str(uuid.uuid4())
 
@@ -27,7 +55,7 @@ def addAudit(db, username, userid=0, otype='concept', detail='', label='', opid=
 
     try:
         db.execute('insert into audit (userid, username, otype, detail, label, opid, dui, event, tstate, apid, params, targetyear) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                                      [userid, username, otype, detail, label, opid, dui, event, tstate, apid, params, targetyear])
+                   [userid, username, otype, detail, label, opid, dui, event, tstate, apid, params, targetyear])
         db.commit()
         res['status'] = 'success'
         res['apid'] = apid
@@ -39,23 +67,25 @@ def addAudit(db, username, userid=0, otype='concept', detail='', label='', opid=
         return res
 
 
-###   Updates
+#   Updates
 
-def updateUser(db, username, firstname, lastname, passwd, ugroup, userid, phone='', email=''):
+def updateUser(username, firstname, lastname, passwd, ugroup, userid, phone='', email=''):
+    db = get_db()
     try:
         if passwd:
             db.execute('update users set username = ?, firstname = ?, lastname = ?, passwd = ?, ugroup = ?, phone = ?, email = ? where id = ?',
-                  [username, firstname, lastname, passwd, ugroup, phone, email, userid])
+                       [username, firstname, lastname, passwd, ugroup, phone, email, userid])
         else:
             db.execute('update users set username = ?, firstname = ?, lastname = ?, ugroup = ?, phone = ?, email = ? where id = ?',
-                  [username, firstname, lastname, ugroup, phone, email, userid])
+                       [username, firstname, lastname, ugroup, phone, email, userid])
         db.commit()
 
     except sqlite3.Error as e:
-        return 'Database error : '+str(e.args[0])
+        return 'Database error : ' + str(e.args[0])
 
 
-def updateUserTheme(db, userid, theme):
+def updateUserTheme(userid, theme):
+    db = get_db()
     try:
         if theme:
             db.execute('update users set theme = ? where id = ?',
@@ -63,46 +93,50 @@ def updateUserTheme(db, userid, theme):
             db.commit()
 
     except sqlite3.Error as e:
-        return 'Database error : '+str(e.args[0])
+        return 'Database error : ' + str(e.args[0])
 
 
-def updateUserParams(db, userid, params):
+def updateUserParams(userid, params):
+    db = get_db()
     try:
         db.execute('update users set params = ? where id = ?',
                    [params, userid])
         db.commit()
 
     except sqlite3.Error as e:
-        return 'Database error : '+str(e.args[0])
+        return 'Database error : ' + str(e.args[0])
 
 
-def updateAuditResolved(db, apid, tstate='', resolvedby='', note=''):
+def updateAuditResolved(apid, tstate='', resolvedby='', note=''):
+    db = get_db()
     try:
         db.execute('update audit set tstate = ?, resolvedby = ?, note = ? where apid = ?',
                    [tstate, resolvedby, note, apid])
         db.commit()
 
     except sqlite3.Error as e:
-        return 'Database error : '+str(e.args[0])
+        return 'Database error : ' + str(e.args[0])
 
 
-###   Selects
+#   Selects
 
-def getUserPwd(db, username):
+def getUserPwd(username):
+    db = get_db()
     query = ('select passwd from users '
-                '  where username = :username limit 1 ')
+             '  where username = :username limit 1 ')
     if db:
         db.row_factory = dict_factory
         cur = db.cursor()
-        cur = db.execute(query, {'username': username} )
+        cur = db.execute(query, {'username': username})
         return cur.fetchone()
 
 
-def getUserData(db, userid=None, username=None):
+def getUserData(userid=None, username=None):
+    db = get_db()
     query = None
     if username:
         query = ('select id, firstname, lastname, ugroup, theme, params, updated from users '
-                    '  where username = :username limit 1 ')
+                 '  where username = :username limit 1 ')
         params = {'username': username}
 
     if userid == 0:
@@ -110,7 +144,7 @@ def getUserData(db, userid=None, username=None):
 
     if userid:
         query = ('select id, firstname, lastname, ugroup, theme, params, updated from users '
-                    '  where id = :userid limit 1 ')
+                 '  where id = :userid limit 1 ')
         params = {'userid': userid}
 
     if db and query:
@@ -120,7 +154,8 @@ def getUserData(db, userid=None, username=None):
         return cur.fetchone()
 
 
-def getUsers(db, userid=None):
+def getUsers(userid=None):
+    db = get_db()
     params = {}
     if userid:
         query = ('select id, username, firstname, lastname, ugroup, phone, email, updated from users '
@@ -135,8 +170,9 @@ def getUsers(db, userid=None):
         return cur.fetchall()
 
 
-### sqlite view:  audit_targetyear
-def getTargetYears(db):
+# sqlite view:  audit_targetyear
+def getTargetYears():
+    db = get_db()
     if db:
         db.row_factory = lambda cursor, row: row[0]
         cur = db.execute('select targetyear from audit_targetyear')
@@ -144,8 +180,9 @@ def getTargetYears(db):
         return cur.fetchall()
 
 
-### sqlite view:  audit_created_yr_mon | audit_resolved_yr_mon
-def getReportMonth(db, targetyear=None):
+# sqlite view:  audit_created_yr_mon | audit_resolved_yr_mon
+def getReportMonth(targetyear=None):
+    db = get_db()
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
@@ -163,8 +200,9 @@ def getReportMonth(db, targetyear=None):
         return cur.fetchall()
 
 
-### sqlite view:  audit_event
-def getAuditEvent(db, targetyear=None):
+# sqlite view:  audit_event
+def getAuditEvent(targetyear=None):
+    db = get_db()
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
@@ -175,8 +213,9 @@ def getAuditEvent(db, targetyear=None):
         return cur.fetchall()
 
 
-### sqlite view:  audit_tstate
-def getAuditStatus(db, targetyear=None):
+# sqlite view:  audit_tstate
+def getAuditStatus(targetyear=None):
+    db = get_db()
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
@@ -187,27 +226,29 @@ def getAuditStatus(db, targetyear=None):
         return cur.fetchall()
 
 
-### sqlite view:  audit_event_tstate
-def getAuditEventStatus(db, event, targetyear=None):
+# sqlite view:  audit_event_tstate
+def getAuditEventStatus(event, targetyear=None):
+    db = get_db()
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
         query = ('select event, tstate, cnt from audit_event_tstate '
-                    '  where targetyear = :targetyear and event = :event order by tstate ')
+                 '  where targetyear = :targetyear and event = :event order by tstate ')
         params = {'targetyear': targetyear, 'event': event}
         cur = db.execute(query, params)
         return cur.fetchall()
 
 
-### sqlite view:  audit_users_tstate
-def getAuditUserStatus(db, userid='', tstate='', targetyear=None, route=None):
+# sqlite view:  audit_users_tstate
+def getAuditUserStatus(userid='', tstate='', targetyear=None, route=None):
+    db = get_db()
     userid = str(userid)
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
         query = 'select userid, username, tstate, ugroup, cnt from audit_users_tstate '
         where = ' where userid > -1 and targetyear = :targetyear '
-        tail =  ' order by username, tstate '
+        tail = ' order by username, tstate '
         params = {}
         params['targetyear'] = targetyear
 
@@ -216,7 +257,7 @@ def getAuditUserStatus(db, userid='', tstate='', targetyear=None, route=None):
                 query = 'select distinct userid, username, ugroup from audit_users_tstate where targetyear = :targetyear order by username '
                 cur = db.execute(query, params)
                 return cur.fetchall()
-            else:    
+            else:
                 query = 'select tstate, cnt from audit_tstate where targetyear = :targetyear order by tstate '
                 cur = db.execute(query, params)
                 return cur.fetchall()
@@ -234,14 +275,15 @@ def getAuditUserStatus(db, userid='', tstate='', targetyear=None, route=None):
         return cur.fetchall()
 
 
-### sqlite view:  audit_users_event
-def getAuditUsersEvent(db, event, userid='', tstate='', targetyear=None, route=None):
+# sqlite view:  audit_users_event
+def getAuditUsersEvent(event, userid='', tstate='', targetyear=None, route=None):
+    db = get_db()
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
         query = 'select userid, username, event, tstate, ugroup, cnt from audit_users_event '
         where = ' where targetyear = :targetyear and event = :event '
-        tail =  ' order by username, tstate '
+        tail = ' order by username, tstate '
         params = {}
         params['targetyear'] = targetyear
         params['event'] = event
@@ -265,11 +307,12 @@ def getAuditUsersEvent(db, event, userid='', tstate='', targetyear=None, route=N
         return cur.fetchall()
 
 
-def getAuditForItem(db, dui, cui=None, targetyear=None):
+def getAuditForItem(dui, cui=None, targetyear=None):
+    db = get_db()
     if db:
         db.row_factory = dict_factory
         query = 'select dui, opid, userid, username, targetyear, event, tstate, otype, apid, detail, label, created, updated, params, resolvedby, note from audit '
-        tail =  ' order by id '
+        tail = ' order by id '
         params = {}
         params['dui'] = dui
 
@@ -288,27 +331,30 @@ def getAuditForItem(db, dui, cui=None, targetyear=None):
         return cur.fetchall()
 
 
-def getAuditLocked(db, dui):
+def getAuditLocked(dui):
+    db = get_db()
     if db:
         db.row_factory = dict_factory
         q = ('select apid from audit '
-            '  where dui = :dui and event = \'lock\' and tstate = \'locked\' and otype = \'descriptor\' limit 1 ')
+             '  where dui = :dui and event = \'lock\' and tstate = \'locked\' and otype = \'descriptor\' limit 1 ')
         cur = db.cursor()
-        cur = db.execute(q, {'dui': dui} )
+        cur = db.execute(q, {'dui': dui})
         return cur.fetchone()
 
 
-def getAuditRecord(db, apid):
+def getAuditRecord(apid):
+    db = get_db()
     qr_udata = ('select dui, opid, userid, username, targetyear, event, tstate, otype, apid, detail, label, created, updated, params, resolvedby, note from audit '
                 '  where apid = :apid limit 1 ')
     if db:
         db.row_factory = dict_factory
         cur = db.cursor()
-        cur = db.execute(qr_udata, {'apid': apid} )
+        cur = db.execute(qr_udata, {'apid': apid})
         return cur.fetchone()
 
 
-def getAuditPending(db, tstate='pending', userid=None, event=None, sort='asc', limit=500):
+def getAuditPending(tstate='pending', userid=None, event=None, sort='asc', limit=500):
+    db = get_db()
     if db:
         db.row_factory = dict_factory
         if limit > 500:
@@ -316,7 +362,7 @@ def getAuditPending(db, tstate='pending', userid=None, event=None, sort='asc', l
 
         query = 'select dui, opid, userid, username, targetyear, event, tstate, otype, apid, detail, label, created, updated, params, note from audit '
         where = ' where tstate = :tstate '
-        tail =  ' order by id ' + sort + ' limit ' + str(limit)
+        tail = ' order by id ' + sort + ' limit ' + str(limit)
         params = {}
         params['tstate'] = tstate
 
@@ -329,14 +375,15 @@ def getAuditPending(db, tstate='pending', userid=None, event=None, sort='asc', l
 
         if event:
             where += ' and event = :event '
-            params['event'] = event            
+            params['event'] = event
 
         q = query + where + tail
         cur = db.execute(q, params)
         return cur.fetchall()
 
 
-def getAuditResolved(db, userid, tstate=None, event=None, resolvedby=None, sort='desc', targetyear=None, limit=500):
+def getAuditResolved(userid, tstate=None, event=None, resolvedby=None, sort='desc', targetyear=None, limit=500):
+    db = get_db()
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
@@ -346,7 +393,7 @@ def getAuditResolved(db, userid, tstate=None, event=None, resolvedby=None, sort=
 
         query = 'select dui, opid, userid, username, targetyear, event, tstate, otype, apid, detail, label, created, updated, params, resolvedby, note from audit '
         where = ' where targetyear = :targetyear and userid = :userid and otype in ("concept","descriptor") '
-        tail =  ' order by updated ' + sort + ' limit ' + str(limit)
+        tail = ' order by updated ' + sort + ' limit ' + str(limit)
         params = {}
         params['targetyear'] = targetyear
         params['userid'] = userid
@@ -371,7 +418,8 @@ def getAuditResolved(db, userid, tstate=None, event=None, resolvedby=None, sort=
         return cur.fetchall()
 
 
-def getReport(db, view, targetyear=None, userid=None, mon=None):
+def getReport(view, targetyear=None, userid=None, mon=None):
+    db = get_db()
     if not targetyear:
         targetyear = app.config['TARGET_YEAR']
     if db:
@@ -379,7 +427,7 @@ def getReport(db, view, targetyear=None, userid=None, mon=None):
 
         query = 'select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_' + view
         where = ' where targetyear = :targetyear '
-        tail =  ' order by yr_mon, userid, event, tstate '
+        tail = ' order by yr_mon, userid, event, tstate '
         params = {}
         params['targetyear'] = targetyear
 
@@ -396,18 +444,19 @@ def getReport(db, view, targetyear=None, userid=None, mon=None):
         return cur.fetchall()
 
 
-###   Deletes
+#   Deletes
 
-def deleteUser(db, userid):
+def deleteUser(userid):
+    db = get_db()
     try:
         db.execute('delete from users where id = ? ', [userid])
         db.commit()
 
     except sqlite3.Error as e:
-        return 'Database error : '+str(e.args[0])
+        return 'Database error : ' + str(e.args[0])
 
 
-### Functions
+# Functions
 
 def dict_factory(cursor, row):
     d = {}

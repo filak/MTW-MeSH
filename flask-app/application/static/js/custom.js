@@ -5,10 +5,10 @@ $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip()
 
     //$('[data-toggle="popover"]').popover();
-    
+
     $(".modal-dialog").draggable({
         handle: ".modal-header"
-    });    
+    });
 
     $('#descriptorTabs a.nav-link').click(function() {
         $('#flashedMessage').html('');
@@ -186,7 +186,7 @@ $(document).ready(function(){
           var resby = '';
         } else {
           var resby = resolvedby;
-        }       
+        }
 
         var descpage = $(e.currentTarget).find('#updateAuditForm').data('descpage');
 
@@ -282,10 +282,7 @@ $(document).ready(function(){
 
 // Functions
 
-/*
-Wrap a string with <pre> tag
-*/
-
+// Wrap a string with <pre> tag
 function wrapStrPre(mystr) {
     if (mystr) {
         return '<pre>' + mystr + '</pre>';
@@ -294,7 +291,7 @@ function wrapStrPre(mystr) {
     }
 }
 
-/*
+/**
 function get_statRep(status) {
     var sRep = {
         'pending'  : "info",

@@ -27,7 +27,7 @@ pyuca==1.2
 requests==2.32.2
 requests_futures==1.0.1
 setuptools==70.0.0
-urllib3==1.26.18
+urllib3==1.26.19
 waitress==3.0.0
 Werkzeug==3.0.3
 wheel==0.43.0

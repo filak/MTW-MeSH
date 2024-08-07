@@ -10,11 +10,7 @@ diff_match_patch==20230430
 Flask==3.0.3
 Flask-Caching==2.3.0
 Flask-Paranoid==0.3.0
-# Flask-SeaSurf==1.1.1 is broken with Flask 3+
-# The last version of Flask-Seasurf on PyPi (v1.1.1) is outdated
-# We install from the last commit on GitHub instead
-# See: https://github.com/maxcountryman/flask-seasurf/issues/135
-Flask-SeaSurf @ https://github.com/maxcountryman/flask-seasurf/archive/refs/heads/main.tar.gz#sha256=64048ed1f01d6bf6ae369112eb70a21dcbbb6612eddd3a9069d8f49353c35400
+Flask-SeaSurf==2.0.0
 Flask-Session==0.8.0
 flask-talisman==1.1.0
 future==0.18.3

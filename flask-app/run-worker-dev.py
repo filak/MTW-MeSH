@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import sys
+from application.worker import create_app
+
 DEFAULT_PORT = 5903
 DEFAULT_CONFIG = 'conf/mtw.ini'
 
-import sys
-from application.worker import create_app
 
 def start():
     if len(sys.argv) == 2:
@@ -17,4 +18,3 @@ def start():
 
 if __name__ == "__main__":
     start()
-

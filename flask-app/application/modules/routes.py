@@ -1245,40 +1245,48 @@ def report(userid, year):
 
     if request.args.get('report'):
         xrep = request.args.get('report').split('--')
-        if len(xrep) == 2:
-            fmt = xrep[0]
-            rep = xrep[1]
-            if rep in ['events', 'resolved']:
-                if rep == 'events':
-                    suf = 'created'
-                    head = 'Month,Username,Event,Status,Count,TargetYear: ' + str(year)
-                elif rep == 'resolved':
-                    suf = 'resolved'
-                    head = 'Month,ResolvedBy,Event,Status,Count,TargetYear: ' + str(year)
-            else:
-                abort(403)
 
+        if len(xrep) != 2:
+            abort(403)
+
+        fmt, rep = xrep
+
+        if fmt not in ['csv', 'tsv']:
+            abort(403)
+
+        suf = None
+        head = None
+
+        if rep == 'events':
+            suf = 'created'
+            head = 'Month,Username,Event,Status,Count,TargetYear: ' + str(year)
+        elif rep == 'resolved':
+            suf = 'resolved'
+            head = 'Month,ResolvedBy,Event,Status,Count,TargetYear: ' + str(year)
+        else:
+            abort(403)
+
+        if suf and head:
             report = mdb.getReport(suf, targetyear=year, userid=userid, mon=month)
-            if fmt in ['csv', 'tsv']:
-                if fmt == 'csv':
-                    resp = make_response(render_template('report-csv.txt', head=head, report=report))
-                    resp.headers["Content-type"] = 'text/csv'
-                elif fmt == 'tsv':
-                    head_list = head.split(',')
-                    head = ('\t').join(head_list)
-                    resp = make_response(render_template('report-tsv.txt', head=head, report=report, tab='\t'))
-                    resp.headers["Content-type"] = 'text/tab-separated-values'
 
-                resp.headers["Content-Disposition"] = 'attachment; filename=mtw-report-' + rep + '.' + fmt
-                return resp
-            else:
-                abort(403)
+            if fmt == 'csv':
+                resp = make_response(render_template('report-csv.txt', head=head, report=report))
+                resp.headers["Content-type"] = 'text/csv'
+            elif fmt == 'tsv':
+                head_list = head.split(',')
+                head = ('\t').join(head_list)
+                resp = make_response(render_template('report-tsv.txt', head=head, report=report, tab='\t'))
+                resp.headers["Content-type"] = 'text/tab-separated-values'
+
+            resp.headers["Content-Disposition"] = 'attachment; filename=mtw-report-' + rep + '.' + fmt
+            return resp
         else:
             abort(400)
+
     else:
         events = mdb.getReport('created', targetyear=year, userid=userid, mon=month)
         resolved = mdb.getReport('resolved', targetyear=year, userid=userid, mon=month)
-        # pp.pprint(report)
+
         return render_template('report.html',
                                users=users, target_years=target_years, year=year,
                                userid=userid, months=months, month=month, report=events, resolved=resolved)

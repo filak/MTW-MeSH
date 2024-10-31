@@ -7,7 +7,7 @@ cachelib==0.9.0 ## Stick to 0.9.0 OR run after pip install -r ... :
 certifi==2024.8.30
 cffi==1.17.1
 colorama==0.4.6
-diff_match_patch==20230430
+diff_match_patch==20241021
 Flask==3.0.3
 Flask-Caching==2.3.0
 Flask-Paranoid==0.3.0
@@ -18,15 +18,15 @@ future==0.18.3
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.4
-MarkupSafe==3.0.1
+MarkupSafe==3.0.2
 pip_audit==2.7.3 ## Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt
 pyuca==1.2
 requests==2.32.3
 requests_futures==1.0.1
-setuptools==75.2.0
+setuptools==75.3.0
 urllib3==1.26.20
-waitress==3.0.0
-Werkzeug==3.0.4
+waitress==3.0.1
+Werkzeug==3.0.6
 wheel==0.44.0
 ### (optional) If building for Windows:
 pyinstaller==6.11.0; sys_platform == "win32"

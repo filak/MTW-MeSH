@@ -35,7 +35,7 @@ def show_elapsed(begin, tag=''):
     return elapsed
 
 
-def getSparqlData(template, query='', show='', status='', top='', tn='', concept='',
+def getSparqlData(template, query='', show='', status='', top='', tn='', concept='', otype='Descriptor',
                   output='json', slang=None, lang=None, scr=None, key=None, cache=None):
 
     t0 = timer()
@@ -58,7 +58,7 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
 
     lang_umls = mtu.getLangCodeUmls(lang)
 
-    sparql = render_template('sparql/' + template + '.sparql', query=cleanQuery(query),
+    sparql = render_template('sparql/' + template + '.sparql', query=cleanQuery(query), otype=otype,
                              show=show, status=status, top=top, tn=tn, toptn=toptn, concept=concept,
                              lang=lang, lang_umls=lang_umls, slang=slang, scr=scr)
 
@@ -92,7 +92,7 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
         app.logger.error('%s \n\n %s \n\n %s \n\n %s', endpoint, template, query, str(err))
 
 
-def getSparqlDataExt(dui, output, year='', key=None, cache=None):
+def getSparqlDataExt(dui, output, year='', key=None, cache=None, otype='Descriptor'):
 
     if key and cache:
         if cache.get(key):
@@ -100,7 +100,7 @@ def getSparqlDataExt(dui, output, year='', key=None, cache=None):
 
     endpoint = app.config['MESH_RDF']
 
-    dview_ext_query = render_template('sparql/descriptor_view.sparql', query=dui, official=True, year=year)
+    dview_ext_query = render_template('sparql/descriptor_view.sparql', query=dui, official=True, year=year, otype=otype)
     # print(dview_ext_query)
 
     query = mtu.encodeMeshRdfQuery(dview_ext_query)
@@ -343,7 +343,7 @@ def parseDescriptor(descriptor):
             val = row['label']['value']
             qualifiers.append({'ui': ui, 'val': val})
 
-        elif p in ['broaderDescriptor', 'seeAlso', 'pharmacologicalAction', 'preferredTerm']:
+        elif p in ['broaderDescriptor', 'broaderQualifier', 'seeAlso', 'pharmacologicalAction', 'preferredTerm']:
             if p == 'preferredTerm':
                 result['labels']['prefTerm'] = row['o']['value'].replace(app.config['SOURCE_NS'], '')
             else:

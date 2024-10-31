@@ -1,7 +1,7 @@
 {% include 'sparql/_namespaces.sparql' %}
 PREFIX a:  <http://aaa>
 
-## Descriptor trx view query v1.0
+## Descriptor trx view query v1.1
 
 SELECT DISTINCT * {
 {SELECT ?p ?o
@@ -61,8 +61,8 @@ WHERE {
 }} UNION {
 SELECT ?p ?o
 WHERE {
-    BIND(meshv:narrowerDescriptor as ?p)
-    ?id meshv:broaderDescriptor mesh:{{ query }} .
+    BIND(meshv:narrower{{ otype }} as ?p)
+    ?id meshv:broader{{ otype }} mesh:{{ query }} .
     ?id rdfs:label ?val
     FILTER(!isLiteral(?id))
     BIND(STR(?val) AS ?o)

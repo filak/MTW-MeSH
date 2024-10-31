@@ -1,4 +1,4 @@
-## Base export query v1.0
+## Base export query v1.1
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -37,6 +37,14 @@ WHERE {
     ?ndx meshv:identifier ?nd
   }
   OPTIONAL {
+    ?d meshv:broaderQualifier ?bdx .
+    ?bdx meshv:identifier ?bd
+  }
+  OPTIONAL {
+    ?ndx meshv:broaderQualifier ?d .
+    ?ndx meshv:identifier ?nd
+  }
+  OPTIONAL {
     ?d meshv:seeAlso ?rdx .
     ?rdx meshv:identifier ?rd
   }
@@ -52,3 +60,4 @@ WHERE {
 }
 GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?cas ?rn  
 ###LIMIT 100
+

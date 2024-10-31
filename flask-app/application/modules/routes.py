@@ -836,11 +836,12 @@ def compare(dui):
 
     if dui:
         dui = dui.replace('?', '').strip()
-        dview_data = sparql.getSparqlData('descriptor_view', query=dui, output='tsv', key=dui + '_diff', cache=cache)
+        otype = getObjType(dui)
+        dview_data = sparql.getSparqlData('descriptor_view', query=dui, output='tsv', key=dui + '_diff', cache=cache, otype=otype)
         if dview_data:
             dview = mtu.cleanDescView(dview_data)
 
-        prev_data = sparql.getSparqlDataExt(dui, 'tsv', year=year, key=dui + '_prev_' + year, cache=cache)
+        prev_data = sparql.getSparqlDataExt(dui, 'tsv', year=year, key=dui + '_prev_' + year, cache=cache, otype=otype)
         if prev_data:
             prev = mtu.cleanDescView(prev_data)
 
@@ -1129,7 +1130,8 @@ def search(dui, action):
             tree = sparql.parseSparqlData(tree_data)
 
             started = timer()
-            dview = sparql.getSparqlData('descriptor_view_trx', query=dui, output='tsv', key=dui + '_dview', cache=cache)
+            otype = getObjType(dui)
+            dview = sparql.getSparqlData('descriptor_view_trx', query=dui, output='tsv', key=dui + '_dview', cache=cache, otype=otype)
             show_elapsed(t0, started=started, tag='dview_data')
 
             dview = mtu.cleanDescView(dview)
@@ -1701,6 +1703,13 @@ def logout():
 
 
 # Functions, context_processors, etc.
+
+def getObjType(dui):
+    otype = "Descriptor"
+    if dui.startswith('Q'):
+        otype = "Qualifier"
+    return otype
+
 
 def checkWorker(worker):
     try:

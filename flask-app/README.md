@@ -2,7 +2,7 @@
 
 ## Development - Run with Python
 
-Prerequisites: Python 3.8+, Git, Java8 JRE
+Prerequisites: Python 3.10+, Git, Java8 JRE
 
 > Tip: You can use [Visual Studio Code](https://code.visualstudio.com/docs/python/python-tutorial)
 

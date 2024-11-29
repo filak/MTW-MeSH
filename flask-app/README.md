@@ -31,8 +31,7 @@ Prerequisites: Python 3.8+, Git, Java8 JRE
     ```
     $ py -m venv --upgrade venv
     $ python -m pip install --upgrade pip
-    $ pip install setuptools --upgrade
-    $ pip install wheel --upgrade
+    $ pip install setuptools wheel --upgrade
     ```
     
 6. Install dependencies - run:

@@ -32,13 +32,11 @@ echo.
 echo Cleaning static files %targetDir% ...
 RMDIR %targetDir%\static /S /Q
 RMDIR %targetDir%\templates /S /Q
-MKDIR %targetDir%\static
-MKDIR %targetDir%\templates
 
 echo.
 echo Copying files from: static, templates ...
-xcopy %srcDir%\static %targetDir%\static /E /Q /Y
-xcopy %srcDir%\templates %targetDir%\templates /E /Q /Y
+xcopy %srcDir%\static %targetDir%\static /I /E /Q /Y
+xcopy %srcDir%\templates %targetDir%\templates /I /E /Q /Y
 
 echo. > %logFile%
 

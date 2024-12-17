@@ -26,18 +26,13 @@ Login
         <label for="loginPassword">Password</label>
         <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Password" required>
       </div>
-
-      <div class="checkbox">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary">Login</button>
+      <div class="checkbox mt-3">
         <label>
           <input type="checkbox" id="loginAdmin" name="isadmin" value="yes"> Admin login
         </label>
       </div>
-
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-      <input type="hidden" name="isadmin" value="no">
-
-      <button type="submit" class="btn btn-primary">Login</button>
-
     </form>
   </div>
 </div>

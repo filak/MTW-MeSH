@@ -8,7 +8,7 @@ import os
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from application.modules.extensions import Talisman, cache, csrf, paranoid, sess
+from application.modules.extensions import Talisman, cache, csrf, paranoid, sess  # limiter
 from application.modules import utils as mtu
 
 
@@ -56,7 +56,7 @@ def create_app(debug=False, logger=None, port=5900,
     app.config.update(dict(
         APPLICATION_ROOT = url_prefix,
         APP_NAME = 'MTW',
-        APP_VER = '1.6.7',
+        APP_VER = '1.6.8',
         API_VER = '1.0.0',
         DBVERSION = 1.0,
         CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
@@ -132,9 +132,13 @@ def create_app(debug=False, logger=None, port=5900,
     cache.init_app(app)
     sess.init_app(app)
 
-    # SeaSurf (csrf) & Talisman
+    # Limiter
+    # limiter.init_app(app)
+
+    # SeaSurf (csrf)
     csrf.init_app(app)
 
+    # Talisman
     if not relax and not app.debug:
         # Paranoid
         paranoid.init_app(app)

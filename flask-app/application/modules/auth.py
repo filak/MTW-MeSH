@@ -1,3 +1,4 @@
+import bcrypt
 from functools import wraps
 from itsdangerous import URLSafeTimedSerializer
 from secrets import compare_digest
@@ -12,6 +13,17 @@ from flask import (
     has_request_context,
 )
 from flask import current_app as app
+
+
+def hash_pwd(password):
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+
+def check_pwd(password, hashed_password):
+    try:
+        return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+    except ValueError:
+        return False
 
 
 def login_required(f):

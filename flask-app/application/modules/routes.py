@@ -13,11 +13,11 @@ from urllib.parse import urlparse
 
 from flask import current_app as app
 
-from application.main import cache
+from application.main import cache  # limiter
 from application.modules import database as mdb
 from application.modules import sparql as sparql
 from application.modules import utils as mtu
-from application.modules.auth import login_required
+from application.modules.auth import login_required, check_pwd
 
 from flask import (abort, flash, g, make_response, redirect, render_template,
                    request, send_from_directory, session,
@@ -1527,15 +1527,13 @@ def add_user():
         email = request.form.get('email')
         phone = request.form.get('phone')
 
-        passwd_hashed = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt(5))
-
         params = {}
         params['insert'] = {}
         params['insert'].update({'firstname': firstname})
         params['insert'].update({'lastname': lastname})
         params['insert'].update({'role': ugroup})
 
-        res = mdb.addUser(username, firstname, lastname, passwd_hashed.decode('utf-8'), ugroup, phone=phone, email=email)
+        res = mdb.addUser(username, firstname, lastname, passwd, ugroup, phone=phone, email=email)
 
         if res:
             flash(res, 'danger')
@@ -1572,8 +1570,6 @@ def update_user():
         params['changed'] = []
 
         if passwd:
-            passwd = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt(5))
-            passwd = passwd.decode('utf-8')
             params['changed'].append('password')
 
         if action == 'delete':
@@ -1607,14 +1603,19 @@ def update_user():
 #  Login | Logout
 
 @app.route('/login/', methods=['GET', 'POST'])
+# @limiter.limit("10/minute")
 def login():
     error = None
     login = False
+    isadmin = None
+
+    if session.get('logged_in'):
+        return redirect(url_for('intro'))
 
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        isadmin = request.form['isadmin']
+        isadmin = request.form.get('isadmin')
 
         if isadmin == 'yes':
             if username == app.config['ADMINNAME'] and bcrypt.checkpw(password.encode('utf-8'), app.config['ADMINPASS'].encode('utf-8')):
@@ -1626,8 +1627,8 @@ def login():
             udata = mdb.getUserPwd(username)
 
             if udata:
-                if bcrypt.checkpw(password.encode('utf-8'), udata['passwd'].encode('utf-8')):
-                    login = True
+                if udata.get('passwd'):
+                    login = check_pwd(password, udata['passwd'])
 
             if not login:
                 error = 'Invalid username or password'

@@ -8,6 +8,8 @@ from sqlite3 import dbapi2 as sqlite3
 from flask import flash, g
 from flask import current_app as app
 
+from application.modules.auth import hash_pwd
+
 
 #  Database
 
@@ -38,6 +40,9 @@ def get_db():
 def addUser(username, firstname, lastname, passwd, ugroup, phone='', email=''):
     db = get_db()
     try:
+        if passwd:
+            passwd = hash_pwd(passwd)
+
         db.execute('insert into users (username, passwd, firstname, lastname, ugroup, phone, email) values (?, ?, ?, ?, ?, ?, ?)',
                    [username, passwd, firstname, lastname, ugroup, phone, email])
         db.commit()
@@ -73,6 +78,8 @@ def updateUser(username, firstname, lastname, passwd, ugroup, userid, phone='', 
     db = get_db()
     try:
         if passwd:
+            passwd = hash_pwd(passwd)
+
             db.execute('update users set username = ?, firstname = ?, lastname = ?, passwd = ?, ugroup = ?, phone = ?, email = ? where id = ?',
                        [username, firstname, lastname, passwd, ugroup, phone, email, userid])
         else:

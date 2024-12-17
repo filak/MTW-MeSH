@@ -54,7 +54,7 @@ def procFile(args):
         config.set(section, 'ADMINNAME', args.login)
 
         pwd = args.pwd
-        pwd_hashed = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt(5))
+        pwd_hashed = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt())
         config.set(section, 'ADMINPASS', pwd_hashed.decode('utf-8'))
 
         section = 'worker'

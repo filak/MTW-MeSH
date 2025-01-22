@@ -8,7 +8,7 @@
 @prefix meshv:   <http://id.nlm.nih.gov/mesh/vocab#> .
 @prefix mesht:   <http://www.medvik.cz/schema/mesh/vocab/#> .
 
-### Version 1.0.5
+### Version 1.1.0
 
 ## Initialize text query
 [] ja:loadClass       "org.apache.jena.query.text.TextQuery" .
@@ -31,27 +31,71 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
 # A TDB dataset used for RDF storage
 <#dataset> 
     a tdb2:DatasetTDB2 ;
-    tdb2:location  "d:/Data/jena/databases/mesh" ;
+    tdb2:location  "d:/apache-jena-data5/databases/mesh" ;
     .
 
 # Text index description
 <#indexLucene> 
     a text:TextIndexLucene ;
-    text:directory "d:/Data/jena/indexes/mesh" ;
+    text:directory "d:/apache-jena-data5/indexes/mesh" ;
     text:entityMap <#entMap> ;
-    text:storeValues true ;
-    ##text:analyzer[ a text:StandardAnalyzer ] ;
+    text:storeValues false ;
+    ## text:analyzer[ a text:StandardAnalyzer ] ;
     text:analyzer [
        a text:ConfigurableAnalyzer ;
        text:tokenizer text:StandardTokenizer ;
-       text:filters (text:ASCIIFoldingFilter text:LowerCaseFilter)
+       text:filters (
+           text:ASCIIFoldingFilter
+           text:LowerCaseFilter
+           # text:PorterStemFilter
+           )
        ] ;
-    ##text:queryAnalyzer [ a text:KeywordAnalyzer ] ;
+    ## text:queryAnalyzer [ a text:KeywordAnalyzer ] ;
     text:queryParser text:AnalyzingQueryParser ;
-    ##text:defineAnalyzers [ . . . ] ;
+    ## text:defineAnalyzers [ . . . ] ;
     text:multilingualSupport true ;
-    ## TBD https://jena.apache.org/documentation/query/text-query.html#lists-of-indexed-properties :
-    ## text:propLists ( [ . . . ] . . . ) ;
+    ## https://jena.apache.org/documentation/query/text-query.html#lists-of-indexed-properties - available since Jena 5.0
+    text:propLists (
+        [ text:propListProp mesht:defQuery ;
+          text:props (
+             rdfs:label
+             meshv:identifier
+             meshv:prefLabel
+             meshv:altLabel
+             meshv:casn1_label
+             meshv:registryNumber
+             meshv:relatedRegistryNumber
+                 mesht:identifier
+                 mesht:prefLabel
+                 mesht:altLabel
+              ) ;
+        ]
+        [ text:propListProp mesht:includeNotes ;
+          text:props (
+             rdfs:label
+             meshv:identifier
+             meshv:prefLabel
+             meshv:altLabel
+             meshv:casn1_label
+             meshv:registryNumber
+             meshv:relatedRegistryNumber
+                 mesht:identifier
+                 mesht:prefLabel
+                 mesht:altLabel
+                    mesht:translatorsNote
+                    mesht:annotation
+                    mesht:historyNote
+                    mesht:scopeNote
+              meshv:annotation
+              meshv:historyNote
+              meshv:note
+              meshv:onlineNote
+              meshv:publicMeSHNote
+              meshv:scopeNote
+              meshv:source
+             ) ;
+        ]
+    ) ;
  .
 
 <#entMap> 

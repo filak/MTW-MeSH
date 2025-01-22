@@ -18,29 +18,21 @@ WHERE {
   {% endif %}
 
   OPTIONAL {
-    ?sub mesht:term|mesht:preferredTerm ?s .
-    ?d mesht:concept ?sub .
-    ?d rdf:type ?type .
-    ?d rdfs:label ?label .
-    FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
-  }
-
-  OPTIONAL {
     BIND(?s as ?d)
     ?s rdf:type ?type .
     ?s rdfs:label ?label .
     FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
     }
-    
-  {% if scr == 'yes' %}  
+
+  {% if scr == 'yes' %}
   OPTIONAL {
     ?s meshv:mappedTo|meshv:preferredMappedTo|meshv:pharmacologicalAction ?d .
     ?d rdf:type ?type .
     ?d rdfs:label ?label .
     FILTER (?type IN(meshv:TopicalDescriptor,meshv:Descriptor))
     }
-  {% endif %}    
-    
+  {% endif %}
+
   OPTIONAL {
     ?d meshv:treeNumber ?s .
     ?d rdf:type ?type .
@@ -71,7 +63,7 @@ WHERE {
     ?d mesht:concept ?s .
     ?d rdf:type ?type .
     }
-             
+
 FILTER (BOUND(?d))
 FILTER (?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
 }
@@ -157,5 +149,3 @@ ORDER BY DESC(?score)
     {% endif %}
 
 } LIMIT 500
-
-

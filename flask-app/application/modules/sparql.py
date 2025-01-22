@@ -62,7 +62,8 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
                              show=show, status=status, top=top, tn=tn, toptn=toptn, concept=concept,
                              lang=lang, lang_umls=lang_umls, slang=slang, scr=scr)
 
-    # print(sparql)
+    if app.debug:
+        print(sparql)
 
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
 

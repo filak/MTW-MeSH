@@ -156,6 +156,7 @@ def getLocalConfValue(conf, fp=''):
         d['GCSP'] = json.loads(conf.get(section, 'GCSP'))
         d['CHAR_NORM_FILE'] = conf.get(section, 'CHAR_NORM_FILE', fallback='norm_chars_table.tsv.txt')
         d['MESH_BROWSER'] = conf.get(section, 'MESH_BROWSER', fallback='https://meshb.nlm.nih.gov/record/ui?ui=')
+        d['USE_PROP_LISTS'] = conf.getboolean(section, 'USE_PROP_LISTS', fallback=False)
 
         section = 'sparqlconf'
         d['SPARQL_HOST'] = conf.get(section, 'SPARQL_HOST', fallback='http://127.0.0.1:3030/')

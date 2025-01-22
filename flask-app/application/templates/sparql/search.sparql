@@ -4,17 +4,26 @@
 
 {% include 'sparql/_namespaces.sparql' %}
 
+{% if config.USE_PROP_LISTS %}
+    {% set prop_list = 'mesht:defQuery' %}
+    {% if includeNotes == 'yes' %}
+        {% set prop_list = 'mesht:includeNotes' %}
+    {% endif %}
+{% else %}
+    {% set prop_list = '' %}
+{% endif %}
+
 SELECT distinct ?label ?d ?type ?active ?val ?scn ?scnt ?ntx ?lockedBy {
 {
 SELECT distinct ?d ?type
 WHERE {
 
   {% if slang == 'target' %}
-    (?s ?score) text:query ("{{ query }}" 500 "lang:{{ lang }}") .
+      (?s ?score) text:query ({{ prop_list }} "{{ query }}" 500 "lang:{{ lang }}") .
   {% elif slang == 'source' %}
-    (?s ?score) text:query ("{{ query }}" 500 "lang:en") .
+      (?s ?score) text:query ({{ prop_list }} "{{ query }}" 500 "lang:en") .
   {% else %}
-    (?s ?score) text:query ("{{ query }}" 500) .
+      (?s ?score) text:query ({{ prop_list }} "{{ query }}" 500) .
   {% endif %}
 
   OPTIONAL {

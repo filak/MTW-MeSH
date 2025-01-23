@@ -68,28 +68,13 @@ Prerequisites: Python 3.10+, Git, Java8 JRE
 
 ## Deploy on Linux
 
-https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment
+https://flask.palletsprojects.com/en/stable/deploying/#deployment
 
 ## Building for Windows
 
-1. Run all !build_*.bat files
-
-    ```
-    $ !!build__mtw-server.bat
-    $ !!build__mtw-tools.bat
-    $ !!build__mtw-worker.bat
-    $ !!build__set-mtw-admin.bat
-    ```
-
-2. Open *dist* folder and test run (and check the logs for any errors)
-
-    ```
-    $ mtw-worker.exe --debug
-    $ set-mtw-admin.exe --login mtwdev --pwd test
-    $ mtw-server.exe --debug
-    ```
+1. Run !!build__dist_pyinstaller.bat
     
-3. Enjoy MTW: http://127.0.0.1:55930/mtw/  
+2. Enjoy MTW: http://127.0.0.1:55930/mtw/  
 
-4. Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows) how to deploy MTW as Windows service for production.
+3. Follow the [Docs](https://github.com/filak/MTW-MeSH/wiki/Installation-on-Windows) guide how to deploy MTW as Windows service for production.
 

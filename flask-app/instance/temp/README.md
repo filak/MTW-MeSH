@@ -1,1 +1,1 @@
-## This is folder for temporary files
+# This is folder for temporary files

@@ -31,13 +31,13 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
 # A TDB dataset used for RDF storage
 <#dataset> 
     a tdb2:DatasetTDB2 ;
-    tdb2:location  "d:/Data/jena/databases/mesh" ;
+    tdb2:location  "d:/Data/jena5/databases/mesh" ;
     .
 
 # Text index description
 <#indexLucene> 
     a text:TextIndexLucene ;
-    text:directory "d:/Data/jena/indexes/mesh" ;
+    text:directory "d:/Data/jena5/indexes/mesh" ;
     text:entityMap <#entMap> ;
     text:storeValues false ;
     ## text:analyzer[ a text:StandardAnalyzer ] ;

@@ -14,13 +14,20 @@ WHERE {
   BIND(mesh:D005123 as ?d)
   ?d rdf:type ?dtype .
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
-  ?d meshv:active ?actived .
+
+  # Assume absence of meshv:active as true
+  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?actived) .
+
   FILTER(?actived)
   ?d meshv:identifier ?dui .
   ?d meshv:allowableQualifier ?q .
-  ##?q meshv:active ?activeq .
+
+  # Assume absence of meshv:active as true
+  ##BIND(IF(EXISTS { ?q meshv:active false }, false, true) AS ?activeq) .
   ##FILTER(?activeq)
+  
   ?q meshv:identifier ?qui
 }
 GROUP BY ?dui
 ### LIMIT 100
+

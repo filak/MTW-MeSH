@@ -12,7 +12,8 @@ SELECT ?dui (GROUP_CONCAT(DISTINCT ?o ; separator='|') AS ?qn)
 WHERE {
   BIND(mesh:D004364 as ?d)
   ?dq meshv:hasDescriptor ?d .
-  ?dq meshv:active ?active .
+  # Assume absence of meshv:active as true
+  BIND(IF(EXISTS { ?dq meshv:active false }, false, true) AS ?active) .
   FILTER(?active)
   ?d meshv:identifier ?dui .
   ?dq meshv:useInstead ?ud .
@@ -23,3 +24,4 @@ WHERE {
 }
 GROUP BY ?dui
 LIMIT 100
+

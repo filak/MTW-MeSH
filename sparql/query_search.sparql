@@ -67,7 +67,8 @@ ORDER BY DESC(?score)
   }
   ?d rdfs:label ?label .
   FILTER ( lang(?label) = 'en' )
-  ?d meshv:active ?active .
+  # Assume absence of meshv:active as true
+  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
   ?d meshv:preferredConcept ?c .
   ?d meshv:dateCreated ?dateCrt .
   OPTIONAL {?d meshv:dateRevised ?dateRev }

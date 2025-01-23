@@ -1,4 +1,4 @@
-### Not translated ScopeNote in preferred Concepts/Descriptors v1.0 ###
+### Not translated ScopeNote in preferred Concepts/Descriptors v1.1 ###
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -18,7 +18,10 @@ WHERE {
    BIND('YES' as ?scnt)
    }
    FILTER (!BOUND(?scnt))
-  ?d meshv:active ?active .
+
+  # Assume absence of meshv:active as true
+  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
+
   #?d meshv:dateCreated ?dateCrt .
   #OPTIONAL { ?d meshv:dateRevised ?dateRev }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }

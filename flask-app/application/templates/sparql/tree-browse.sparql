@@ -1,4 +1,4 @@
-## Browse query v1.0 - always with a treeNumber prefix !
+## Browse query v1.1 - always with a treeNumber prefix !
 
 ## Preferred concepts AKA descriptors
 
@@ -73,7 +73,9 @@ SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
   ?d rdfs:label ?label .
     FILTER (lang(?label) = 'en')
 
-  ?d meshv:active ?active .
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
+
     {% if status == 'active' %}
         FILTER (?active)
     {% endif %}
@@ -89,7 +91,7 @@ SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
     OPTIONAL {?c meshv:scopeNote ?scnv .
               BIND('YES' as ?scn)
              }
-             
+
     OPTIONAL {?c mesht:scopeNote ?scntv
               BIND('YES' as ?scnt)
              }

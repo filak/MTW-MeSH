@@ -1,4 +1,4 @@
-## Tree display query v1.0
+## Tree display query v1.1
 
 {% include 'sparql/_namespaces.sparql' ignore missing %}
 
@@ -40,7 +40,10 @@ ORDER BY ?tn LIMIT 500
     ?d rdfs:label ?label .
     FILTER (lang(?label) = 'en') .
     ?d rdf:type ?type .
-    ?d meshv:active ?active .
+
+   # Assume absence of meshv:active as true
+   BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
+
     OPTIONAL {
         ?c mesht:preferredTerm ?id .
         ?id mesht:prefLabel ?val

@@ -17,7 +17,7 @@
                 //"--port=80",
                 "--port=5900",
                 "--debugger",
-                "--reload" 
+                "--reload"
             ],
             "jinja": true
         },
@@ -54,8 +54,8 @@
                 //"--port", "80",
                 //"--config", "conf/mtw.ini",
                 //"--config", "conf/mtw-fr.ini",
-                //"--debug",
-                "--fqdn=test.medvik.cz", 
+                "--debug",
+                "--fqdn=test.medvik.cz",
                 //"--relax"
             ],
             "jinja": true
@@ -74,11 +74,11 @@
                 //"--port", "5903",
                 //"--config", "conf/mtw.ini",
                 //"--config", "conf/mtw-fr.ini",
-                //"--debug"
+                "--debug"
                 //"--relax"
             ],
             "jinja": true
-        },                
+        },
         {
             "name": "mesh-trx2nt",
             "type": "debugpy",
@@ -90,7 +90,7 @@
                 "tools/trans_only_2023_expanded_fre.txt",
                 "fr",
                 "http://meshfr.medvik.cz/link/"
-            ],            
-        }        
+            ],
+        }
     ]
 }

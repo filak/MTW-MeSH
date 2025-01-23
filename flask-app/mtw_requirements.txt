@@ -10,7 +10,7 @@ colorama==0.4.6
 diff_match_patch==20241021
 Flask==3.1.0
 Flask-Caching==2.3.0
-# Flask-Limiter==3.10.1
+# Flask-Limiter==3.10.1  ## NOT used yet
 Flask-Paranoid==0.3.0
 Flask-SeaSurf==2.0.0
 Flask-Session==0.8.0

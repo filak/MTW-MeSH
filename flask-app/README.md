@@ -2,13 +2,14 @@
 
 ## Development - Run with Python
 
-Prerequisites: Python 3.10+, Git, Java8 JRE
+Prerequisites: Python 3.12+, Git, Java17 JRE
 
 > Tip: You can use [Visual Studio Code](https://code.visualstudio.com/docs/python/python-tutorial)
 
 1. Install: 
 
-    - Apache Jena/Fuseki, SQLite and load some MeSH datasets - see the [wiki](https://github.com/filak/MTW-MeSH/wiki)
+    - Apache Jena/Fuseki v5+, SQLite
+    - Load MeSH datasets - see the [wiki](https://github.com/filak/MTW-MeSH/wiki)
 
 2. Clone the repo: 
 

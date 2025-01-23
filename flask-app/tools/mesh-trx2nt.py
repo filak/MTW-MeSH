@@ -150,6 +150,8 @@ def getTriples(line, lang_tag, meshx_prefix, startDate):
         ParentCUI,
     ) = line
 
+    not_used = [Language, TermUI, Tree]  # noqa: F841
+
     csub = mesh_prefix + ConceptUI
     obj = meshx_prefix + str(uuid.uuid4())
 

@@ -9,7 +9,7 @@ WHERE {
    mesh:{{ query }} meshv:treeNumber ?treeNum .
    ?treeNum meshv:parentTreeNumber ?parent .
    BIND(CONCAT(str(?parent),'.???') as ?q) .
-   (?tn ?score ?literal) text:query (?q) .
+   (?tn ?score) text:query (?q) .
    ?d meshv:treeNumber ?tn .
    ?d meshv:preferredConcept ?c .
 }} UNION {
@@ -24,7 +24,7 @@ SELECT ?tn ?d ?c
 WHERE {
    mesh:{{ query }} meshv:treeNumber ?treeNum .
    BIND(CONCAT(str(?treeNum),'.???') as ?q) .
-   (?tn ?score ?literal) text:query (?q) .
+   (?tn ?score) text:query (?q) .
    ?d meshv:treeNumber ?tn .
    ?d meshv:preferredConcept ?c .
 }} UNION {

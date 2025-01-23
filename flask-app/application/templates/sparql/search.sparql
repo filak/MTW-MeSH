@@ -5,10 +5,12 @@
 {% include 'sparql/_namespaces.sparql' %}
 
 {% if config.USE_PROP_LISTS %}
-    {% if queryAll == 'yes' %}
+    {% if qtp == 'all' %}
         {% set prop_list = 'mesht:queryAll' %}
-    {% elif onlyNotes == 'yes' %}
+    {% elif qtp == 'notes' %}
         {% set prop_list = 'mesht:queryNotes' %}
+    {% elif qtp == 'def' %}
+        {% set prop_list = 'mesht:queryDef' %}
     {% else %}
         {% set prop_list = 'mesht:queryDef' %}
     {% endif %}

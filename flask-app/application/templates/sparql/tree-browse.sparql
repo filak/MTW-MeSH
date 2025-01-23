@@ -4,6 +4,12 @@
 
 {% include 'sparql/_namespaces.sparql' ignore missing %}
 
+{% if config.USE_PROP_LISTS %}
+    {% set treeno_field = '' %}
+{% else %}
+    {% set treeno_field = 'meshv:identifier' %}
+{% endif %}
+
 SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
 
 {% if show == 'ntx' %} ## notTranslatable
@@ -37,10 +43,10 @@ SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
   ##  status:{{ status }} show:{{ show }} ##
   {% if toptn %}
       ## TOPTN ##
-      (?tn ?score) text:query (meshv:identifier "{{ tn }} OR {{ toptn }} OR {{ toptn }}.*") .
+      (?tn ?score) text:query ({{ treeno_field }} "{{ tn }} OR {{ toptn }} OR {{ toptn }}.*") .
   {% else %}
       ## TOP ##
-      (?tn ?score) text:query (meshv:identifier "{{ top }}??.*") .
+      (?tn ?score) text:query ({{ treeno_field }} "{{ top }}??.*") .
   {% endif %}
         }
   }
@@ -54,10 +60,10 @@ SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
   ##  status:{{ status }} show:{{ show }} ##
   {% if toptn %}
       ## TOPTN  ##
-      (?tn ?score) text:query (meshv:identifier "{{ tn }} OR {{ tn }}.??? OR {{ toptn }} OR {{ toptn }}.???" 1000) .
+      (?tn ?score) text:query ({{ treeno_field }} "{{ tn }} OR {{ tn }}.??? OR {{ toptn }} OR {{ toptn }}.???" 1000) .
   {% else %}
       ## TOP ##
-      (?tn ?score) text:query (meshv:identifier "{{ query }}" 1000) .
+      (?tn ?score) text:query ({{ treeno_field }} "{{ query }}" 1000) .
   {% endif %}
         }
   }
@@ -132,4 +138,3 @@ SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
 }
 
 ORDER BY ?tn
-

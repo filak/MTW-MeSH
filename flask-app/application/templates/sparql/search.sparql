@@ -5,9 +5,12 @@
 {% include 'sparql/_namespaces.sparql' %}
 
 {% if config.USE_PROP_LISTS %}
-    {% set prop_list = 'mesht:defQuery' %}
-    {% if includeNotes == 'yes' %}
-        {% set prop_list = 'mesht:includeNotes' %}
+    {% if queryAll == 'yes' %}
+        {% set prop_list = 'mesht:queryAll' %}
+    {% elif onlyNotes == 'yes' %}
+        {% set prop_list = 'mesht:queryNotes' %}
+    {% else %}
+        {% set prop_list = 'mesht:queryDef' %}
     {% endif %}
 {% else %}
     {% set prop_list = '' %}

@@ -6,35 +6,41 @@ import io
 import gzip
 from timeit import default_timer as timer
 
-appname = 'mesh-nt2trx'
-appversion = '1.5.1 14-5-2024'
-appdesc = 'Extracting translation dataset from Fuseki backup dump'
-appusage = 'Help:   ' + appname + '.py -h \n'
-appauthor = 'Filip Kriz'
+appname = "mesh-nt2trx"
+appversion = "1.5.1 14-5-2024"
+appdesc = "Extracting translation dataset from Fuseki backup dump"
+appusage = "Help:   " + appname + ".py -h \n"
+appauthor = "Filip Kriz"
 
-mesht_prefix = 'http://www.medvik.cz/schema/mesh/vocab/#'
+mesht_prefix = "http://www.medvik.cz/schema/mesh/vocab/#"
 
 
 def main():
 
-    print('\n')
-    print('********************************************')
-    print('*  ', appname, appversion)
-    print('********************************************')
-    print('*  ', appdesc)
-    print('*  ', appusage)
-    print('*   Author:  ', appauthor)
-    print('********************************************\n')
+    print("\n")
+    print("********************************************")
+    print("*  ", appname, appversion)
+    print("********************************************")
+    print("*  ", appdesc)
+    print("*  ", appusage)
+    print("*   Author:  ", appauthor)
+    print("********************************************\n")
 
-    parser = argparse.ArgumentParser(description=appdesc, prog=appname, usage='%(prog)s inputFile [options]')
-    parser.add_argument('inputFile', type=str, help='MTW dump file name (plain or gzipped)')
-    parser.add_argument('--out', type=str, default='mtw-trx', help='Output file name prefix')
+    parser = argparse.ArgumentParser(
+        description=appdesc, prog=appname, usage="%(prog)s inputFile [options]"
+    )
+    parser.add_argument(
+        "inputFile", type=str, help="MTW dump file name (plain or gzipped)"
+    )
+    parser.add_argument(
+        "--out", type=str, default="mtw-trx", help="Output file name prefix"
+    )
 
     args, unknown = parser.parse_known_args()
 
     if unknown:
-        print('ERROR : Uknown arguments : ', unknown)
-        print('Try : ' + appname + '.py -h')
+        print("ERROR : Uknown arguments : ", unknown)
+        print("Try : " + appname + ".py -h")
 
     else:
         inFile = os.path.normpath(args.inputFile)
@@ -42,38 +48,38 @@ def main():
         if os.path.isfile(inFile):
             getSubset(inFile, args.out)
         else:
-            print('ERROR : Input file NOT found : ', args.inputFile)
+            print("ERROR : Input file NOT found : ", args.inputFile)
 
 
 def getSubset(inputFile, outputFile):
 
     t0 = timer()
-    startTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
-    startDate = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d')
+    startTime = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H-%M-%S")
+    startDate = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
 
-    outputFile = outputFile + '_' + startDate + '.nt.gz'
+    outputFile = outputFile + "_" + startDate + ".nt.gz"
 
-    print('Started     : ', startTime, '\n')
-    print('Input file  : ', inputFile)
-    print('mesht       : ', mesht_prefix)
-    print('Output file : ', outputFile)
-    print('\n')
+    print("Started     : ", startTime, "\n")
+    print("Input file  : ", inputFile)
+    print("mesht       : ", mesht_prefix)
+    print("Output file : ", outputFile)
+    print("\n")
 
-    head = '### MeSH translation dataset extracted from Fuseki backup dump ###\n'
+    head = "### MeSH translation dataset extracted from Fuseki backup dump ###\n"
     writeOutputGzip(outputFile, head)
 
     result = getSubsetFrom(inputFile, outputFile)
-    print('\n', result)
+    print("\n", result)
 
     # endTime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H-%M-%S')
-    et = ('\nElapsed time : ' + str((timer() - t0) / 60) + ' min\n')
+    et = "\nElapsed time : " + str((timer() - t0) / 60) + " min\n"
     print(et)
 
 
 def getSubsetFrom(inputFile, outputFile):
 
     result = {}
-    mesht_pred = ' <' + mesht_prefix
+    mesht_pred = " <" + mesht_prefix
 
     count = 0
     found = 0
@@ -84,12 +90,12 @@ def getSubsetFrom(inputFile, outputFile):
     ext = os.path.splitext(inputFile)[1]
     fext = ext.lower()
 
-    print('Processing ...')
+    print("Processing ...")
 
-    if fext == '.gz':
-        fh = gzip.open(inputFile, mode='rt', encoding='utf-8')
+    if fext == ".gz":
+        fh = gzip.open(inputFile, mode="rt", encoding="utf-8")
     else:
-        fh = open(inputFile, mode='r', encoding='utf-8')
+        fh = open(inputFile, mode="r", encoding="utf-8")
 
     s = io.StringIO()
 
@@ -102,27 +108,27 @@ def getSubsetFrom(inputFile, outputFile):
             s.write(line)
 
         if batch == bsize:
-            writeOutputGzip(outputFile, s.getvalue(), mode='at')
+            writeOutputGzip(outputFile, s.getvalue(), mode="at")
             batch = 0
             s.close()
             s = io.StringIO()
 
     fh.close()
-    writeOutputGzip(outputFile, s.getvalue(), mode='at')
+    writeOutputGzip(outputFile, s.getvalue(), mode="at")
     s.close()
 
-    result['triplesCount'] = count
-    result['triplesFound'] = found
+    result["triplesCount"] = count
+    result["triplesFound"] = found
 
-    print('... DONE!')
+    print("... DONE!")
     return result
 
 
-def writeOutputGzip(outputFile, fdata, mode='wt'):
+def writeOutputGzip(outputFile, fdata, mode="wt"):
 
-    with gzip.open(outputFile, mode=mode, encoding='utf-8') as ft:
+    with gzip.open(outputFile, mode=mode, encoding="utf-8") as ft:
         ft.write(fdata)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

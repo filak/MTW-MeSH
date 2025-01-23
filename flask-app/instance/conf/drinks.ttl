@@ -1,0 +1,85 @@
+@prefix :        <http://localhost/jena_example/#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tdb2:    <http://jena.apache.org/2016/tdb#> .
+@prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix text:    <http://jena.apache.org/text#> .
+@prefix fuseki:  <http://jena.apache.org/fuseki#> .
+@prefix mt:      <http://id.example.test/vocab/#> .
+@prefix mx:      <http://id.example.test/mx/#> .
+
+## Initialize text query
+[] ja:loadClass       "org.apache.jena.query.text.TextQuery" .
+# A TextDataset is a regular dataset with a text index.
+text:TextDataset      rdfs:subClassOf   ja:RDFDataset .
+# Lucene index
+text:TextIndexLucene  rdfs:subClassOf   text:TextIndex .
+# Elasticsearch index
+text:TextIndexES    rdfs:subClassOf   text:TextIndex .
+
+## ---------------------------------------------------------------
+## This URI must be fixed - it's used to assemble the text dataset.
+
+:text_dataset
+    a text:TextDataset ;
+    text:dataset   <#dataset> ;
+    text:index     <#indexLucene> ;
+    .
+
+# A TDB dataset used for RDF storage
+<#dataset>
+    a tdb2:DatasetTDB2 ;
+    tdb2:location  "d:/apache-jena-data5/databases/drinks" ;
+    .
+
+# Text index description
+<#indexLucene>
+    a text:TextIndexLucene ;
+    text:directory "d:/apache-jena-data5/indexes/drinks" ;
+    text:entityMap <#entMap> ;
+    text:storeValues true ;
+    text:analyzer [
+       a text:ConfigurableAnalyzer ;
+       text:tokenizer text:StandardTokenizer ;
+       text:filters (text:ASCIIFoldingFilter text:LowerCaseFilter)
+       ] ;
+    text:queryParser text:AnalyzingQueryParser ;
+    text:multilingualSupport true ;
+    text:propLists (
+        [ text:propListProp mt:baseQuery ;
+          text:props (
+               rdfs:label
+             ) ;
+        ]
+        [ text:propListProp mt:noteOnly ;
+          text:props (
+             mt:note
+             ) ;
+        ]
+    ) ;
+     .
+
+<#entMap>
+    a text:EntityMap ;
+    text:defaultField     "ftext" ;
+    text:entityField      "uri" ;
+    text:uidField         "uid" ;
+    text:langField        "lang" ;
+    text:graphField       "graph" ;
+    text:map (
+         [ text:field "ftext" ; text:predicate rdfs:label ]
+         [ text:field "ftext" ; text:predicate mt:note ]
+         ) .
+
+<#service_text_tdb>
+    a fuseki:Service ;
+    rdfs:label                      "Drinks TEST" ;
+    fuseki:name                     "drinks" ;
+    fuseki:serviceQuery             "query" ;
+    fuseki:serviceQuery             "sparql" ;
+    fuseki:serviceUpdate            "update" ;
+    fuseki:serviceUpload            "upload" ;
+    fuseki:serviceReadGraphStore    "get" ;
+    fuseki:serviceReadWriteGraphStore    "data" ;
+    fuseki:dataset                  :text_dataset ;
+    .

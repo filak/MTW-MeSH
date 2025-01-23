@@ -1072,12 +1072,18 @@ def search(dui, action):
         if scr in ['yes', 'no']:
             session['scr'] = scr
 
+    if request.args.get('qtp'):
+        qtp = request.args.get('qtp').strip()
+        if qtp in ['def', 'all', 'notes']:
+            session['qtp'] = qtp
+
     if action == 'clear':
         session.pop('q', None)
         session.pop('sshow', None)
         session.pop('sstatus', None)
         session.pop('slang', None)
         session.pop('scr', None)
+        session.pop('qtp', None)
         session.pop('dui', None)
         session.pop('adui', None)
 
@@ -1150,7 +1156,7 @@ def search(dui, action):
     if text_query:
         data = sparql.getSparqlData('search',
                                     query=text_query, show=session.get('sshow'), status=session.get('sstatus'),
-                                    slang=session.get('slang'), scr=session.get('scr'))
+                                    slang=session.get('slang'), scr=session.get('scr'), qtp=session.get('qtp'))
         # pp.pprint(data)
 
         if data:
@@ -1180,7 +1186,8 @@ def search(dui, action):
 
     return render_template('search.html',
                            hits_cnt=hits_cnt, hits=hits, dui=dui, tree=tree, descriptor=descriptor, concepts=concepts, tab=tab,
-                           show=session.get('sshow'), status=session.get('sstatus'), slang=session.get('slang'), scr=session.get('scr'),
+                           show=session.get('sshow'), status=session.get('sstatus'),
+                           slang=session.get('slang'), scr=session.get('scr'), qtp=session.get('qtp'),
                            audit=audit, dview=dview)
 
 

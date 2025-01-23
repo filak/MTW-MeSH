@@ -1,4 +1,4 @@
-### Not translated nonPreferred Concepts v1.1 ###
+### Not translated nonPreferred Concepts v1.2 ###
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -18,7 +18,10 @@ WHERE {
     ?idx mesht:prefLabel ?nval
   }
   FILTER (!BOUND(?nval))
-  ?d meshv:active ?active .
+
+  # Assume absence of meshv:active as true
+  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
+
   #?d meshv:dateCreated ?dateCrt .
   #OPTIONAL { ?d meshv:dateRevised ?dateRev }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }

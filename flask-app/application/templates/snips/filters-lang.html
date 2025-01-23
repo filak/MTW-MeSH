@@ -1,40 +1,59 @@
-    {% if slang == 'target' %}
-        {% set TRG_CHECKED = 'checked' %}
-    {% elif slang == 'source' %}
-        {% set SRC_CHECKED = 'checked' %}
+{% if slang == 'target' %}
+    {% set TRG_CHECKED = 'checked' %}
+{% elif slang == 'source' %}
+    {% set SRC_CHECKED = 'checked' %}
+{% else %}
+    {% set ALL_LANGS = 'checked' %}
+{% endif %}
+<div class="form-group mb-2">
+  <div class="custom-control custom-radio custom-control-inline">
+    <input type="radio" id="radioLangAll" name="lang" value="all" class="custom-control-input" {{ ALL_LANGS }}>
+    <label class="custom-control-label" for="radioLangAll">Both langs</label>
+  </div>
+  <div class="custom-control custom-radio custom-control-inline">
+    <input type="radio" id="radioLangSource" name="lang" value="source" class="custom-control-input" {{ SRC_CHECKED }}>
+    <label class="custom-control-label" for="radioLangSource">Source</label>
+  </div>
+  <div class="custom-control custom-radio custom-control-inline">
+    <input type="radio" id="radioLangTarget" name="lang" value="target" class="custom-control-input" {{ TRG_CHECKED }}>
+    <label class="custom-control-label text-success" for="radioLangTarget">Target</label>
+  </div>
+</div>
+{% if scr == 'yes' %}
+    {% set SCR_YES = 'checked' %}
+{% else %}
+    {% set SCR_NO = 'checked' %}
+{% endif %}
+<div class="form-group mb-2">
+  <div class="custom-control custom-radio custom-control-inline">
+    <input type="radio" class="custom-control-input" name="scr" value="no" id="radioScrNo" {{ SCR_NO }}>
+    <label class="custom-control-label" for="radioScrNo">Exclude SCR</label>
+  </div>
+  <div class="custom-control custom-radio custom-control-inline">
+    <input type="radio" class="custom-control-input" name="scr" value="yes" id="radioScrYes" {{ SCR_YES }}>
+    <label class="custom-control-label" for="radioScrYes">Include SCR</label>
+  </div>
+</div>
+{% if config.USE_PROP_LISTS %}
+    {% if qtp == 'all' %}
+        {% set QTYPE_ALL = 'checked' %}
+    {% elif qtp == 'notes' %}
+        {% set QTYPE_NOTES = 'checked' %}
     {% else %}
-        {% set ALL_LANGS = 'checked' %}
+        {% set QTYPE_DEF = 'checked' %}
     {% endif %}
-    
-        <div class="form-group mb-2">                  
-          <div class="custom-control custom-radio custom-control-inline">
-            <input type="radio" id="radioLangAll" name="lang" value="all" class="custom-control-input" {{ ALL_LANGS }}>
-            <label class="custom-control-label" for="radioLangAll">Both langs</label>
-          </div>
-          <div class="custom-control custom-radio custom-control-inline">
-            <input type="radio" id="radioLangSource" name="lang" value="source" class="custom-control-input" {{ SRC_CHECKED }}>
-            <label class="custom-control-label" for="radioLangSource">Source</label>
-          </div>
-          <div class="custom-control custom-radio custom-control-inline">
-            <input type="radio" id="radioLangTarget" name="lang" value="target" class="custom-control-input" {{ TRG_CHECKED }}>
-            <label class="custom-control-label text-success" for="radioLangTarget">Target</label>
-          </div>                             
-        </div>    
-    
-    {% if scr == 'yes' %}
-        {% set SCR_YES = 'checked' %}
-    {% else %} 
-        {% set SCR_NO = 'checked' %}
-    {% endif %}    
-
-        <div class="form-group mb-2">                  
-          <div class="custom-control custom-radio custom-control-inline">
-            <input type="radio" class="custom-control-input" name="scr" value="no" id="radioScrNo" {{ SCR_NO }}>
-            <label class="custom-control-label" for="radioScrNo">Exclude SCR</label>
-          </div>
-          <div class="custom-control custom-radio custom-control-inline">
-            <input type="radio" class="custom-control-input" name="scr" value="yes" id="radioScrYes" {{ SCR_YES }}>
-            <label class="custom-control-label" for="radioScrYes">Include SCR</label>
-          </div>                             
-        </div>
-
+    <div class="form-group mb-2">
+      <div class="custom-control custom-radio custom-control-inline">
+        <input type="radio" class="custom-control-input" name="qtp" value="def" id="radioQueryDef" {{ QTYPE_DEF }}>
+        <label class="custom-control-label" for="radioQueryDef">Main terms</label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        <input type="radio" class="custom-control-input" name="qtp" value="all" id="radioQueryAll" {{ QTYPE_ALL }}>
+        <label class="custom-control-label" for="radioQueryAll">All fields</label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        <input type="radio" class="custom-control-input" name="qtp" value="notes" id="radioQueryNotes" {{ QTYPE_NOTES }}>
+        <label class="custom-control-label" for="radioQueryNotes">Notes only</label>
+      </div>
+    </div>
+{% endif %}

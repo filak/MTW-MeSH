@@ -11,8 +11,9 @@ PREFIX meshcs: <http://mesh.medvik.cz/link/>
 SELECT distinct ?type
 {
   ?s meshv:lastActiveYear ?last . # "2017"@en .
-  ?s meshv:active ?active .
+  BIND(IF(EXISTS { ?s meshv:active false }, false, true) AS ?active) .
   ?s rdf:type ?type .
   #?s rdf:type meshv:TopicalDescriptor
 
 } ORDER BY ?p LIMIT 1000
+

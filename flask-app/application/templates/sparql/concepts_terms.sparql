@@ -176,7 +176,7 @@ ORDER BY ?ctype ?ttype ?tlabel
   OPTIONAL {?t mesht:lexicalTag ?ltag }
   OPTIONAL {?c mesht:identifier ?cpid }
   OPTIONAL {?t mesht:identifier ?tpid }
-  OPTIONAL {?c mesht:notTranslatable ?ntx}
+  OPTIONAL {?c mesht:notTranslatable ?ntx }
   OPTIONAL {?c mesht:translatorsNote ?cnote }
   OPTIONAL {?t mesht:translatorsNote ?tnote }
   OPTIONAL {?t meshv:dateCreated ?dateCreated }

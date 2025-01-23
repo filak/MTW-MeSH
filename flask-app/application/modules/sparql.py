@@ -36,7 +36,7 @@ def show_elapsed(begin, tag=''):
 
 
 def getSparqlData(template, query='', show='', status='', top='', tn='', concept='', otype='Descriptor',
-                  output='json', slang=None, lang=None, scr=None, key=None, cache=None):
+                  output='json', slang=None, lang=None, scr=None, qtp=None, key=None, cache=None):
 
     t0 = timer()
 
@@ -60,9 +60,10 @@ def getSparqlData(template, query='', show='', status='', top='', tn='', concept
 
     sparql = render_template('sparql/' + template + '.sparql', query=cleanQuery(query), otype=otype,
                              show=show, status=status, top=top, tn=tn, toptn=toptn, concept=concept,
-                             lang=lang, lang_umls=lang_umls, slang=slang, scr=scr)
+                             lang=lang, lang_umls=lang_umls, slang=slang, scr=scr, qtp=qtp)
 
-    # print(sparql)
+    if app.debug:
+        print(sparql, '\n')
 
     endpoint = app.config['SPARQL_HOST'] + app.config['SPARQL_DATASET'] + '/query'
 

@@ -22,16 +22,20 @@ WHERE {
   BIND(mesh:D018806 as ?d)
   ?d rdf:type ?dtype .
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
-  ?d meshv:active ?active .
+  # Assume absence of meshv:active as true
+  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
   ##FILTER(?active)
   ?d meshv:identifier ?dui .
   ?d meshv:preferredConcept ?c .
-  ##?c meshv:active ?activec .
+
+  # Assume absence of meshv:active as true
+  ##BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?activec) .
   ##FILTER(?activec)
 
   OPTIONAL {
     ?c meshv:term ?pt .
-    ##?pt meshv:active ?activet .
+    # Assume absence of meshv:active as true
+    ##BIND(IF(EXISTS { ?pt meshv:active false }, false, true) AS ?activet) .
     ##FILTER(?activet)
     ?pt meshv:prefLabel ?pterm
   }
@@ -43,23 +47,25 @@ WHERE {
 
   OPTIONAL {
     ?d meshv:concept ?ct .
-    ##?ct meshv:active ?activec1 .
+    # Assume absence of meshv:active as true
+    ##BIND(IF(EXISTS { ?ct meshv:active false }, false, true) AS ?activec1) .
     ##FILTER(?activec1)
     ?ct meshv:term|meshv:preferredTerm ?nt .
-    ##?nt meshv:active ?activet1 .
+    ##BIND(IF(EXISTS { ?nt meshv:active false }, false, true) AS ?activet1) .
     ##FILTER(?activet1)
     ?nt meshv:prefLabel ?nterm
   }
 
   OPTIONAL {
     ?d meshv:concept|mesht:concept ?cct .
-    ##OPTIONAL { ?cct mesht:active ?activec2 }
+    ##BIND(IF(EXISTS { ?cct meshv:active false }, false, true) AS ?activec2) .
     ##FILTER(!BOUND(?activec2))
     ?cct mesht:term|mesht:preferredTerm ?ntx .
-    ##OPTIONAL { ?ntx meshv:active ?activet2 }
+    ##BIND(IF(EXISTS { ?ntx meshv:active false }, false, true) AS ?activet2) .
     ##FILTER(!BOUND(?activet2))
     ?ntx mesht:prefLabel ?ntermx
   }
 }
 GROUP BY ?dui ?active
 LIMIT 100
+

@@ -1,5 +1,5 @@
 
-            {% if term['active'] == 'true' %}
+            {% if term.get('active', 'true') == 'true' %}
               {% set term_text = '' %}
             {% else %}
               {% set term_text = 'text-muted' %}
@@ -15,10 +15,10 @@
 
             <li class="pb-1 {{ term_class }} {{ term_text }}" data-ttype="{{ term['ttype'] }}">
                {{ term['prefLabel'] }}
-               
+
                {% if term['lexicalTag'] != 'NON' %}
                  <span class="font-weight-light text-info"> {{ term['lexicalTag'] }} </span>
-               {% endif %}               
+               {% endif %}
 
                {% if term['tpid'] %}
                   <span class="text-muted term font-weight-normal"><small> {{ term['tpid'] }} </small></span>

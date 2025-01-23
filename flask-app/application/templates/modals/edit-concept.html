@@ -15,7 +15,7 @@
 
      {% if item['ntx'] %}
          {% set text_notrx_label = 'text-warning' %}
-     {% elif item['active'] == 'false' %}
+     {% elif item.get('active') == 'false' %}
          {% set text_notrx_label = 'text-danger' %}
      {% endif %}
 
@@ -167,7 +167,7 @@
 
           <input type="hidden"
                  name="active"
-                 value="{{ item['active'] }}">
+                 value="{{ item.get('active', 'true') }}">
 
           <input type="hidden"
                  name="label"
@@ -216,7 +216,7 @@
 
           {% if session.ugroup in ['admin','manager','editor'] %}
 
-            {% if item['active'] == 'false' %}
+            {% if item.get('active') == 'false' %}
               {% if session.ugroup in ['admin','manager'] %}
                {% set del_butt_label = 'Purge Concept & Terms' %}
                {% set del_butt_outline = 'danger' %}
@@ -237,10 +237,11 @@
 
             <button type="button" class="btn btn-outline-{{ del_butt_outline }} mr-auto {{ del_butt_invisible }} {{ del_butt_disabled }}"
                     data-dismiss="modal" data-toggle="modal" data-target="#deleteConcept" data-concept="{{ item['cui'] }}"
-                    data-form="#editConcept-{{ item['cui'] }}" data-active="{{ item['active'] }}">{{ del_butt_label }}</button>
+                    data-form="#editConcept-{{ item['cui'] }}"
+                    data-active="{{ item.get('active', 'true') }}">{{ del_butt_label }}</button>
 
           {% else %}
-            {% if item['active'] == 'false' %}
+            {% if item.get('active') == 'false' %}
                <button type="button" class="btn btn-outline-warning mr-auto">Deleted</button>
             {% endif %}
           {% endif %}
@@ -249,7 +250,7 @@
 
             <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
 
-         {% if item['active'] == 'false' and item['lang'] == config.TARGET_LANG and item['lang'] != 'en' %}
+         {% if item.get('active') == 'false' and item['lang'] == config.TARGET_LANG and item['lang'] != 'en' %}
             {% set submit_inactive = 'disabled' %}
          {% endif %}
 

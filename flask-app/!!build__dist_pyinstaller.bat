@@ -70,6 +70,16 @@ set extras=
 set subdir=tools\
 call:buildFiles
 
+set fileHandle=update-ns
+set extras=
+set subdir=tools\
+call:buildFiles
+
+set fileHandle=secrets-gen
+set extras=
+set subdir=tools\
+call:buildFiles
+
 echo.
 echo Finished !!!
 echo.

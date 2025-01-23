@@ -350,7 +350,7 @@ def getLookupJson(lookups, export):
         dui = item['dui']
 
         d = {}
-        if item.get('active', '') == 'false':
+        if item.get('active') == 'false':
             d['active'] = False
             d['eng'] = item.get('den', '').replace('[OBSOLETE]', '').strip()
         else:
@@ -379,7 +379,7 @@ def getLookupJson(lookups, export):
 
         if export == 'marc':
             if xterms.get(dui):
-                if xterms[dui].get('active') == 'true':
+                if xterms[dui].get('active', 'true') == 'true':
                     # terms termsx nterms ntermsx
                     for termtype in ['terms', 'termsx', 'nterms', 'ntermsx']:
                         if xterms[dui].get(termtype):
@@ -397,7 +397,7 @@ def getLookupJson(lookups, export):
             trees = item.get('trn', '').split('~')
             for trn in trees:
                 if trn:
-                    if item.get('active', '') == 'false':
+                    if item.get('active') == 'false':
                         trn = trn.replace('[OBSOLETE]', '').strip()
                         if 'x' not in d['cat']:
                             d['cat'].append('x')
@@ -558,7 +558,7 @@ def getElasticData(data):
                 # resp.append({'index': {'_id': trn, '_index': 'mesht'}})
                 resp.append({'id': dui, 'db': 'mesht', 'trn': trn.replace('.', '-'),
                              'eng': item.get('eng', ''), 'trx': item.get('trx', ''),
-                             'active': item.get('active')})
+                             'active': item.get('active', 'true')})
 
         # Add later by running:  grind-data elastic mesh ...
         # resp.append({'index': {'_id': dui, '_index': 'mesh'}})
@@ -580,7 +580,7 @@ def getElasticData(data):
                 # resp.append({'index': {'_id': trn, '_index': 'mesht'}})
                 resp.append({'id': dui, 'db': 'mesht', 'trn': trn.replace('.', '-'),
                              'eng': item.get('eng', ''), 'trx': item.get('trx', ''),
-                             'active': item.get('active')})
+                             'active': item.get('active', 'true')})
 
         if qualifs.get(dui):
             qa = []
@@ -761,7 +761,7 @@ def getLookupXml(lookups, export, as_string=True):
         trx = html.escape(items[k].get('trx', ''))
         dclass = items[k].get('dc', '-1')
 
-        if items[k].get('active') is False:
+        if items[k].get('active', True) is False:
             line = '<%s id="%s" eng="%s" trx="%s" dclass="%s" active="0" />\n' % (tag, k, eng, trx, dclass)
         else:
             line = '<%s id="%s" eng="%s" trx="%s" dclass="%s" />\n' % (tag, k, eng, trx, dclass)
@@ -828,7 +828,7 @@ def getMarc(lookups, export, params, as_string=True):
 
         item = items[mid]
 
-        if item.get('active') is True:
+        if item.get('active', True):
             cnt += 1
             marc.write(leader)
             marc.write(line_pref + '001' + code_pref + mid + '\n')
@@ -880,7 +880,7 @@ def getMarc(lookups, export, params, as_string=True):
             marc.write('\n')
 
         qa = qualifs.get(mid)
-        if item.get('active') is True and qa and ecin == 'yes':
+        if item.get('active', True) and qa and ecin == 'yes':
             for qui in qa.split('~'):
                 cnt += 1
                 marc.write(leader)
@@ -949,7 +949,7 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     btdx = []
     for d in item.get('btd', []):
         des = descriptors.get(d)
-        if des.get('active') is True:
+        if des.get('active', True) is True:
             trx = des.get('trx')
             if not trx:
                 trx = des.get('eng')
@@ -965,7 +965,7 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     ntdx = []
     for d in item.get('ntd', []):
         des = descriptors.get(d)
-        if des.get('active') is True:
+        if des.get('active', True) is True:
             trx = des.get('trx')
             if not trx:
                 trx = des.get('eng')
@@ -981,7 +981,7 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     rtdx = []
     for d in item.get('rtd', []):
         des = descriptors.get(d)
-        if des.get('active') is True:
+        if des.get('active', True) is True:
             trx = des.get('trx')
             if not trx:
                 trx = des.get('eng')
@@ -997,7 +997,7 @@ def getMarcFields(dui, item, descriptors, qualifiers, qualifs, xnote, lp='=', cp
     pax = []
     for d in item.get('pa', []):
         des = descriptors.get(d)
-        if des.get('active') is True:
+        if des.get('active', True) is True:
             trx = des.get('trx')
             if not trx:
                 trx = des.get('eng')
@@ -1410,7 +1410,7 @@ def getParamsForAudit(dui, concept, cui):
     par['cui'] = cui
 
     if citem:
-        par['active'] = citem['active']
+        par['active'] = citem.get('active', True)
         par['label'] = citem['label']
         par['rel'] = citem['rel']
         par['terms'] = citem['terms']['target']

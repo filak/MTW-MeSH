@@ -8,7 +8,7 @@
 @prefix meshv:   <http://id.nlm.nih.gov/mesh/vocab#> .
 @prefix mesht:   <http://www.medvik.cz/schema/mesh/vocab/#> .
 
-### Version 1.1.1
+### Version 1.5.0 for Jena v5
 
 ## Initialize text query
 [] ja:loadClass       "org.apache.jena.query.text.TextQuery" .
@@ -29,13 +29,13 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
     .
 
 # A TDB dataset used for RDF storage
-<#dataset> 
+<#dataset>
     a tdb2:DatasetTDB2 ;
     tdb2:location  "d:/Data/jena5/databases/mesh" ;
     .
 
 # Text index description
-<#indexLucene> 
+<#indexLucene>
     a text:TextIndexLucene ;
     text:directory "d:/Data/jena5/indexes/mesh" ;
     text:entityMap <#entMap> ;
@@ -56,32 +56,32 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
     text:multilingualSupport true ;
     ## https://jena.apache.org/documentation/query/text-query.html#lists-of-indexed-properties - available since Jena 5.0
     text:propLists (
-    [ text:propListProp mesht:defQuery ;
-          text:props ( 
+    [ text:propListProp mesht:queryDef ;
+          text:props (
              rdfs:label
-               meshv:identifier 
+               meshv:identifier
                meshv:prefLabel
                meshv:altLabel
                meshv:casn1_label
                meshv:abbreviation
                meshv:registryNumber
                meshv:relatedRegistryNumber
-                 mesht:identifier 
+                 mesht:identifier
                  mesht:prefLabel
                  mesht:altLabel
              ) ;
-        ]
-    [ text:propListProp mesht:includeNotes ;
-          text:props ( 
+    ]
+    [ text:propListProp mesht:queryAll ;
+          text:props (
              rdfs:label
-               meshv:identifier 
+               meshv:identifier
                meshv:prefLabel
                meshv:altLabel
                meshv:casn1_label
                meshv:abbreviation
                meshv:registryNumber
                meshv:relatedRegistryNumber
-                 mesht:identifier 
+                 mesht:identifier
                  mesht:prefLabel
                  mesht:altLabel
                     mesht:translatorsNote
@@ -94,43 +94,58 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
                 meshv:onlineNote
                 meshv:publicMeSHNote
                 meshv:scopeNote
-                meshv:source
+                # meshv:source
               ) ;
-        ]
+    ]
+    [ text:propListProp mesht:queryNotes ;
+          text:props (
+                    mesht:translatorsNote
+                    mesht:annotation
+                    mesht:historyNote
+                    mesht:scopeNote
+                meshv:annotation
+                meshv:historyNote
+                meshv:note
+                meshv:onlineNote
+                meshv:publicMeSHNote
+                meshv:scopeNote
+                # meshv:source
+              ) ;
+    ]
     ) ;
      .
 
-<#entMap> 
+<#entMap>
     a text:EntityMap ;
-    text:defaultField     "ftext" ;
+    text:defaultField     "label" ;
     text:entityField      "uri" ;
     text:uidField         "uid" ;
     text:langField        "lang" ;
     text:graphField       "graph" ;
     text:map (
-         [ text:field "ftext" ; text:predicate rdfs:label ]
-         [ text:field "ftext" ; text:predicate meshv:abbreviation ]
-         [ text:field "ftext" ; text:predicate meshv:annotation ]
-         [ text:field "ftext" ; text:predicate meshv:historyNote ]
-         [ text:field "ftext" ; text:predicate meshv:identifier ]
-         [ text:field "ftext" ; text:predicate meshv:prefLabel ]
-         [ text:field "ftext" ; text:predicate meshv:altLabel ]
-         [ text:field "ftext" ; text:predicate meshv:casn1_label ]
-         [ text:field "ftext" ; text:predicate meshv:registryNumber ]
-         [ text:field "ftext" ; text:predicate meshv:relatedRegistryNumber ]
-         [ text:field "ftext" ; text:predicate meshv:note ]
-         [ text:field "ftext" ; text:predicate meshv:onlineNote ]
-         [ text:field "ftext" ; text:predicate meshv:publicMeSHNote ]
-         [ text:field "ftext" ; text:predicate meshv:source ]
-         [ text:field "ftext" ; text:predicate meshv:scopeNote ]
-         [ text:field "ftext" ; text:predicate mesht:abbreviation ]
-         [ text:field "ftext" ; text:predicate mesht:annotation ]
-         [ text:field "ftext" ; text:predicate mesht:historyNote ]
-         [ text:field "ftext" ; text:predicate mesht:identifier ]
-         [ text:field "ftext" ; text:predicate mesht:prefLabel ]
-         [ text:field "ftext" ; text:predicate mesht:altLabel ]
-         [ text:field "ftext" ; text:predicate mesht:scopeNote ]
-         [ text:field "ftext" ; text:predicate mesht:translatorsNote ]
+         [ text:field "label" ; text:predicate rdfs:label ]
+         [ text:field "abbreviation" ; text:predicate meshv:abbreviation ]
+         [ text:field "annotation" ; text:predicate meshv:annotation ]
+         [ text:field "historyNote" ; text:predicate meshv:historyNote ]
+         [ text:field "identifier" ; text:predicate meshv:identifier ]
+         [ text:field "prefLabel" ; text:predicate meshv:prefLabel ]
+         [ text:field "altLabel" ; text:predicate meshv:altLabel ]
+         [ text:field "casn1_label" ; text:predicate meshv:casn1_label ]
+         [ text:field "registryNumber" ; text:predicate meshv:registryNumber ]
+         [ text:field "relatedRegistryNumber" ; text:predicate meshv:relatedRegistryNumber ]
+         [ text:field "note" ; text:predicate meshv:note ]
+         [ text:field "onlineNote" ; text:predicate meshv:onlineNote ]
+         [ text:field "publicMeSHNote" ; text:predicate meshv:publicMeSHNote ]
+         # [ text:field "source" ; text:predicate meshv:source ]
+         [ text:field "scopeNote" ; text:predicate meshv:scopeNote ]
+         [ text:field "abbreviation_t" ; text:predicate mesht:abbreviation ]
+         [ text:field "annotation_t" ; text:predicate mesht:annotation ]
+         [ text:field "historyNote_t" ; text:predicate mesht:historyNote ]
+         [ text:field "identifier_t" ; text:predicate mesht:identifier ]
+         [ text:field "prefLabel_t" ; text:predicate mesht:prefLabel ]
+         [ text:field "altLabel_t" ; text:predicate mesht:altLabel ]
+         [ text:field "scopeNote_t" ; text:predicate mesht:scopeNote ]
+         [ text:field "translatorsNote" ; text:predicate mesht:translatorsNote ]
          ) .
 
 ### MeSH common:
@@ -153,7 +168,7 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
 ### Translation only:
 ## mesht:translatorsNote
 
-<#service_text_tdb> 
+<#service_text_tdb>
     a fuseki:Service ;
     rdfs:label                      "MeSH-Translation-service" ;
     fuseki:name                     "mesh" ;

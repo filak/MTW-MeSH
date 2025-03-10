@@ -6,6 +6,7 @@ import datetime
 import logging
 import os
 from flask import Flask
+from cachelib import FileSystemCache
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from application.modules.extensions import Talisman, cache, csrf, paranoid, sess  # limiter
@@ -74,7 +75,7 @@ def create_app(debug=False, logger=None, port=5900,
         SESSION_REFRESH_EACH_REQUEST = True,
         SESSION_REVERSE_PROXY = True,
         SESSION_USE_SIGNER = True,
-        SESSION_TYPE = 'filesystem',
+        SESSION_TYPE = 'cachelib',
         SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions'),
         TEMPLATES_AUTO_RELOAD = False,
         TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
@@ -128,8 +129,11 @@ def create_app(debug=False, logger=None, port=5900,
 
     # Flask Extensions init
 
-    # Cache, Session
+    # Cache
     cache.init_app(app)
+
+    # Session
+    app.config['SESSION_CACHELIB'] = FileSystemCache(cache_dir=app.config['SESSION_FILE_DIR'], threshold=app.config['SESSION_FILE_THRESHOLD'])
     sess.init_app(app)
 
     # Limiter

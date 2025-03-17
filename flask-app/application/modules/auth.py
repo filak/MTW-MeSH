@@ -106,10 +106,10 @@ def getReqOrigin():
 def validateRequest(token=None):
 
     if not has_app_context():
-        return (418, "No app context")
+        return (400, "No app context")
 
     if not has_request_context():
-        return (418, "No request context")
+        return (400, "No request context")
 
     if not token:
         if request.method == "GET":

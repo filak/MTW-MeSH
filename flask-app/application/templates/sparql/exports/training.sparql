@@ -1,0 +1,86 @@
+## MeSH training export query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?status ?tstatus ?dui ?cui ?den ?trx ?tt
+       (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
+       (GROUP_CONCAT(DISTINCT ?ptermx ; separator='~') AS ?termsx)
+       (GROUP_CONCAT(DISTINCT ?nterm ; separator='~') AS ?nterms)
+       (GROUP_CONCAT(DISTINCT ?ntermx ; separator='~') AS ?ntermsx)
+WHERE {
+  {
+    # MH block
+    ?d rdf:type ?dtype .
+    FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+    ?d meshv:identifier ?dui .
+
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status) .
+
+    ?d meshv:preferredConcept ?c .
+    ?c meshv:identifier ?cui .
+    ?c meshv:preferredTerm ?t .
+    ?t meshv:prefLabel ?den .
+    OPTIONAL {  }
+    OPTIONAL { ?c mesht:notTranslatable ?notrx }
+    OPTIONAL {
+      ?c mesht:preferredTerm ?tp .
+      ?tp mesht:prefLabel ?trx .
+      ?tp mesht:active ?tstatus
+    }
+    OPTIONAL {
+      ?c meshv:term ?pt .
+      ?pt meshv:prefLabel ?pterm
+    }
+    OPTIONAL {
+      ?c mesht:term ?ptt .
+      ?ptt mesht:prefLabel ?ptermx
+    }
+    OPTIONAL {
+      ?d meshv:concept ?ct .
+      ?ct meshv:term|meshv:preferredTerm ?nt .
+      ?nt meshv:prefLabel ?nterm
+    }
+    OPTIONAL {
+      ?d meshv:concept|mesht:concept ?cct .
+      ?cct mesht:term|mesht:preferredTerm ?ntx .
+      ?ntx mesht:prefLabel ?ntermx
+    }
+    BIND("MH" AS ?tt)
+  }
+  UNION
+  {
+    # PEP block
+    ?d rdf:type ?dtype .
+    FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+    ?d meshv:identifier ?dui .
+
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status) .
+
+    ?d meshv:concept|mesht:concept ?c .
+    ?c meshv:identifier ?cui .
+    ?c meshv:preferredTerm ?t .
+    ?t meshv:prefLabel ?den .
+    OPTIONAL { ?c mesht:notTranslatable ?notrx }
+    OPTIONAL {
+      ?c mesht:preferredTerm ?tp .
+      ?tp mesht:prefLabel ?trx .
+      ?tp mesht:active ?tstatus
+    }
+    OPTIONAL {
+      ?c meshv:term ?pt .
+      ?pt meshv:prefLabel ?pterm
+    }
+    OPTIONAL {
+      ?c mesht:term ?ptt .
+      ?ptt mesht:prefLabel ?ptermx
+    }
+    BIND("" AS ?nterm)
+    BIND("" AS ?ntermx)
+    BIND("PEP" AS ?tt)
+  }
+}
+GROUP BY ?status ?tstatus ?dui ?cui ?den ?trx ?tt
+#ORDER BY ?dui
+#LIMIT 100

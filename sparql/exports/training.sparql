@@ -22,19 +22,16 @@ WHERE {
     ?d meshv:identifier ?dui .
     ?d rdf:type ?dtype .
     FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
-
     # Assume absence of meshv:active as true
     BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status) .
-
     ?d meshv:preferredConcept ?c .
     ?c meshv:identifier ?cui .
     ?c meshv:preferredTerm ?t .
     ?t meshv:prefLabel ?den .
-    OPTIONAL { ?c mesht:notTranslatable ?notrx }
     OPTIONAL {
       ?c mesht:preferredTerm ?tp .
       ?tp mesht:prefLabel ?trx .
-      ?tp mesht:active ?tstatus
+      OPTIONAL { ?tp mesht:active ?tstatus }
     }
     OPTIONAL {
       ?c meshv:term ?pt .
@@ -67,11 +64,10 @@ WHERE {
     ?c meshv:identifier ?cui .
     ?c meshv:preferredTerm ?t .
     ?t meshv:prefLabel ?den .
-    OPTIONAL { ?c mesht:notTranslatable ?notrx }
     OPTIONAL {
       ?c mesht:preferredTerm ?tp .
       ?tp mesht:prefLabel ?trx .
-      ?tp mesht:active ?tstatus
+      OPTIONAL { ?tp mesht:active ?tstatus }
     }
     OPTIONAL {
       ?c meshv:term ?pt .

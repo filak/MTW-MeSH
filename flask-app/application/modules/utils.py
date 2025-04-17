@@ -1666,8 +1666,8 @@ def exportCsvFile(export, inputFile, outputFile, ext_in='tsv', ext_out='tsv'):
         cols = 'Dstatus,Tstatus,DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
 
     elif export in ['training']:
-              # "dui","cui","den","trx","tt","terms","termsx","nterms","ntermsx","trns"
-        cols = ["dui","cui","den","trx","tt","terms","termsx","nterms","ntermsx","trns"]
+        # "dui","cui","den","trx","tt","terms","termsx","nterms","ntermsx","trns"
+        cols = ["dui", "cui", "den", "trx", "tt", "terms", "termsx", "nterms", "ntermsx", "trns"]
 
     writeOutputGzipCsv(outputFile, [cols], mode='wt', delimiter=delimiter_out)
 

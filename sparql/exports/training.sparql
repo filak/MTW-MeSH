@@ -8,13 +8,14 @@ PREFIX text:   <http://jena.apache.org/text#>
 PREFIX meshx:  <http://mesh.medvik.cz/link/>
 PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
-## MeSH training export query v1.0
+## MeSH training export query v1.1
 
 SELECT ?status ?tstatus ?dui ?cui ?den ?trx ?tt
        (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
        (GROUP_CONCAT(DISTINCT ?ptermx ; separator='~') AS ?termsx)
        (GROUP_CONCAT(DISTINCT ?nterm ; separator='~') AS ?nterms)
        (GROUP_CONCAT(DISTINCT ?ntermx ; separator='~') AS ?ntermsx)
+       (GROUP_CONCAT(DISTINCT ?trn ; separator='~') AS ?trns)
 WHERE {
   {
     # MH block
@@ -51,6 +52,10 @@ WHERE {
       ?cct mesht:term|mesht:preferredTerm ?ntx .
       ?ntx mesht:prefLabel ?ntermx
     }
+    OPTIONAL {
+       ?d meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
+    }
     BIND("MH" AS ?tt)
   }
   UNION
@@ -76,6 +81,10 @@ WHERE {
     OPTIONAL {
       ?c mesht:term ?ptt .
       ?ptt mesht:prefLabel ?ptermx
+    }
+    OPTIONAL {
+       ?d meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
     }
     BIND("" AS ?nterm)
     BIND("" AS ?ntermx)

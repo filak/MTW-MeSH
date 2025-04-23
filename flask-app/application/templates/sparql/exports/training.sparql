@@ -46,6 +46,7 @@ WHERE {
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
+       FILTER(!STRSTARTS(?trn, "[OBSOLETE]"))
     }
     BIND("MH" AS ?tt)
   }
@@ -77,6 +78,7 @@ WHERE {
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
+       FILTER(!STRSTARTS(?trn, "[OBSOLETE]"))
     }
     BIND("" AS ?nterm)
     BIND("" AS ?ntermx)

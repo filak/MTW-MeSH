@@ -226,22 +226,25 @@ def refreshStats(stat, force=False):
 
 def exportData(export):
     lpath = getLockFpath('stats')
-    ext = 'json'
-    if export in ['umls', 'umls_all', 'umls_raw']:
-        ext = 'tsv'
+
+    ext_in = 'tsv'
+    ext_out = 'tsv'
+
+    if export in ['training']:
+        ext_out = 'csv'
 
     if export in ['umls_all', 'umls_raw']:
-        fpath = getTempFpath('umls', ext=ext)
-        epath = getStatsFpath(export, ext=ext)
-        exportTsvFile(export, fpath, epath)
+        fpath = getTempFpath('umls', ext=ext_in)
+        epath = getStatsFpath(export, ext=ext_out)
+        exportCsvFile(export, fpath, epath, ext_in=ext_in, ext_out=ext_out)
     else:
-        fpath = getTempFpath(export, ext=ext)
+        fpath = getTempFpath(export, ext=ext_in)
         if not lpath.is_file():
             resp = startStats(export, fpath, lpath)
 
         if resp and fpath.is_file():
-            epath = getStatsFpath(export, ext=ext)
-            exportTsvFile(export, fpath, epath)
+            epath = getStatsFpath(export, ext=ext_out)
+            exportCsvFile(export, fpath, epath, ext_in=ext_in, ext_out=ext_out)
 
 
 def startStats(stat, fpath, lpath, interval=None, force=False):
@@ -1178,6 +1181,11 @@ def backStatsProcess(fpath, lpath, stat):
         template_subdir = 'exports/'
         templates = ['umls']
 
+    elif stat == 'training':
+        output = 'tsv'
+        template_subdir = 'exports/'
+        templates = ['training']
+
     elif stat == 'lookups':
         template_subdir = 'exports/'
         templates = ['lookups_base']
@@ -1192,7 +1200,7 @@ def backStatsProcess(fpath, lpath, stat):
         resp = sparql.getSparqlData(template_subdir + t, output=output)
 
         if resp:
-            if stat == 'umls':
+            if stat in ['umls', 'training']:
                 data_text = resp
             else:
                 parsed = sparql.parseSparqlStats(resp, t)
@@ -1308,9 +1316,9 @@ def writeOutputGzip(fpath, data, mode='wt'):
         ft.write(data)
 
 
-def writeOutputGzipTsv(fpath, lines, mode='wt'):
+def writeOutputGzipCsv(fpath, lines, mode='wt', delimiter='\t'):
     with gzip.open(str(fpath) + '.gz', mode=mode, encoding='utf-8', newline='') as ft:
-        writer = csv.writer(ft, delimiter='\t', doublequote=True, quoting=1)
+        writer = csv.writer(ft, delimiter=delimiter, doublequote=True, quoting=1)
         writer.writerows(lines)
 
 
@@ -1635,21 +1643,33 @@ def getDescClass(dtype):
     return dtype_dict.get(dtype, '-1')
 
 
-def exportTsvFile(export, inputFile, outputFile):
+def exportCsvFile(export, inputFile, outputFile, ext_in='tsv', ext_out='tsv'):
 
     ext = os.path.splitext(inputFile)[1]
     fext = ext.lower()
-    tab = '\t'
+
+    delimiter_in = '\t'
+    delimiter_out = '\t'
+
+    if ext_in == 'csv':
+        delimiter_in = ','
+
+    if ext_out == 'csv':
+        delimiter_out = ','
 
     if export == 'umls':
-        #    ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
+        # ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
 
     elif export in ['umls_all', 'umls_raw']:
-        #    ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
+        # ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'Dstatus,Tstatus,DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
 
-    writeOutputGzipTsv(outputFile, [cols], mode='wt')
+    elif export in ['training']:
+        # "dui","cui","den","trx","tt","terms","termsx","nterms","ntermsx","trns"
+        cols = ["dui", "cui", "den", "trx", "tt", "terms", "termsx", "nterms", "ntermsx", "trns"]
+
+    writeOutputGzipCsv(outputFile, [cols], mode='wt', delimiter=delimiter_out)
 
     if fext == '.gz':
         fh = gzip.open(str(inputFile), mode='rt', encoding='utf-8')
@@ -1661,34 +1681,43 @@ def exportTsvFile(export, inputFile, outputFile):
 
     for line in fh:
         if count > 0:
+            line = line.replace('@en', '')
             line = line.replace('@' + app.config['TARGET_LANG'], '')
             line = line.replace('^^xsd:boolean', '')
 
-            row = line.rstrip('\n').split(tab)
+            row = line.rstrip('\n').split(delimiter_in)
 
             if export in ['umls_all', 'umls_raw']:
                 if row[1] == 'false':
                     # print(line)
                     pass
                 else:
-                    clean_row = (tab).join(clearQuotes(row))
+                    clean_row = (delimiter_out).join(clearQuotes(row))
 
                     if export == 'umls_raw':
-                        docs.append(normalize_str(clean_row, clear_escaping=True, skip_normalization=True).split(tab))
+                        docs.append(normalize_str(clean_row, clear_escaping=True, skip_normalization=True).split(delimiter_in))
                     else:
-                        docs.append(normalize_str(clean_row, clear_escaping=True).split(tab))
+                        docs.append(normalize_str(clean_row, clear_escaping=True).split(delimiter_in))
 
             elif export == 'umls':
                 if row[0] == 'false' or row[1] == 'false':
                     # print(line)
                     pass
                 else:
-                    clean_row = (tab).join(clearQuotes(row[2:]))
-                    docs.append(normalize_str(clean_row, clear_escaping=True).split(tab))
+                    clean_row = (delimiter_in).join(clearQuotes(row[2:]))
+                    docs.append(normalize_str(clean_row, clear_escaping=True).split(delimiter_in))
+
+            elif export == 'training':
+                if row[0] == 'false' or row[1] == 'false':
+                    # print(line)
+                    pass
+                else:
+                    clean_row = (delimiter_in).join(clearQuotes(row[2:]))
+                    docs.append(normalize_str(clean_row, clear_escaping=True).split(delimiter_in))
 
         count += 1
 
-    writeOutputGzipTsv(outputFile, docs, mode='at')
+    writeOutputGzipCsv(outputFile, docs, mode='at', delimiter=delimiter_out)
 
 
 def clearQuotes(row):

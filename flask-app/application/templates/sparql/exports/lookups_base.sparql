@@ -21,7 +21,8 @@ WHERE {
   ?d meshv:dateEstablished ?est .
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
-    ?tree rdfs:label ?trns
+    ?tree rdfs:label ?trns .
+    FILTER(!STRSTARTS(?trns, "[OBSOLETE]"))
   }
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .

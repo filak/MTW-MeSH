@@ -1346,6 +1346,9 @@ def manage(action):
     exports = {}
     exp_files = {}
 
+    # YYYY_train.csv.gz
+    exports['training_csv'] = mtu.getStatsFpath('training', ext='csv.gz')
+
     # YYYY_umls.tsv.gz
     exports['umls_tsv'] = mtu.getStatsFpath('umls', ext='tsv.gz')
 
@@ -1441,7 +1444,7 @@ def update_stats(stat):
         flash(msg, 'warning')
         return render_template('errors/error_page.html', errcode=403, error=msg), 403
 
-    if stat not in ['initial', 'actual', 'umls', 'umls_all', 'umls_raw', 'lookups', 'lookups_rest', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif', 'marc']:
+    if stat not in ['initial', 'actual', 'umls', 'umls_all', 'umls_raw', 'lookups', 'lookups_rest', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif', 'marc', 'training']:
         msg = 'Unknown params for update_stats'
         flash(msg, 'danger')
         return render_template('errors/error_page.html', errcode=404, error=msg), 404
@@ -1477,7 +1480,7 @@ def update_stats(stat):
 
         return redirect(ref_redirect())
 
-    if stat in ['umls', 'umls_all', 'umls_raw', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif']:
+    if stat in ['umls', 'umls_all', 'umls_raw', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif', 'training']:
 
         mtu.callWorker(export=stat)
 

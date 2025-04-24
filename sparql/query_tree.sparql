@@ -9,7 +9,7 @@ PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 PREFIX meshx: <http://mesh.medvik.cz/link/>
 
 
-## Tree display query v1.0
+## Tree display query v1.1
 ## endpoint: http://localhost:3030/mesh/query
 
 SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx {
@@ -19,7 +19,7 @@ WHERE {
    mesh:D017282 meshv:treeNumber ?treeNum .
    ?treeNum meshv:parentTreeNumber ?parent .
    BIND(CONCAT(str(?parent),'.???') as ?q) .
-   (?tn ?score ?literal) text:query (?q) .
+   (?tn ?score) text:query (?q) .
    ?d meshv:treeNumber ?tn .
    ?d meshv:preferredConcept ?c .
 }} UNION {
@@ -34,7 +34,7 @@ SELECT ?tn ?d ?c
 WHERE {
    mesh:D017282 meshv:treeNumber ?treeNum .
    BIND(CONCAT(str(?treeNum),'.???') as ?q) .
-   (?tn ?score ?literal) text:query (?q) .
+   (?tn ?score) text:query (?q) .
    ?d meshv:treeNumber ?tn .
    ?d meshv:preferredConcept ?c .
 }} UNION {

@@ -48,7 +48,7 @@ Manage
             <span class="text-info">[if any]</span>
       </div>
     </div>
-    {% endif %}     
+    {% endif %}
 
     <div class="row mb-3">
       <div class="col">
@@ -58,7 +58,7 @@ Manage
             </a>
             <span class="text-warning">[shall be 0 before exports]</span>
       </div>
-    </div>    
+    </div>
 
     <div class="row mb-3">
       <div class="col">
@@ -68,7 +68,7 @@ Manage
             </a>
             <span class="text-warning">[shall be 0 before exports]</span>
       </div>
-    </div>    
+    </div>
 
     <div class="row mb-3">
       <div class="col">
@@ -78,14 +78,14 @@ Manage
             </a>
             <span class="text-info">[shall be 0]</span>
       </div>
-    </div>   
+    </div>
 
     <ul class="list-inline mb-2">
       <li class="list-inline-item"><h4>Stats</h4></li>
       <li class="list-inline-item float-right">
       </li>
     </ul>
-    
+
     <div class="row mb-3">
       <div class="col">
         <h5>Count mesht-predicates</h5>
@@ -221,7 +221,7 @@ Manage
           </form>
       </div>
     </div>
-    
+
     <ul class="list-inline mb-2">
       <li class="list-inline-item">
         <h4>MARC21</h4>
@@ -229,7 +229,7 @@ Manage
       <li class="list-inline-item float-right">
       </li>
     </ul>
-    
+
   {% if show_marc %}
 
     <div class="row mb-3">
@@ -287,8 +287,8 @@ Manage
               <div class="custom-control custom-radio custom-control-inline">
                 <input type="radio" id="radioMarcAngloYes" name="anglo_style" value="yes" class="custom-control-input" {{ yes_checked }}>
                 <label class="custom-control-label" for="radioMarcAngloYes">Include Q... &amp; ECIN</label>
-              </div>              
-            </div>            
+              </div>
+            </div>
 
             <button class="btn btn-sm btn-success mb-2" type="submit" title="Create MARC file (TXT)">
               Generate
@@ -339,7 +339,7 @@ Manage
       </div>
     </div>
 
-  {% endif %}        
+  {% endif %}
 
 
   </div>
@@ -440,17 +440,17 @@ Manage
     </div>
 
     {% endif %}
-    
+
     <ul class="list-inline mb-2">
       <li class="list-inline-item">
         <h4>NLK Custom</h4>
       </li>
       <li class="list-inline-item float-right">
       </li>
-    </ul>    
-    
-    {% if show_lookups %} 
-    
+    </ul>
+
+    {% if show_lookups %}
+
     <div class="row mb-3">
       <div class="col">
         <h5>JSON <small class="text-info">for data parsers</small></h5>
@@ -481,7 +481,7 @@ Manage
         {% endif %}
       </div>
     </div>
-    
+
     <div class="row mb-3">
       <div class="col">
         <h5>JSON <small class="text-info">for Elastic</small></h5>
@@ -511,8 +511,8 @@ Manage
           </form>
         {% endif %}
       </div>
-    </div>         
-    
+    </div>
+
     <div class="row mb-3">
       <div class="col">
         <h5>UMLS TSV MSSQL <small class="text-info">[includes inactive terms]</small></h5>
@@ -522,7 +522,7 @@ Manage
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
             {% if exports['umls_all_tsv'] %}
-            <button class="btn btn-sm btn-info" type="submit" 
+            <button class="btn btn-sm btn-info" type="submit"
                     data-toggle="tooltip" data-placement="bottom"
                     title="To refresh You need to regenerate UMLS TSV first">
               Refresh
@@ -555,7 +555,7 @@ Manage
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
             {% if exports['umls_raw_tsv'] %}
-            <button class="btn btn-sm btn-info" type="submit" 
+            <button class="btn btn-sm btn-info" type="submit"
                     data-toggle="tooltip" data-placement="bottom"
                     title="To refresh You need to regenerate UMLS TSV first">
               Refresh
@@ -578,7 +578,36 @@ Manage
         {% endif %}
       </div>
     </div>
-    
+
+    <div class="row mb-3">
+      <div class="col">
+        <h5>Training CSV <small class="text-info">[to be processed into key value pairs]</small></h5>
+
+          <form action="{{ url_for('update_stats', stat='training') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['training_csv'] %}
+            <button class="btn btn-sm btn-info" type="submit"
+                    data-toggle="tooltip" data-placement="bottom">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['training_csv'] %}
+            {% set file = exports['training_csv'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+          </form>
+      </div>
+    </div>
+
   {% endif %}
   </div>
 </div>

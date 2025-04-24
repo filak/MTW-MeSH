@@ -230,7 +230,7 @@ def exportData(export):
     ext_in = 'tsv'
     ext_out = 'tsv'
 
-    if export in ['training']:
+    if export in ['training_base']:
         ext_out = 'csv'
 
     if export in ['umls_all', 'umls_raw']:
@@ -1181,7 +1181,7 @@ def backStatsProcess(fpath, lpath, stat):
         template_subdir = 'exports/'
         templates = ['umls']
 
-    elif stat == 'training':
+    elif stat == 'training_base':
         output = 'tsv'
         template_subdir = 'exports/'
         templates = ['training']
@@ -1200,7 +1200,7 @@ def backStatsProcess(fpath, lpath, stat):
         resp = sparql.getSparqlData(template_subdir + t, output=output)
 
         if resp:
-            if stat in ['umls', 'training']:
+            if stat in ['umls', 'training_base']:
                 data_text = resp
             else:
                 parsed = sparql.parseSparqlStats(resp, t)
@@ -1665,7 +1665,7 @@ def exportCsvFile(export, inputFile, outputFile, ext_in='tsv', ext_out='tsv'):
         # ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'Dstatus,Tstatus,DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
 
-    elif export in ['training']:
+    elif export in ['training_base']:
         # "dui","cui","den","trx","tt","terms","termsx","nterms","ntermsx","trns"
         cols = ["dui", "cui", "den", "trx", "tt", "terms", "termsx", "nterms", "ntermsx", "trns"]
 
@@ -1707,7 +1707,7 @@ def exportCsvFile(export, inputFile, outputFile, ext_in='tsv', ext_out='tsv'):
                     clean_row = (delimiter_in).join(clearQuotes(row[2:]))
                     docs.append(normalize_str(clean_row, clear_escaping=True).split(delimiter_in))
 
-            elif export == 'training':
+            elif export == 'training_base':
                 if row[0] == 'false' or row[1] == 'false':
                     # print(line)
                     pass

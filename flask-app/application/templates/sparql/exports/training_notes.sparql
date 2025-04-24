@@ -1,0 +1,44 @@
+## MeSH training export - notes query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?cui ?label ?note
+       (GROUP_CONCAT(DISTINCT ?trn ; separator='~') AS ?trns)
+WHERE {
+  {
+    ?c meshv:note ?note .
+    ?c rdf:type ?otype .
+    FILTER(?otype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol))
+    ?c meshv:identifier ?cui .
+    ?c rdfs:label ?label .
+	?c meshv:preferredMappedTo ?d .
+    OPTIONAL {
+       ?d meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
+    }
+  }
+  UNION
+  {
+    ?c meshv:scopeNote ?note .
+    ?c meshv:identifier ?cui .
+    ?c rdfs:label ?label .
+	?d meshv:preferredConcept ?c .
+    OPTIONAL {
+       ?d meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
+    }
+  }
+  UNION
+  {
+    ?c mesht:scopeNote ?note .
+    ?c meshv:identifier ?cui .
+    ?c mesht:preferredTerm ?tp .
+    ?tp mesht:prefLabel ?label .
+	?d meshv:preferredConcept ?c .
+    OPTIONAL {
+       ?d meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
+    }
+  }
+}
+#LIMIT 100

@@ -19,7 +19,7 @@ idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.2
-pip_audit  ## Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt
+pip_audit==2.8.0  ## Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt
 pyuca==1.2
 requests==2.32.3
 requests_futures==1.0.2

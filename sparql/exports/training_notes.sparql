@@ -10,17 +10,20 @@ PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
 ## MeSH training export - notes query v1.0
 
-SELECT ?cui ?label ?note
+SELECT ?status ?tstatus ?cui ?label ?note
        (GROUP_CONCAT(DISTINCT ?trn ; separator='~') AS ?trns)
 WHERE {
   {
     ?c meshv:note ?note .
     ?c rdf:type ?otype .
     FILTER(?otype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol))
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
     ?c meshv:identifier ?cui .
     ?c rdfs:label ?label .
     FILTER (?cui IN ("C011536")) .
 	?c meshv:preferredMappedTo ?d .
+    OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
@@ -32,7 +35,10 @@ WHERE {
     ?c meshv:identifier ?cui .
     ?c rdfs:label ?label .
     FILTER (?cui IN ("M000761585")) .
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
 	?d meshv:preferredConcept ?c .
+    OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
@@ -45,12 +51,15 @@ WHERE {
     ?c mesht:preferredTerm ?tp .
     ?tp mesht:prefLabel ?label .
     FILTER (?cui IN ("M0013309")) .
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
 	?d meshv:preferredConcept ?c .
+    OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
     }
   }
 }
-GROUP BY ?cui ?label ?note
+GROUP BY ?status ?tstatus ?cui ?label ?note
 LIMIT 100

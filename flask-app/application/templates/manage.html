@@ -581,7 +581,7 @@ Manage
 
     <div class="row mb-3">
       <div class="col">
-        <h5>Training base CSV <small class="text-info">[to be processed into key value pairs]</small></h5>
+        <h5>Training base CSV <small class="text-info">[to be processed into pairs]</small></h5>
 
           <form action="{{ url_for('update_stats', stat='training_base') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -610,7 +610,7 @@ Manage
 
     <div class="row mb-3">
       <div class="col">
-        <h5>Training notes CSV <small class="text-info">[to be processed into key value pairs]</small></h5>
+        <h5>Training notes CSV <small class="text-info">[to be processed into pairs]</small></h5>
 
           <form action="{{ url_for('update_stats', stat='training_notes') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">

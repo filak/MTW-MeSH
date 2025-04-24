@@ -39,11 +39,11 @@ def refresh_stats(stat):
 @public_api_only()
 def export_data(export):
 
-    if export in ['umls', 'umls_all', 'umls_raw', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif', 'marc', 'training']:
+    if export in ['umls', 'umls_all', 'umls_raw', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif', 'marc', 'training_base', 'training_notes']:
 
         app.logger.info('Export ' + export + ' started  ...')
 
-        if export in ['umls', 'umls_all', 'umls_raw', 'training']:
+        if export in ['umls', 'umls_all', 'umls_raw', 'training_base', 'training_notes']:
             mtu.exportData(export)
         else:
             if request.method == 'POST':

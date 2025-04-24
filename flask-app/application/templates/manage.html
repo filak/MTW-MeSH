@@ -581,12 +581,12 @@ Manage
 
     <div class="row mb-3">
       <div class="col">
-        <h5>Training CSV <small class="text-info">[to be processed into key value pairs]</small></h5>
+        <h5>Training base CSV <small class="text-info">[to be processed into pairs]</small></h5>
 
-          <form action="{{ url_for('update_stats', stat='training') }}" method="post">
+          <form action="{{ url_for('update_stats', stat='training_base') }}" method="post">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
-            {% if exports['training_csv'] %}
+            {% if exports['training_base_csv'] %}
             <button class="btn btn-sm btn-info" type="submit"
                     data-toggle="tooltip" data-placement="bottom">
               Refresh
@@ -597,8 +597,37 @@ Manage
                 </button>
             {% endif %}
 
-          {% if exports['training_csv'] %}
-            {% set file = exports['training_csv'] %}
+          {% if exports['training_base_csv'] %}
+            {% set file = exports['training_base_csv'] %}
+            [{{ file['fdate'] }}]
+            <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
+              {{ file['fname'] }}
+            </a>
+          {% endif %}
+          </form>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <h5>Training notes CSV <small class="text-info">[to be processed into pairs]</small></h5>
+
+          <form action="{{ url_for('update_stats', stat='training_notes') }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            {% if exports['training_notes_csv'] %}
+            <button class="btn btn-sm btn-info" type="submit"
+                    data-toggle="tooltip" data-placement="bottom">
+              Refresh
+                </button>
+            {% else %}
+            <button class="btn btn-sm btn-success" type="submit" title="Create">
+              Generate
+                </button>
+            {% endif %}
+
+          {% if exports['training_notes_csv'] %}
+            {% set file = exports['training_notes_csv'] %}
             [{{ file['fdate'] }}]
             <a href="{{ url_for('download', fname=file['fname']) }}" title="Download file" target="_blank" rel="noopener noreferrer">
               {{ file['fname'] }}

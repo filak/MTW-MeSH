@@ -8,9 +8,9 @@ PREFIX text:   <http://jena.apache.org/text#>
 PREFIX meshx:  <http://mesh.medvik.cz/link/>
 PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
-## MeSH training export query v1.1
+## MeSH training export - base query v1.2
 
-SELECT ?status ?tstatus ?dui ?cui ?den ?trx ?tt
+SELECT ?status ?tstatus ?tt ?dui ?cui ?den ?trx
        (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
        (GROUP_CONCAT(DISTINCT ?ptermx ; separator='~') AS ?termsx)
        (GROUP_CONCAT(DISTINCT ?nterm ; separator='~') AS ?nterms)
@@ -24,7 +24,7 @@ WHERE {
     ?d rdf:type ?dtype .
     FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
     # Assume absence of meshv:active as true
-    BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status) .
+    BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status)
     ?d meshv:preferredConcept ?c .
     ?c meshv:identifier ?cui .
     ?c meshv:preferredTerm ?t .
@@ -65,6 +65,8 @@ WHERE {
     ?d meshv:identifier ?dui .
     ?d rdf:type ?dtype .
     FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status)
     ?d meshv:concept|mesht:concept ?c .
     ?c meshv:identifier ?cui .
     ?c meshv:preferredTerm ?t .
@@ -90,7 +92,40 @@ WHERE {
     BIND("" AS ?ntermx)
     BIND("PEP" AS ?tt)
   }
+  UNION
+  {
+    # SCR block
+    VALUES ?dui { "C011536" }
+    ?d meshv:identifier ?dui .
+    ?d rdf:type ?dtype .
+    FILTER(?dtype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol))
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status)
+    ?d meshv:preferredConcept ?c .
+    ?c meshv:identifier ?cui .
+    ?c meshv:preferredTerm ?t .
+    ?t meshv:prefLabel ?den .
+      ?d meshv:preferredMappedTo ?tp .
+      ?tp rdfs:label ?trx .
+      OPTIONAL { ?tp meshv:active ?tstatus }
+    OPTIONAL {
+      ?c meshv:term ?pt .
+      ?pt meshv:prefLabel ?pterm
+    }
+    OPTIONAL {
+      ?c mesht:term ?ptt .
+      ?ptt mesht:prefLabel ?ptermx
+    }
+    OPTIONAL {
+       ?d meshv:preferredMappedTo ?dd .
+       ?dd meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
+    }
+    BIND("" AS ?nterm)
+    BIND("" AS ?ntermx)
+    BIND("SCR" AS ?tt)
+  }
 }
-GROUP BY ?status ?tstatus ?dui ?cui ?den ?trx ?tt
+GROUP BY ?status ?tstatus ?tt ?dui ?cui ?den ?trx
 ORDER BY ?dui
 LIMIT 100

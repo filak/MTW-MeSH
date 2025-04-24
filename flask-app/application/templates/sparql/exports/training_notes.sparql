@@ -1,0 +1,60 @@
+## MeSH training export - notes query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?status ?tstatus ?tt ?dui ?cui ?label ?note
+       (GROUP_CONCAT(DISTINCT ?trn ; separator='~') AS ?trns)
+WHERE {
+  {
+    ?c meshv:note ?note .
+    ?c rdf:type ?otype .
+    FILTER(?otype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol))
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
+    ?c meshv:identifier ?cui .
+    ?c rdfs:label ?label .
+	  ?c meshv:preferredMappedTo ?d .
+    ?d meshv:identifier ?dui .
+    OPTIONAL { ?d meshv:active ?tstatus }
+    OPTIONAL {
+       ?d meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
+    }
+    BIND("SCR" AS ?tt)
+  }
+  UNION
+  {
+    ?c meshv:scopeNote ?note .
+    ?c meshv:identifier ?cui .
+    ?c rdfs:label ?label .
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
+	  ?d meshv:preferredConcept ?c .
+    ?d meshv:identifier ?dui .
+    OPTIONAL { ?d meshv:active ?tstatus }
+    OPTIONAL {
+       ?d meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
+    }
+    BIND("MHE" AS ?tt)
+  }
+  UNION
+  {
+    ?c mesht:scopeNote ?note .
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
+    ?c meshv:identifier ?cui .
+    ?c mesht:preferredTerm ?tp .
+    ?tp mesht:prefLabel ?label .
+	  ?d meshv:preferredConcept ?c .
+    ?d meshv:identifier ?dui .
+    OPTIONAL { ?d meshv:active ?tstatus }
+    OPTIONAL {
+       ?d meshv:treeNumber ?tn .
+       ?tn rdfs:label ?trn .
+    }
+    BIND("MHT" AS ?tt)
+  }
+}
+GROUP BY ?status ?tstatus ?tt ?dui ?cui ?label ?note
+#LIMIT 100

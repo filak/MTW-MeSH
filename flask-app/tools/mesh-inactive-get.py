@@ -81,12 +81,21 @@ def retrieve_all_rdf(
 if __name__ == "__main__":
     endpoint_url = "https://id.nlm.nih.gov/mesh/sparql"
     script_dir = Path(__file__).resolve().parent
-    query_file_path = script_dir / "mesh-inactive.sparql"
+
     output_file_path = script_dir / "mesh_inactive.ttl"
 
-    # Read the original CONSTRUCT query from the file
-    with open(query_file_path, "r", encoding="utf-8") as query_file:
-        sparql_query = query_file.read()
+    sparql_query = """
+    PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+    PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+    CONSTRUCT {
+        ?s ?p ?o
+    }
+    WHERE {
+    ?s meshv:active "false"^^xsd:boolean .
+    ?s ?p ?o .
+    }
+    """
 
     print("Counting total triples...")
     total = count_matching_triples(endpoint_url)

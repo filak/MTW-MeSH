@@ -41,4 +41,5 @@ WHERE {
     }
   }
 }
+GROUP BY ?cui ?label ?note
 #LIMIT 100

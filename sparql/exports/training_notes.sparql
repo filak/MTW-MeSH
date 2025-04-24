@@ -10,7 +10,7 @@ PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
 ## MeSH training export - notes query v1.0
 
-SELECT ?status ?tstatus ?cui ?label ?note
+SELECT ?status ?tstatus ?tt ?dui ?cui ?label ?note
        (GROUP_CONCAT(DISTINCT ?trn ; separator='~') AS ?trns)
 WHERE {
   {
@@ -23,11 +23,13 @@ WHERE {
     ?c rdfs:label ?label .
     FILTER (?cui IN ("C011536")) .
 	?c meshv:preferredMappedTo ?d .
+    ?d meshv:identifier ?dui .
     OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
     }
+    BIND("SCR" AS ?tt)
   }
   UNION
   {
@@ -38,11 +40,13 @@ WHERE {
     # Assume absence of meshv:active as true
     BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
 	?d meshv:preferredConcept ?c .
+    ?d meshv:identifier ?dui .
     OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
     }
+    BIND("MHE" AS ?tt)
   }
   UNION
   {
@@ -54,12 +58,14 @@ WHERE {
     # Assume absence of meshv:active as true
     BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
 	?d meshv:preferredConcept ?c .
+    ?d meshv:identifier ?dui .
     OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
     }
+    BIND("MHT" AS ?tt)
   }
 }
-GROUP BY ?status ?tstatus ?cui ?label ?note
+GROUP BY ?status ?tstatus ?tt ?dui ?cui ?label ?note
 LIMIT 100

@@ -2,7 +2,7 @@
 
 {% include 'sparql/_namespaces.sparql' %}
 
-SELECT ?status ?tstatus ?dui ?cui ?den ?trx ?tt
+SELECT ?status ?tstatus ?tt ?dui ?cui ?den ?trx
        (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
        (GROUP_CONCAT(DISTINCT ?ptermx ; separator='~') AS ?termsx)
        (GROUP_CONCAT(DISTINCT ?nterm ; separator='~') AS ?nterms)
@@ -117,6 +117,6 @@ WHERE {
     BIND("SCR" AS ?tt)
   }
 }
-GROUP BY ?status ?tstatus ?dui ?cui ?den ?trx ?tt
+GROUP BY ?status ?tstatus ?tt ?dui ?cui ?den ?trx
 #ORDER BY ?dui
 #LIMIT 100

@@ -2,7 +2,7 @@
 
 {% include 'sparql/_namespaces.sparql' %}
 
-SELECT ?status ?tstatus ?cui ?label ?note
+SELECT ?status ?tstatus ?tt ?dui ?cui ?label ?note
        (GROUP_CONCAT(DISTINCT ?trn ; separator='~') AS ?trns)
 WHERE {
   {
@@ -14,11 +14,13 @@ WHERE {
     ?c meshv:identifier ?cui .
     ?c rdfs:label ?label .
 	  ?c meshv:preferredMappedTo ?d .
+    ?d meshv:identifier ?dui .
     OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
     }
+    BIND("SCR" AS ?tt)
   }
   UNION
   {
@@ -28,11 +30,13 @@ WHERE {
     # Assume absence of meshv:active as true
     BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
 	  ?d meshv:preferredConcept ?c .
+    ?d meshv:identifier ?dui .
     OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
     }
+    BIND("MHE" AS ?tt)
   }
   UNION
   {
@@ -43,12 +47,14 @@ WHERE {
     ?c mesht:preferredTerm ?tp .
     ?tp mesht:prefLabel ?label .
 	  ?d meshv:preferredConcept ?c .
+    ?d meshv:identifier ?dui .
     OPTIONAL { ?d meshv:active ?tstatus }
     OPTIONAL {
        ?d meshv:treeNumber ?tn .
        ?tn rdfs:label ?trn .
     }
+    BIND("MHT" AS ?tt)
   }
 }
-GROUP BY ?status ?tstatus ?cui ?label ?note
+GROUP BY ?status ?tstatus ?tt ?dui ?cui ?label ?note
 #LIMIT 100

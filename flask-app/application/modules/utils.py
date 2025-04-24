@@ -1670,9 +1670,11 @@ def exportCsvFile(export, inputFile, outputFile, ext_in='tsv', ext_out='tsv'):
         # ?status ?tstatus  ?dui  ?cui  ?lang  ?tty  ?str  ?tui  ?scn
         cols = 'Dstatus,Tstatus,DescriptorUI,ConceptUI,Language,TermType,String,TermUI,ScopeNote'.split(',')
 
-    elif export in ['training_base', 'training_notes']:
-        # "dui","cui","den","trx","tt","terms","termsx","nterms","ntermsx","trns"
-        cols = ["dui", "cui", "den", "trx", "tt", "terms", "termsx", "nterms", "ntermsx", "trns"]
+    elif export in ['training_base']:
+        cols = ["tt", "dui", "cui", "den", "trx", "terms", "termsx", "nterms", "ntermsx", "trns"]
+
+    elif export in ['training_notes']:
+        cols = ["tt", "dui", "cui", "label", "note", "trns"]
 
     writeOutputGzipCsv(outputFile, [cols], mode='wt', delimiter=delimiter_out)
 

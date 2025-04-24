@@ -19,7 +19,7 @@ SELECT ?status ?tstatus ?dui ?cui ?den ?trx ?tt
 WHERE {
   {
     # MH block
-    VALUES ?dui { "D001794" "D007676" "D009203" "D005585" "D008099" "Q000032" "D013827" }
+    VALUES ?dui { "D001794" "D007676" "D009203" "D005585" "D008099" "Q000032" "D013827" "D000098346" }
     ?d meshv:identifier ?dui .
     ?d rdf:type ?dtype .
     FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
@@ -61,7 +61,7 @@ WHERE {
   UNION
   {
     # PEP block
-    VALUES ?dui { "D001794" "D007676" "D009203" "D005585" "D008099" "Q000032" "D013827" }
+    VALUES ?dui { "D001794" "D007676" "D009203" "D005585" "D008099" "Q000032" "D013827" "D000098346" }
     ?d meshv:identifier ?dui .
     ?d rdf:type ?dtype .
     FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))

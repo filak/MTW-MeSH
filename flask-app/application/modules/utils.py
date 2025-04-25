@@ -23,6 +23,7 @@ from pyuca import Collator
 from requests_futures.sessions import FuturesSession
 from urllib import parse as uparse
 
+from flask import abort
 from flask import current_app as app
 
 from application.modules import sparql
@@ -1358,6 +1359,17 @@ def getFpathDate(fpath):
     )
 
 
+def safe_join(base_dir, *paths):
+
+    base_path = Path(base_dir).resolve()
+    final_path = (base_path / Path(*paths)).resolve()
+
+    if not str(final_path).startswith(str(base_path)):
+        abort(403, "Forbidden: Unsafe file path")
+
+    return final_path
+
+
 def getStatsFpath(stat, ext="json", params=None, target_year=None):
 
     if not params:
@@ -1370,7 +1382,7 @@ def getStatsFpath(stat, ext="json", params=None, target_year=None):
     if not target_year:
         target_year = app.config["TARGET_YEAR"]
 
-    return Path(app.config["EXP_DIR"], target_year + "_" + stat + "." + ext)
+    return safe_join(app.config["EXP_DIR"], f"{target_year}_{stat}.{ext}")
 
 
 def getLockFpath(stat):

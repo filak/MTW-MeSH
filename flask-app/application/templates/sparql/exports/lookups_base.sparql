@@ -1,8 +1,8 @@
-## Base export query v1.2
+## Base export query v1.3
 
 {% include 'sparql/_namespaces.sparql' %}
 
-SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?cas ?rn
+SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?last ?nlm ?cas ?rn
       (GROUP_CONCAT(DISTINCT ?rnr ; separator='~') AS ?rrn)
       (GROUP_CONCAT(DISTINCT ?trns ; separator='~') AS ?trn)
       (GROUP_CONCAT(DISTINCT ?pac ; separator='~') AS ?pa)
@@ -19,6 +19,7 @@ WHERE {
 
   ?d meshv:dateCreated ?crt .
   ?d meshv:dateEstablished ?est .
+  OPTIONAL { ?d meshv:lastActiveYear ?last }
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
     ?tree rdfs:label ?trns .
@@ -62,6 +63,6 @@ WHERE {
   OPTIONAL { ?c meshv:relatedRegistryNumber ?rnr }
   OPTIONAL { ?c meshv:casn1_label ?cas }
 }
-GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?cas ?rn
-###LIMIT 100
+GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?last ?nlm ?cas ?rn
+#LIMIT 100
 

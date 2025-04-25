@@ -1,0 +1,26 @@
+## Base SCR export query v1.0
+
+{% include 'sparql/_namespaces.sparql' %}
+
+SELECT ?dui ?cui ?src ?den
+       (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
+WHERE {
+    ?sc rdf:type ?dtype .
+    FILTER(?dtype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol))
+    ?sc meshv:identifier ?src .
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?sc meshv:active false }, false, true) AS ?status) .
+    FILTER(?status = true) .
+    ?sc meshv:preferredConcept ?c .
+    ?c meshv:identifier ?cui .
+    ?c meshv:preferredTerm ?t .
+    ?t meshv:prefLabel ?den .
+    ?sc meshv:preferredMappedTo ?d .
+    ?d meshv:identifier ?dui .
+    OPTIONAL {
+      ?c meshv:term ?pt .
+      ?pt meshv:prefLabel ?pterm
+    }
+}
+GROUP BY ?dui ?cui ?src ?den
+#LIMIT 100

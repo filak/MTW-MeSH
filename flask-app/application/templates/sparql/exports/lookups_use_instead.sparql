@@ -21,3 +21,4 @@ WHERE {
   BIND( CONCAT(STR(?qui), '~', REPLACE(STR(?adq), str(mesh:), '')) AS ?o)
 }
 GROUP BY ?dui
+#LIMIT 100

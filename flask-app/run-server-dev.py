@@ -3,7 +3,7 @@ import sys
 from application.main import create_app
 
 DEFAULT_PORT = 5900
-DEFAULT_CONFIG = 'conf/mtw.ini'
+DEFAULT_CONFIG = "conf/mtw.ini"
 
 
 def start():

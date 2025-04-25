@@ -5,48 +5,66 @@ from application.modules.auth import public_api_only
 from application.modules import utils as mtu
 
 
-@app.route('/')
+@app.route("/")
 def worker_index():
-    return 'MTW Worker API'
+    return "MTW Worker API"
 
 
-@app.route('/test')
+@app.route("/test")
 @public_api_only()
 def worker_test():
-    return 'MTW Worker API is NOT secured ! Debug: ' + str(app.debug)
+    return "MTW Worker API is NOT secured ! Debug: " + str(app.debug)
 
 
-@app.route('/refresh_stats/<stat>', methods=['GET', 'POST'])
+@app.route("/refresh_stats/<stat>", methods=["GET", "POST"])
 @public_api_only()
 def refresh_stats(stat):
 
     force = False
-    if request.args.get('force'):
+    if request.args.get("force"):
         force = True
 
-    if stat in ['initial', 'actual', 'all', 'duplicates', 'lookups', 'lookups_rest']:
+    if stat in ["initial", "actual", "all", "duplicates", "lookups", "lookups_rest"]:
 
-        app.logger.info('Stats gen started  ...')
+        app.logger.info("Stats gen started  ...")
         mtu.refreshStats(stat, force=force)
-        app.logger.info('Stats gen finished ...')
+        app.logger.info("Stats gen finished ...")
 
-        return 'OK'
+        return "OK"
     else:
-        return 'ERROR'
+        return "ERROR"
 
 
-@app.route('/export_data/<export>', methods=['GET', 'POST'])
+@app.route("/export_data/<export>", methods=["GET", "POST"])
 @public_api_only()
 def export_data(export):
 
-    if export in ['umls', 'umls_all', 'umls_raw', 'js_all', 'js_parsers', 'js_elastic', 'xml_desc', 'xml_qualif', 'marc', 'training_base', 'training_notes']:
+    if export in [
+        "umls",
+        "umls_all",
+        "umls_raw",
+        "js_all",
+        "js_parsers",
+        "js_elastic",
+        "xml_desc",
+        "xml_qualif",
+        "marc",
+        "training_base",
+        "training_notes",
+    ]:
 
-        app.logger.info('Export ' + export + ' started  ...')
+        app.logger.info("Export " + export + " started  ...")
 
-        if export in ['umls', 'umls_all', 'umls_raw', 'training_base', 'training_notes']:
+        if export in [
+            "umls",
+            "umls_all",
+            "umls_raw",
+            "training_base",
+            "training_notes",
+        ]:
             mtu.exportData(export)
         else:
-            if request.method == 'POST':
+            if request.method == "POST":
                 if request.is_json:
                     if request.json.get(export):
                         mtu.exportLookup(export, params=request.json.get(export))
@@ -55,8 +73,8 @@ def export_data(export):
             else:
                 mtu.exportLookup(export)
 
-        app.logger.info('Export ' + export + ' finished ...')
+        app.logger.info("Export " + export + " finished ...")
 
-        return 'OK'
+        return "OK"
     else:
-        return 'ERROR'
+        return "ERROR"

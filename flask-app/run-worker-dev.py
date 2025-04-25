@@ -3,7 +3,7 @@ import sys
 from application.worker import create_app
 
 DEFAULT_PORT = 5903
-DEFAULT_CONFIG = 'conf/mtw.ini'
+DEFAULT_CONFIG = "conf/mtw.ini"
 
 
 def start():

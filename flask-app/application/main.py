@@ -9,98 +9,120 @@ from flask import Flask
 from cachelib import FileSystemCache
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from application.modules.extensions import Talisman, cache, csrf, paranoid, sess  # limiter
+from application.modules.extensions import (
+    Talisman,
+    cache,
+    csrf,
+    paranoid,
+    sess,
+)  # limiter
 from application.modules import utils as mtu
 
 
-def create_app(debug=False, logger=None, port=5900,
-               config_path='conf/mtw.ini',
-               server_name=None,
-               url_prefix='',
-               static_url_path='/assets-mtw',
-               relax=False):
+def create_app(
+    debug=False,
+    logger=None,
+    port=5900,
+    config_path="conf/mtw.ini",
+    server_name=None,
+    url_prefix="",
+    static_url_path="/assets-mtw",
+    relax=False,
+):
 
-    url_prefix = url_prefix.strip().strip('/')
+    url_prefix = url_prefix.strip().strip("/")
 
     if url_prefix:
-        url_prefix = '/' + url_prefix
+        url_prefix = "/" + url_prefix
     else:
-        url_prefix = '/'
+        url_prefix = "/"
 
-    app = Flask(__name__, instance_relative_config=True, static_url_path=static_url_path)
+    app = Flask(
+        __name__, instance_relative_config=True, static_url_path=static_url_path
+    )
 
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
     if debug and not app.debug:
         app.debug = debug
-    elif os.getenv('FLASK_DEBUG', None):
+    elif os.getenv("FLASK_DEBUG", None):
         app.debug = True
 
     if app.debug:
-        print('MTW Config:  ', config_path, ' - port: ', port)
+        print("MTW Config:  ", config_path, " - port: ", port)
 
     if logger:
         app.logger = logger
 
     if not app.debug:
-        file_handler = logging.FileHandler(mtu.get_instance_dir(app, 'logs/mtw_server.log'))
+        file_handler = logging.FileHandler(
+            mtu.get_instance_dir(app, "logs/mtw_server.log")
+        )
         file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s '))
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s: %(message)s ")
+        )
         app.logger.addHandler(file_handler)
     else:
-        file_handler = logging.FileHandler(mtu.get_instance_dir(app, 'logs/mtw_server_debug.log'))
+        file_handler = logging.FileHandler(
+            mtu.get_instance_dir(app, "logs/mtw_server_debug.log")
+        )
         file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s '))
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s: %(message)s ")
+        )
         app.logger.addHandler(file_handler)
 
-    app.config.update(dict(
-        APPLICATION_ROOT = url_prefix,
-        APP_NAME = 'MTW',
-        APP_VER = '1.7.2',
-        API_VER = '1.0.0',
-        DBVERSION = 1.0,
-        CACHE_DIR = mtu.get_instance_dir(app, 'cache'),
-        CACHE_THRESHOLD = 1000,
-        CACHE_TYPE = 'FileSystemCache',
-        CSRF_COOKIE_HTTPONLY = True,
-        CSRF_COOKIE_TIMEOUT = datetime.timedelta(days=1),
-        CSRF_COOKIE_SECURE = True,
-        SESSION_COOKIE_HTTPONLY = True,
-        SESSION_COOKIE_PATH = url_prefix,
-        SESSION_COOKIE_SAMESITE = 'Lax',
-        SESSION_COOKIE_SECURE = True,
-        SESSION_FILE_THRESHOLD = 1000,
-        SESSION_PERMANENT = True,
-        PERMANENT_SESSION_LIFETIME = 600,
-        SESSION_REFRESH_EACH_REQUEST = True,
-        SESSION_USE_SIGNER = True,
-        SESSION_TYPE = 'cachelib',
-        SESSION_FILE_DIR = mtu.get_instance_dir(app, 'sessions'),
-        TEMPLATES_AUTO_RELOAD = False,
-        TEMP_DIR = mtu.get_instance_dir(app, 'temp'),
-        local_config_file = mtu.get_instance_dir(app, config_path),
-        admin_config_file = mtu.get_instance_dir(app, 'conf/mtw-admin.tmp'),
-        pid_counter_file = mtu.get_instance_dir(app, 'conf/pid_counter.json')
-    ))
+    app.config.update(
+        dict(
+            APPLICATION_ROOT=url_prefix,
+            APP_NAME="MTW",
+            APP_VER="1.7.2",
+            API_VER="1.0.0",
+            DBVERSION=1.0,
+            CACHE_DIR=mtu.get_instance_dir(app, "cache"),
+            CACHE_THRESHOLD=1000,
+            CACHE_TYPE="FileSystemCache",
+            CSRF_COOKIE_HTTPONLY=True,
+            CSRF_COOKIE_TIMEOUT=datetime.timedelta(days=1),
+            CSRF_COOKIE_SECURE=True,
+            SESSION_COOKIE_HTTPONLY=True,
+            SESSION_COOKIE_PATH=url_prefix,
+            SESSION_COOKIE_SAMESITE="Lax",
+            SESSION_COOKIE_SECURE=True,
+            SESSION_FILE_THRESHOLD=1000,
+            SESSION_PERMANENT=True,
+            PERMANENT_SESSION_LIFETIME=600,
+            SESSION_REFRESH_EACH_REQUEST=True,
+            SESSION_USE_SIGNER=True,
+            SESSION_TYPE="cachelib",
+            SESSION_FILE_DIR=mtu.get_instance_dir(app, "sessions"),
+            TEMPLATES_AUTO_RELOAD=False,
+            TEMP_DIR=mtu.get_instance_dir(app, "temp"),
+            local_config_file=mtu.get_instance_dir(app, config_path),
+            admin_config_file=mtu.get_instance_dir(app, "conf/mtw-admin.tmp"),
+            pid_counter_file=mtu.get_instance_dir(app, "conf/pid_counter.json"),
+        )
+    )
 
     app.app_context().push()
 
-    adminConfig = mtu.getConfig(app.config['admin_config_file'], admin=True)
+    adminConfig = mtu.getConfig(app.config["admin_config_file"], admin=True)
     if not adminConfig:
         return
 
-    d = mtu.getAdminConfValue(adminConfig, fp=app.config['admin_config_file'])
+    d = mtu.getAdminConfValue(adminConfig, fp=app.config["admin_config_file"])
     if not d:
         return
 
     app.config.update(d)
 
-    localConfig = mtu.getConfig(app.config['local_config_file'])
+    localConfig = mtu.getConfig(app.config["local_config_file"])
     if not localConfig:
         return
 
-    d = mtu.getLocalConfValue(localConfig, fp=app.config['local_config_file'])
+    d = mtu.getLocalConfValue(localConfig, fp=app.config["local_config_file"])
     if not d:
         return
 
@@ -109,23 +131,25 @@ def create_app(debug=False, logger=None, port=5900,
     # Server settings
 
     if relax:
-        app.config.update({'SERVER_NAME': None})
-        app.config.update({'_RELAXED': True})
+        app.config.update({"SERVER_NAME": None})
+        app.config.update({"_RELAXED": True})
 
-    if app.config['SERVER_NAME']:
-        app.config.update({'SESSION_COOKIE_DOMAIN': mtu.getCookieDomain(app.config['SERVER_NAME'])})
+    if app.config["SERVER_NAME"]:
+        app.config.update(
+            {"SESSION_COOKIE_DOMAIN": mtu.getCookieDomain(app.config["SERVER_NAME"])}
+        )
 
     # --fqdn <server_name>
     if server_name:
-        app.config.update({'SERVER_NAME': server_name})
-        app.config.update({'SESSION_COOKIE_DOMAIN': mtu.getCookieDomain(server_name)})
+        app.config.update({"SERVER_NAME": server_name})
+        app.config.update({"SESSION_COOKIE_DOMAIN": mtu.getCookieDomain(server_name)})
 
-    if app.config.get('SERVER_NAME'):
+    if app.config.get("SERVER_NAME"):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)
 
     if app.debug:
-        print('Server host: ', app.config['SERVER_NAME'])
-        print('Worker host: ', app.config['WORKER_HOST'])
+        print("Server host: ", app.config["SERVER_NAME"])
+        print("Worker host: ", app.config["WORKER_HOST"])
 
     # Flask Extensions init
 
@@ -133,8 +157,10 @@ def create_app(debug=False, logger=None, port=5900,
     cache.init_app(app)
 
     # Session
-    app.config['SESSION_CACHELIB'] = FileSystemCache(cache_dir=app.config['SESSION_FILE_DIR'],
-                                                     threshold=app.config['SESSION_FILE_THRESHOLD'])
+    app.config["SESSION_CACHELIB"] = FileSystemCache(
+        cache_dir=app.config["SESSION_FILE_DIR"],
+        threshold=app.config["SESSION_FILE_THRESHOLD"],
+    )
     sess.init_app(app)
 
     # Limiter
@@ -147,15 +173,16 @@ def create_app(debug=False, logger=None, port=5900,
     if not relax and not app.debug:
         # Paranoid
         paranoid.init_app(app)
-        paranoid.redirect_view = ('/')
+        paranoid.redirect_view = "/"
 
         talisman = Talisman(  # noqa: F841
             app,
-            session_cookie_secure=app.config['SESSION_COOKIE_SECURE'],
-            force_https=app.config['SESSION_COOKIE_SECURE'],
+            session_cookie_secure=app.config["SESSION_COOKIE_SECURE"],
+            force_https=app.config["SESSION_COOKIE_SECURE"],
             strict_transport_security=False,
-            content_security_policy=app.config['GCSP'],
-            content_security_policy_nonce_in=['script-src', 'style-src'])
+            content_security_policy=app.config["GCSP"],
+            content_security_policy_nonce_in=["script-src", "style-src"],
+        )
 
     from application.modules import filters  # noqa: F401
     from application.modules import routes  # noqa: F401

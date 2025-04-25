@@ -497,26 +497,26 @@ def getReport(view=None, targetyear=None, userid=None, mon=None):
         db.row_factory = dict_factory
 
         if view == "resolved":
-            query = "select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_resolved"
+            base_query = "SELECT yr_mon, userid, username, event, tstate, cnt, targetyear FROM audit_resolved"
         else:
-            query = "select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_created"
+            base_query = "SELECT yr_mon, userid, username, event, tstate, cnt, targetyear FROM audit_created"
 
-        where = " where targetyear = :targetyear "
-        tail = " order by yr_mon, userid, event, tstate "
-
-        params = {}
-        params["targetyear"] = targetyear
+        conditions = ["targetyear = :targetyear"]
+        params = {"targetyear": targetyear}
 
         if userid:
+            conditions.append("userid = :userid")
             params["userid"] = userid
-            where += " and userid = :userid "
 
         if mon:
+            conditions.append("yr_mon = :mon")
             params["mon"] = mon
-            where += " and yr_mon = :mon "
 
-        q = query + where + tail
-        cur = db.execute(q, params)
+        where_clause = " WHERE " + " AND ".join(conditions)
+        order_clause = " ORDER BY yr_mon, userid, event, tstate"
+
+        query = base_query + where_clause + order_clause
+        cur = db.execute(query, params)
         return cur.fetchall()
 
 

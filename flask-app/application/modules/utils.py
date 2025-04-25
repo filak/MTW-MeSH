@@ -1370,7 +1370,15 @@ def getStatsFpath(stat, ext="json", params=None, target_year=None):
     if not target_year:
         target_year = app.config["TARGET_YEAR"]
 
-    return Path(app.config["EXP_DIR"], target_year + "_" + stat + "." + ext)
+    base_dir = Path(app.config["EXP_DIR"])
+    constructed_path = Path(base_dir, target_year + "_" + stat + "." + ext)
+    normalized_path = constructed_path.resolve()
+
+    # Ensure the path is within the allowed base directory
+    if not str(normalized_path).startswith(str(base_dir.resolve())):
+        raise ValueError("Invalid file path: Path traversal detected.")
+
+    return normalized_path
 
 
 def getLockFpath(stat):

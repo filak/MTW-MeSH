@@ -589,6 +589,7 @@ def getElasticData(data):
     qualifs = data.get("desc_qualifs", {})
     notes = data.get("desc_notes", {})
     use_instead = data.get("desc_use", {})
+    scr = data.get("desc_scr", {})
 
     resp = []
 
@@ -628,6 +629,8 @@ def getElasticData(data):
         item["heading"] = []
         item["heading"].append(item["eng"])
         item["heading"].append(item["trx"])
+        if scr.get(dui):
+            item["scr"] = scr.get(dui, [])
 
         for trn in item.get("trn", []):
             if trn:

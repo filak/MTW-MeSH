@@ -496,10 +496,8 @@ def getReport(view, targetyear=None, userid=None, mon=None):
     if db:
         db.row_factory = dict_factory
 
-        query = (
-            "select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_"
-            + view
-        )
+        query = f"select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_{view} "
+
         where = " where targetyear = :targetyear "
         tail = " order by yr_mon, userid, event, tstate "
         params = {}

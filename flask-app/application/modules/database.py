@@ -489,17 +489,21 @@ def getAuditResolved(
         return cur.fetchall()
 
 
-def getReport(view, targetyear=None, userid=None, mon=None):
+def getReport(view=None, targetyear=None, userid=None, mon=None):
     db = get_db()
     if not targetyear:
         targetyear = app.config["TARGET_YEAR"]
     if db:
         db.row_factory = dict_factory
 
-        query = f"select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_{view} "
+        if view == "resolved":
+            query = "select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_resolved"
+        else:
+            query = "select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_created"
 
         where = " where targetyear = :targetyear "
         tail = " order by yr_mon, userid, event, tstate "
+
         params = {}
         params["targetyear"] = targetyear
 

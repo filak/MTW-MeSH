@@ -489,32 +489,36 @@ def getAuditResolved(
         return cur.fetchall()
 
 
-def getReport(view, targetyear=None, userid=None, mon=None):
+def getReport(view=None, targetyear=None, userid=None, mon=None):
     db = get_db()
     if not targetyear:
         targetyear = app.config["TARGET_YEAR"]
     if db:
         db.row_factory = dict_factory
 
-        query = (
-            "select yr_mon, userid, username, event, tstate, cnt, targetyear from audit_"
-            + view
-        )
-        where = " where targetyear = :targetyear "
-        tail = " order by yr_mon, userid, event, tstate "
-        params = {}
-        params["targetyear"] = targetyear
+        if view == "resolved":
+            base_query = "SELECT yr_mon, userid, username, event, tstate, cnt, targetyear FROM audit_resolved"
+        else:
+            base_query = "SELECT yr_mon, userid, username, event, tstate, cnt, targetyear FROM audit_created"
+
+        conditions = ["targetyear = :targetyear"]
+        params = {"targetyear": targetyear}
 
         if userid:
+            conditions.append("userid = :userid")
             params["userid"] = userid
-            where += " and userid = :userid "
 
         if mon:
+            conditions.append("yr_mon = :mon")
             params["mon"] = mon
-            where += " and yr_mon = :mon "
 
-        q = query + where + tail
-        cur = db.execute(q, params)
+        where_clause = " WHERE " + " AND ".join(conditions)
+        order_clause = " ORDER BY yr_mon, userid, event, tstate"
+
+        # safe: no user input in query
+        # params = {"targetyear": targetyear, "userid": userid, "mon": mon}
+        query = base_query + where_clause + order_clause
+        cur = db.execute(query, params)
         return cur.fetchall()
 
 

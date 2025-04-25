@@ -443,6 +443,10 @@ def getLookupJson(lookups, export):
             if est:
                 d['est'] = est
 
+            last = item.get('last')
+            if last:
+                d['last'] = last
+
             # for t in terms:
             #     if t:
             #         d['xtr'].append(t.replace('[OBSOLETE]', '').strip())
@@ -700,12 +704,14 @@ def getBaseRest():
     data['trx_lang'] = xrest.get('trx_lang', app.config['TARGET_LANG'])
 
     # lookups_notes
-    # lookups_use_instead
     # lookups_qualifs
+    # lookups_scr
+    # lookups_use_instead
 
     desc_notes = {}
-    desc_use = {}
     desc_qualifs = {}
+    desc_scr = {}
+    desc_use = {}
 
     for item in xrest.get('lookups_notes', []):
         dui = item['dui']
@@ -713,19 +719,28 @@ def getBaseRest():
         for k in item:
             desc_notes[dui][k] = item[k]
 
+    for item in xrest.get('lookups_qualifs', []):
+        dui = item['dui']
+        desc_qualifs[dui] = item['qa']
+
+    for item in xrest.get('lookups_scr', []):
+        dui = item['dui']
+        if desc_qualifs.get(dui):
+            desc_qualifs[dui].append(item)
+        else:
+            desc_qualifs[dui] = [item]
+
     for item in xrest.get('lookups_use_instead', []):
         dui = item['dui']
         desc_use[dui] = {}
         for k in item:
             desc_use[dui][k] = item[k]
 
-    for item in xrest.get('lookups_qualifs', []):
-        dui = item['dui']
-        desc_qualifs[dui] = item['qa']
-
+    data['desc_scr'] = dict(sorted(desc_scr.items()))
     data['desc_qualifs'] = dict(sorted(desc_qualifs.items()))
     data['desc_use'] = dict(sorted(desc_use.items()))
     data['desc_notes'] = dict(sorted(desc_notes.items()))
+
     return data
 
 
@@ -1198,7 +1213,7 @@ def backStatsProcess(fpath, lpath, stat):
 
     elif stat == 'lookups_rest':
         template_subdir = 'exports/'
-        templates = ['lookups_notes', 'lookups_qualifs', 'lookups_terms', 'lookups_use_instead']
+        templates = ['lookups_notes', 'lookups_qualifs', 'lookups_scr', 'lookups_terms', 'lookups_use_instead']
         gzip = True
 
     for t in templates:

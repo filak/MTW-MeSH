@@ -1,0 +1,34 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX meshv:  <http://id.nlm.nih.gov/mesh/vocab#>
+PREFIX mesh:   <http://id.nlm.nih.gov/mesh/>
+PREFIX text:   <http://jena.apache.org/text#>
+PREFIX meshx:  <http://mesh.medvik.cz/link/>
+PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
+
+SELECT ?dui ?cui ?src ?den
+       (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
+WHERE {
+    VALUES ?src { "C011536" "C567045" "C564258" }
+    ?sc meshv:identifier ?src .
+    ?sc rdf:type ?dtype .
+    FILTER(?dtype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol))
+    # Assume absence of meshv:active as true
+    BIND(IF(EXISTS { ?sc meshv:active false }, false, true) AS ?status) .
+	FILTER(?status = true) .
+    ?sc meshv:preferredConcept ?c .
+    ?c meshv:identifier ?cui .
+    ?c meshv:preferredTerm ?t .
+    ?t meshv:prefLabel ?den .
+    ?sc meshv:preferredMappedTo ?d .
+    ?d meshv:identifier ?dui .
+    OPTIONAL {
+      ?c meshv:term ?pt .
+      ?pt meshv:prefLabel ?pterm
+    }
+}
+GROUP BY ?dui ?cui ?src ?den
+ORDER BY ?dui
+LIMIT 100

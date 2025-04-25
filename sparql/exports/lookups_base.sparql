@@ -8,30 +8,24 @@ PREFIX text:   <http://jena.apache.org/text#>
 PREFIX meshx:  <http://mesh.medvik.cz/link/>
 PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 
-SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?rn ?cas
+SELECT ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?last ?nlm ?rn ?cas
       (GROUP_CONCAT(DISTINCT ?trns ; separator='~') AS ?trn)
       (GROUP_CONCAT(DISTINCT ?pac ; separator='~') AS ?pa)
       (GROUP_CONCAT(DISTINCT ?bd ; separator='~') AS ?btd)
       (GROUP_CONCAT(DISTINCT ?nd ; separator='~') AS ?ntd)
       (GROUP_CONCAT(DISTINCT ?rd ; separator='~') AS ?rtd)
 WHERE {
-  #BIND(mesh:D000003 as ?d)
-  #BIND(mesh:D012459 as ?d)
-  #BIND(mesh:Q000008 as ?d)
-  #BIND(mesh:Q000009 as ?d)
-  #BIND(mesh:D002493 as ?d)
-  #BIND(mesh:D005123 as ?d)
-  #BIND(mesh:D018806 as ?d)
-  BIND(mesh:D023482 as ?d)
+  VALUES ?dui { "D001794" "D007676" "D009203" "D005585" "D008099" "D000071817" "D013827" "D000098346" }
+  ?d meshv:identifier ?dui .
   ?d rdf:type ?dtype .
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
-  ?d meshv:identifier ?dui .
 
   # Assume absence of meshv:active as true
   BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
 
   ?d meshv:dateCreated ?crt .
   ?d meshv:dateEstablished ?est .
+  OPTIONAL { ?d meshv:lastActiveYear ?last }
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
     ?tree rdfs:label ?trns
@@ -65,6 +59,6 @@ WHERE {
   OPTIONAL { ?c meshv:registryNumber ?rn }
   OPTIONAL { ?c meshv:casn1_label ?cas }
 }
-GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?nlm ?rn ?cas
+GROUP BY ?dui ?cui ?dtype ?den ?trx ?notrx ?active ?crt ?est ?last ?nlm ?rn ?cas
 ###LIMIT 100
 

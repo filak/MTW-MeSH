@@ -118,5 +118,4 @@ WHERE {
   }
 }
 GROUP BY ?status ?tstatus ?tt ?dui ?cui ?den ?trx
-#ORDER BY ?dui
 #LIMIT 100

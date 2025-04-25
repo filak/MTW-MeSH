@@ -11,14 +11,10 @@ PREFIX mesht:  <http://www.medvik.cz/schema/mesh/vocab/#>
 SELECT ?dui ?cui ?scn ?scnt ?an ?tan ?cx ?tcx ?hn ?thn ?ol ?pm
        (GROUP_CONCAT(DISTINCT ?prev ; separator='~') AS ?pi)
 WHERE {
-  #BIND(mesh:D000003 as ?d)
-  #BIND(mesh:D012459 as ?d)
-  #BIND(mesh:Q000008 as ?d)
-  #BIND(mesh:D002493 as ?d)
-  BIND(mesh:D005123 as ?d)
+  VALUES ?dui { "D001794" "D007676" "D009203" "D005585" "D008099" "Q000032" "D013827" "D000098346" }
+  ?d meshv:identifier ?dui .
   ?d rdf:type ?dtype .
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
-  ?d meshv:identifier ?dui .
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .
   OPTIONAL { ?c meshv:scopeNote ?scn }

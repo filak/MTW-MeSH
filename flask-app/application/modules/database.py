@@ -515,6 +515,8 @@ def getReport(view=None, targetyear=None, userid=None, mon=None):
         where_clause = " WHERE " + " AND ".join(conditions)
         order_clause = " ORDER BY yr_mon, userid, event, tstate"
 
+        # safe: no user input in query
+        # params = {"targetyear": targetyear, "userid": userid, "mon": mon}
         query = base_query + where_clause + order_clause
         cur = db.execute(query, params)
         return cur.fetchall()

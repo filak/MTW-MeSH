@@ -616,9 +616,6 @@ def getElasticData(data):
                     }
                 )
 
-        # Add later by running:  grind-data elastic mesh ...
-        # resp.append({'index': {'_id': dui, '_index': 'mesh'}})
-
         xnote = notes.get(dui, {})
         resp.append(getElasticDoc(dui, item, qualifiers, xnote))
 

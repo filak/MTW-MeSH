@@ -1,4 +1,4 @@
-## Base export query v1.3
+## Base export query v1.4
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -22,8 +22,7 @@ WHERE {
   OPTIONAL { ?d meshv:lastActiveYear ?last }
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
-    ?tree rdfs:label ?trns .
-    FILTER(!STRSTARTS(?trns, "[OBSOLETE]"))
+    ?tree rdfs:label ?trns
   }
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .

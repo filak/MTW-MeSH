@@ -441,9 +441,11 @@ def getLookupJson(lookups, export):
             for trn in trees:
                 if trn:
                     if item.get("active") == "false":
-                        trn = trn.replace("[OBSOLETE]", "").strip()
                         if "x" not in d["cat"]:
                             d["cat"].append("x")
+
+                    if trn.startswith("[OBSOLETE]"):
+                        trn = trn.replace("[OBSOLETE]", "").strip() + " [OBSOLETE]"
 
                     d["trn"].append(trn)
                     cat = trn[:1].lower()
@@ -486,10 +488,6 @@ def getLookupJson(lookups, export):
             last = item.get("last")
             if last:
                 d["last"] = last
-
-            # for t in terms:
-            #     if t:
-            #         d['xtr'].append(t.replace('[OBSOLETE]', '').strip())
 
         if export in ["marc", "js_elastic"]:
 
@@ -601,6 +599,9 @@ def getElasticData(data):
         item["heading"].append(item["eng"])
         item["heading"].append(item["trx"])
 
+        # if dui in ["D000071817", "D000098902", "D000098944"]:
+        #    pass
+
         for trn in item.get("trn", []):
             if trn:
                 # Add later by running:  grind-data elastic mesh ...
@@ -609,7 +610,7 @@ def getElasticData(data):
                     {
                         "id": dui,
                         "db": "mesht",
-                        "trn": trn.replace(".", "-"),
+                        "trn": trn,
                         "eng": item.get("eng", ""),
                         "trx": item.get("trx", ""),
                         "active": item.get("active", "true"),
@@ -637,7 +638,7 @@ def getElasticData(data):
                     {
                         "id": dui,
                         "db": "mesht",
-                        "trn": trn.replace(".", "-"),
+                        "trn": trn,
                         "eng": item.get("eng", ""),
                         "trx": item.get("trx", ""),
                         "active": item.get("active", "true"),
@@ -1059,8 +1060,9 @@ def getMarcFields(
     if treetype == "def":
         for trn in item.get("trn", []):
             if trn:
-                trx = "$a" + fw + trn.replace(".", "." + fw + "$x" + fw)
-                rows.append(lp + "072    " + trx)
+                if not trn.startswith("[OBSOLETE]"):
+                    trx = "$a" + fw + trn.replace(".", "." + fw + "$x" + fw)
+                    rows.append(lp + "072    " + trx)
 
     heading = item.get("trx", "")
     if heading == "":
@@ -1207,8 +1209,9 @@ def getMarcFields(
     if treetype == "daw":
         for trn in item.get("trn", []):
             if trn:
-                trx = "$a" + fw + trn + fw
-                rows.append(lp + "686    " + trx)
+                if not trn.startswith("[OBSOLETE]"):
+                    trx = "$a" + fw + trn + fw
+                    rows.append(lp + "686    " + trx)
 
     hn = xnote.get("hn")
     if not hn:
@@ -1819,7 +1822,6 @@ def getTermList(f, concept, dui):
 
         if not dform.get("prefTermNew"):
             pass
-
         else:
             if dform["prefTermNew"] == dterm["rowid"]:
                 dterm["rel"] = "preferredTerm"

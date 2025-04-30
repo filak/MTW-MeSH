@@ -1,4 +1,4 @@
-## Base SCR export query v1.0
+## Base SCR export query v1.1
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -6,7 +6,7 @@ SELECT ?dui ?cui ?src ?dtype ?den
        (GROUP_CONCAT(DISTINCT ?pterm ; separator='~') AS ?terms)
 WHERE {
     ?sc rdf:type ?dtype .
-    FILTER(?dtype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol)) .
+    FILTER(?dtype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Organism, meshv:SCR_Population, meshv:SCR_Protocol)) .
     ?sc meshv:identifier ?src .
     # Assume absence of meshv:active as true
     BIND(IF(EXISTS { ?sc meshv:active false }, false, true) AS ?status) .

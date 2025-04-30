@@ -1,4 +1,4 @@
-## MeSH training export - notes query v1.0
+## MeSH training export - notes query v1.1
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -8,7 +8,7 @@ WHERE {
   {
     ?c meshv:note ?note .
     ?c rdf:type ?otype .
-    FILTER(?otype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol))
+    FILTER(?otype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Organism, meshv:SCR_Population, meshv:SCR_Protocol))
     # Assume absence of meshv:active as true
     BIND(IF(EXISTS { ?c meshv:active false }, false, true) AS ?status)
     ?c meshv:identifier ?cui .

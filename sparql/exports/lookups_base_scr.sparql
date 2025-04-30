@@ -14,7 +14,7 @@ WHERE {
     VALUES ?src { "C011536" "C567045" "C564258" }
     ?sc meshv:identifier ?src .
     ?sc rdf:type ?dtype .
-    FILTER(?dtype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Population, meshv:SCR_Protocol))
+    FILTER(?dtype IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Organism, meshv:SCR_Population, meshv:SCR_Protocol))
     # Assume absence of meshv:active as true
     BIND(IF(EXISTS { ?sc meshv:active false }, false, true) AS ?status) .
 	FILTER(?status = true) .

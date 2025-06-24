@@ -150,7 +150,9 @@ def create_app(
         app.config.update({"SESSION_COOKIE_DOMAIN": mtu.getCookieDomain(server_name)})
 
     if app.config.get("SERVER_NAME"):
-        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=0, x_port=0, x_prefix=0)
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app, x_for=1, x_proto=1, x_host=0, x_port=0, x_prefix=0
+        )
 
     sess_key_prefix = app.config["SESSION_COOKIE_NAME"].replace("__Host-", "")
     app.config.update({"CSRF_COOKIE_NAME": f"{sess_key_prefix}_csrf_token"})

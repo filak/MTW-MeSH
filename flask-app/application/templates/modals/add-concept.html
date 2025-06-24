@@ -84,7 +84,7 @@
                  value="NEW">
 
           <input type="hidden" id="formchanged-{{ item_cui }}" name="form_changed" value="false">
-          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          {% include 'snips/_csrf_input.html' %}
 
         </div>
 

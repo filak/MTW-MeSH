@@ -26,7 +26,7 @@ Login
         <label for="loginPassword">Password</label>
         <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Password" required>
       </div>
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      {% include 'snips/_csrf_input.html' %}
       <button type="submit" class="btn btn-primary">Login</button>
       <div class="checkbox mt-3">
         <label>

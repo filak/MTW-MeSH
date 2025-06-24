@@ -85,15 +85,20 @@ def create_app(
             CACHE_THRESHOLD=1000,
             CACHE_TYPE="FileSystemCache",
             CSRF_COOKIE_HTTPONLY=True,
-            CSRF_COOKIE_TIMEOUT=datetime.timedelta(days=1),
+            CSRF_COOKIE_PATH=url_prefix,
             CSRF_COOKIE_SECURE=True,
+            CSRF_COOKIE_TIMEOUT=datetime.timedelta(days=1),
+            CSRF_HEADER_NAME="X-CSRFToken",
             SESSION_COOKIE_HTTPONLY=True,
+            SESSION_COOKIE_NAME="mtw_session",
             SESSION_COOKIE_PATH=url_prefix,
             SESSION_COOKIE_SAMESITE="Lax",
             SESSION_COOKIE_SECURE=True,
             SESSION_FILE_THRESHOLD=1000,
-            SESSION_PERMANENT=True,
-            PERMANENT_SESSION_LIFETIME=600,
+            SESSION_IGNORE_PATHS=["/static", static_url_path],
+            SESSION_KEY_PREFIX="mtws",
+            SESSION_PERMANENT=False,
+            PERMANENT_SESSION_LIFETIME=3600,
             SESSION_REFRESH_EACH_REQUEST=True,
             SESSION_USE_SIGNER=True,
             SESSION_TYPE="cachelib",
@@ -145,7 +150,22 @@ def create_app(
         app.config.update({"SESSION_COOKIE_DOMAIN": mtu.getCookieDomain(server_name)})
 
     if app.config.get("SERVER_NAME"):
-        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=0, x_port=0, x_prefix=0)
+
+    sess_key_prefix = app.config["SESSION_COOKIE_NAME"].replace("__Host-", "")
+    app.config.update({"CSRF_COOKIE_NAME": f"{sess_key_prefix}_csrf_token"})
+
+    if app.config["SESSION_COOKIE_NAME"].startswith("__Host-"):
+        csrf_cookie_name = app.config["CSRF_COOKIE_NAME"]
+        app.config.update(
+            {
+                "SESSION_COOKIE_DOMAIN": False,
+                "SESSION_COOKIE_PATH": "/",
+                "CSRF_COOKIE_DOMAIN": False,
+                "CSRF_COOKIE_NAME": f"__Host-{csrf_cookie_name}",
+                "CSRF_COOKIE_PATH": "/",
+            }
+        )
 
     if app.debug:
         print("Server host: ", app.config["SERVER_NAME"])

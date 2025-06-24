@@ -176,14 +176,13 @@ def getSparqlDataExt(dui, output, year="", key=None, cache=None, otype="Descript
 def updateSparqlBatch(
     template, concept_list=None, term_list=None, lang=None, dui=None, cache=None
 ):
-
     if not template:
         return False
 
-    if not concept_list:
+    if concept_list is None:
         concept_list = []
 
-    if not term_list:
+    if term_list is None:
         term_list = []
 
     template = "sparql/updates/" + template + ".sparql"

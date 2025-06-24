@@ -2119,7 +2119,7 @@ def login():
             session["userid"] = userid
 
             if session["ugroup"] in ["disabled", "locked"]:
-                session.pop("logged_in", None)
+                session.clear()
                 flash("Your account has been " + session["ugroup"] + ".", "warning")
                 app.logger.warning(
                     "Disabled/Locked user login attempt : "
@@ -2143,10 +2143,11 @@ def login():
                     event="login",
                     tstate="success",
                 )
-
+                app.session_interface.regenerate(session)
                 return redirect(url_for("intro"))
 
         else:
+            session.clear()
             session.pop("logged_in", None)
             flash("Bad login", "danger")
 
@@ -2177,12 +2178,8 @@ def logout():
             tstate="success",
         )
 
-    session.pop("logged_in", None)
-    session.pop("next", None)
     session.clear()
-    session.modified = True
     flash("Logout successful", "info")
-
     return redirect(url_for("login"))
 
 

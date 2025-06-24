@@ -31,7 +31,7 @@
           <input type="hidden"
                  name="label"
                  value="{{ descriptor['labels']['en']|truncate(50, True) }}">
-          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          {% include 'snips/_csrf_input.html' %}
           <button class="btn btn-primary {{ disabled }} {{ invisible }}" type="submit" name="action" value="add" title="Add to Clipboard">
             <i class="far fa-clipboard"></i></button>
     {% if session.ugroup not in ['viewer'] %}

@@ -158,10 +158,20 @@ def getLocalConfValue(conf, fp=""):
         d["CLIPBOARD_SIZE"] = int(conf.get(section, "CLIPBOARD_SIZE", fallback=20))
         d["AUT_LINK"] = conf.get(section, "AUT_LINK", fallback="/mtw/search/dui:")
         d["PID_PREFIX_CONCEPT"] = conf.get(section, "PID_PREFIX_CONCEPT", fallback="F")
-        d["CSRF_COOKIE_SECURE"] = conf.getboolean(
-            section, "CSRF_COOKIE_SECURE", fallback=True
+
+        d["CSRF_DISABLE"] = conf.getboolean(
+            "appconf", "DEV_DISABLE_CSRF", fallback=False
         )
-        d["CSRF_DISABLE"] = conf.getboolean(section, "DEV_DISABLE_CSRF", fallback=False)
+        d["CSRF_COOKIE_NAME"] = conf.get(
+            "appconf", "CSRF_COOKIE_NAME", fallback="_csrf_token"
+        )
+        d["CSRF_HEADER_NAME"] = conf.get(
+            "appconf", "CSRF_HEADER_NAME", fallback="X-CSRFToken"
+        )
+        d["CSRF_COOKIE_SECURE"] = conf.getboolean(
+            "appconf", "CSRF_COOKIE_SECURE", fallback=True
+        )
+
         d["GCSP"] = json.loads(conf.get(section, "GCSP"))
         d["CHAR_NORM_FILE"] = conf.get(
             section, "CHAR_NORM_FILE", fallback="norm_chars_table.tsv.txt"

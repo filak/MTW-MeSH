@@ -18,7 +18,7 @@
         <input type="hidden" id="noteTrxChanged" name="tnote_changed" value="false">
         <input type="hidden" id="noteOriginal" name="tnote_original" value="">
 
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        {% include 'snips/_csrf_input.html' %}
 
         <div class="form-group">
           <label for="noteTrx" id="notePredicateLabel" class="font-weight-bold">Note type</label>

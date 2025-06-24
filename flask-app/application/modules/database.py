@@ -13,7 +13,6 @@ from application.modules.auth import hash_pwd
 
 #  Database
 
-
 def connect_db():
     rv = sqlite3.connect(app.config["DATABASE"])
     rv.row_factory = sqlite3.Row
@@ -37,7 +36,6 @@ def get_db():
 
 
 #   Inserts
-
 
 def addUser(username, firstname, lastname, passwd, ugroup, phone="", email=""):
     db = get_db()

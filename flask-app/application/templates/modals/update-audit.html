@@ -25,8 +25,8 @@
           <div class="col-6" id="historyScntOld"></div>
           <div class="col-6" id="historyScntNew"></div>
         </div>
-        
-        <div class="row mb-4"></div>        
+
+        <div class="row mb-4"></div>
 
        {% if session.ugroup in ['admin','manager','editor'] %}
         <div class="form-group" id="noteAuditComment">
@@ -59,7 +59,7 @@
                  name="backlink"
                  value="s">
 
-          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          {% include 'snips/_csrf_input.html' %}
 
           <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
           {% if session.ugroup in ['admin','manager','editor'] and not isDbLocked() %}

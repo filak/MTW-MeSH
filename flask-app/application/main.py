@@ -78,7 +78,7 @@ def create_app(
         dict(
             APPLICATION_ROOT=url_prefix,
             APP_NAME="MTW",
-            APP_VER="1.7.3",
+            APP_VER="1.7.4",
             API_VER="1.0.0",
             DBVERSION=1.0,
             CACHE_DIR=mtu.get_instance_dir(app, "cache"),

@@ -20,7 +20,7 @@
         <input type="hidden" id="scopeNoteTrxOriginal" name="scnt_original" value="">
         <input type="hidden" id="scopeNoteEngOriginal" name="scne_original" value="">
 
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        {% include 'snips/_csrf_input.html' %}
 
       {% if session.ugroup not in ['admin','manager','editor'] %}
           {% set disabled_scopeNote = 'readonly' %}
@@ -46,7 +46,7 @@
             <label class="custom-control-label"
             for="editScopeNote-force">Force update ?</label>
           </div>
-        </div>        
+        </div>
 
         <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
 

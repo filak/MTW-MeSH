@@ -100,7 +100,7 @@ Manage
       <div class="col">
         <h5>Actual stats</h5>
           <form action="{{ url_for('update_stats', stat='actual', force=1) }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
             <button class="btn btn-sm btn-success" type="submit" title="Update Actual stats">
               Refresh</button>
           </form>
@@ -111,7 +111,7 @@ Manage
       <div class="col">
         <h5>Initial stats</h5>
           <form action="{{ url_for('update_stats', stat='initial', force=1) }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
             <button class="btn btn-danger" type="submit" title="Update Initial stats">
               Reset
                 </button>
@@ -164,7 +164,7 @@ Manage
       <div class="col">
         <h5>UMLS TSV</h5>
           <form action="{{ url_for('update_stats', stat='umls') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
             <button class="btn btn-success" type="submit" title="Create UMLS Export (TSV)" {{ export_disabled }}>
               Generate
                 </button>
@@ -185,7 +185,7 @@ Manage
       <div class="col">
         <h5>Base Exports<small class="text-success"> [generate to enable more exports]</small></h5>
           <form action="{{ url_for('update_stats', stat='lookups') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
             <button class="btn btn-success mb-2" type="submit" title="Create Base-export file (JSON)" {{ export_disabled }}>
               Generate Base
                 </button>
@@ -203,7 +203,7 @@ Manage
           </form>
 
           <form action="{{ url_for('update_stats', stat='lookups_rest') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
             <button class="btn btn-success mb-2" type="submit" title="Create Base-rest file (JSON)" {{ export_disabled }}>
               Generate Rest
                 </button>
@@ -237,7 +237,7 @@ Manage
         <h5>Settings</h5>
 
           <form action="{{ url_for('update_stats', stat='marc') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if config.MARC_LINE == 'mrk' %}
                 {% set mrk_checked = 'checked=""' %}
@@ -360,7 +360,7 @@ Manage
       <div class="col">
         <h5>JSON <small class="text-info">for Javascript</small> <small>[<a href="{{ url_for('download', fname='structure.json') }}">structure</a>]</small></h5>
           <form action="{{ url_for('update_stats', stat='js_all') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['js_all'] %}
             <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for Javascript... (JSON)">
@@ -388,7 +388,7 @@ Manage
       <div class="col">
         <h5>XSLT lookup <small class="text-info">for Descriptors</small></h5>
           <form action="{{ url_for('update_stats', stat='xml_desc') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['xml_desc'] %}
             <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for Descriptors (XML)">
@@ -416,7 +416,7 @@ Manage
       <div class="col">
         <h5>XSLT lookup <small class="text-info">for Qualifiers</small></h5>
           <form action="{{ url_for('update_stats', stat='xml_qualif') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['xml_qualif'] %}
             <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for Qualifiers (XML)">
@@ -457,7 +457,7 @@ Manage
 
         {% if show_marc %}
           <form action="{{ url_for('update_stats', stat='js_parsers') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['js_parsers'] %}
             <button class="btn btn-sm btn-info" type="submit" title="Refresh lookup file for parsing support (JSON)">
@@ -488,7 +488,7 @@ Manage
 
         {% if show_marc %}
           <form action="{{ url_for('update_stats', stat='js_elastic') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['js_elastic'] %}
             <button class="btn btn-sm btn-info" type="submit" title="Refresh (JSON)">
@@ -519,7 +519,7 @@ Manage
 
         {% if show_umls_exports %}
           <form action="{{ url_for('update_stats', stat='umls_all') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['umls_all_tsv'] %}
             <button class="btn btn-sm btn-info" type="submit"
@@ -552,7 +552,7 @@ Manage
 
         {% if show_umls_exports %}
           <form action="{{ url_for('update_stats', stat='umls_raw') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['umls_raw_tsv'] %}
             <button class="btn btn-sm btn-info" type="submit"
@@ -584,7 +584,7 @@ Manage
         <h5>Training base CSV <small class="text-info">[to be processed further]</small></h5>
 
           <form action="{{ url_for('update_stats', stat='training_base') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['training_base_csv'] %}
             <button class="btn btn-sm btn-info" type="submit"
@@ -613,7 +613,7 @@ Manage
         <h5>Training notes CSV <small class="text-info">[to be processed further]</small></h5>
 
           <form action="{{ url_for('update_stats', stat='training_notes') }}" method="post">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
 
             {% if exports['training_notes_csv'] %}
             <button class="btn btn-sm btn-info" type="submit"

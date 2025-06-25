@@ -12,7 +12,7 @@
             {% set invisible = 'invisible' %}
         {% endif %}
           <fieldset {{ disabled }}>
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            {% include 'snips/_csrf_input.html' %}
             <input type="hidden"
                    name="action"
                    value="append">

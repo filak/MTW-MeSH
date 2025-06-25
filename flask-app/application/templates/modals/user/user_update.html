@@ -89,7 +89,7 @@
         <button type="submit" class="btn btn-success ml-3">Update</button>
       </div>
 
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      {% include 'snips/_csrf_input.html' %}
 
     </form>
     </div>

@@ -69,7 +69,7 @@
         <button type="submit" class="btn btn-info ml-3" id="noteSubmit">Add User</button>
       </div>
 
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      {% include 'snips/_csrf_input.html' %}
 
     </form>
 

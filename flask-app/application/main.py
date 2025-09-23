@@ -203,7 +203,7 @@ def create_app(
             force_https=app.config["SESSION_COOKIE_SECURE"],
             strict_transport_security=False,
             content_security_policy=app.config["GCSP"],
-            content_security_policy_nonce_in=["script-src", "style-src"],
+            content_security_policy_nonce_in=["script-src"],
         )
 
     from application.modules import filters  # noqa: F401

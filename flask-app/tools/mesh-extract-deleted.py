@@ -18,13 +18,13 @@ def process_file(filename):
                     identifiers.add(row["DescriptorUI"])
                 if row["ConceptUI"]:
                     identifiers.add(row["ConceptUI"])
-                if row["TermUI"]:
-                    identifiers.add(row["TermUI"])
+                # if row["TermUI"]:
+                #    identifiers.add(row["TermUI"])
 
                 term_str = row["String"]
 
                 # Add term_str to eng_terms dict for each ID
-                for id_key in ["DescriptorUI", "ConceptUI", "TermUI"]:
+                for id_key in ["DescriptorUI"]:
                     id_value = row.get(id_key)
                     if id_value:
                         if id_value not in eng_terms:
@@ -49,21 +49,19 @@ def query_rdf_stream(rdf_file, identifiers):
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            try:
-                # N-Triples format: <subject> <predicate> <object> .
-                parts = line.rstrip(" .").split(" ", 2)
-                if len(parts) != 3:
-                    continue
-                s, p, o = parts
-                s = s.strip("<>")
-                p = p.strip("<>")
-                o = o.strip("<>") if o.startswith("<") else o.strip('"')
 
-                if s in id_uris:
-                    if base_uri in p or "http://www.w3.org" in p:
-                        triples.append((s, p, o))
-            except Exception:
+            # N-Triples format: <subject> <predicate> <object> .
+            parts = line.rstrip(" .").split(" ", 2)
+            if len(parts) != 3:
                 continue
+            s, p, o = parts
+            s = s.strip("<>")
+            p = p.strip("<>")
+            o = o.strip("<>") if o.startswith("<") else o.strip('"')
+
+            if s in id_uris:
+                if base_uri in p or "http://www.w3.org" in p:
+                    triples.append((s, p, o))
 
     return triples
 

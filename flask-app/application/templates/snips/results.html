@@ -34,16 +34,16 @@
           {% set TEXT_COLOR = 'text-success' %}
       {% endif %}
 
-      {% if row['active']['repr'] == 'false' %}
-          {% set TEXT_COLOR = 'text-muted' %}
-      {% endif %}
-
       {% if row['scn'] and row.val and not row['scnt']  %}
           {% set TEXT_COLOR = 'text-info' %}
       {% endif %}
 
       {% if row['ntx']  %}
           {% set TEXT_COLOR = 'text-warning' %}
+      {% endif %}
+
+      {% if row['active']['repr'] == 'false' %}
+          {% set TEXT_COLOR = 'text-muted' %}
       {% endif %}
 
       <div class="row">

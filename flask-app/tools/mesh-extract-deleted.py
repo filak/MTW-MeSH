@@ -2,7 +2,7 @@ import csv
 import argparse
 import gzip
 from tqdm import tqdm
-from urllib.parse import urlparse
+
 base_uri = "http://id.nlm.nih.gov/mesh/"
 
 
@@ -60,8 +60,6 @@ def query_rdf_stream(rdf_file, identifiers):
             o = o.strip("<>") if o.startswith("<") else o.strip('"')
 
             if s in id_uris:
-                # Secure host comparison for RDF predicate (p)
-                p_host = urlparse(p).hostname
                 if base_uri in p or p.startswith("http://www.w3.org"):
                     triples.append((s, p, o))
 

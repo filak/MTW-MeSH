@@ -55,6 +55,16 @@ set extras=
 set subdir=
 call:buildFiles
 
+set fileHandle=mesh-extract-deleted
+set extras=
+set subdir=tools\
+call:buildFiles
+
+set fileHandle=mesh-get-inactive
+set extras=
+set subdir=tools\
+call:buildFiles
+
 set fileHandle=mesh-nt2trx
 set extras=
 set subdir=tools\

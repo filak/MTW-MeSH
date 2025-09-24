@@ -60,7 +60,7 @@ def query_rdf_stream(rdf_file, identifiers):
             o = o.strip("<>") if o.startswith("<") else o.strip('"')
 
             if s in id_uris:
-                if base_uri in p or p.startswith("http://www.w3.org"):
+                if p.startswith(base_uri) or p.startswith("http://www.w3.org"):
                     triples.append((s, p, o))
 
     return triples

@@ -97,14 +97,18 @@ if __name__ == "__main__":
     }
     """
 
-    print("Counting total triples...")
-    total = count_matching_triples(endpoint_url)
-
-    if total is not None:
-        print(f"Total matching triples: {total}")
+    proceed = input(f"Query & download the inactive MeSH triples from {endpoint_url} ? (y/n):  ").strip().lower()
+    if proceed not in ("y", "yes"):
+        print("Aborted.")
     else:
-        print("Proceeding without total count...")
+        print("Counting total triples...")
+        total = count_matching_triples(endpoint_url)
 
-    retrieve_all_rdf(
-        endpoint_url, sparql_query, output_file_path, total_triples=total, limit=1000
-    )
+        if total is not None:
+            print(f"Total matching triples: {total}")
+        else:
+            print("Proceeding without total count...")
+
+        retrieve_all_rdf(
+            endpoint_url, sparql_query, output_file_path, total_triples=total, limit=1000
+        )

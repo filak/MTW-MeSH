@@ -91,6 +91,36 @@
                 "fr",
                 "http://meshfr.medvik.cz/link/"
             ],
+        },
+        {
+            "name": "mesh-get-inactive",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tools/mesh-get-inactive.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [],
+        },
+        {
+            "name": "mesh-extract-deleted",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tools/mesh-extract-deleted.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "mesh_2025-09-22_bkp.nq.gz",
+                "deleted_mh.txt"
+            ],
+        },
+        {
+            "name": "Python Debugger: Current File with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": "${command:pickArgs}"
         }
     ]
 }

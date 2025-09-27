@@ -6,11 +6,17 @@ on:
     paths-ignore:
       - 'README.md'
       - 'docs/**'
+      - 'screenshots/**'
+      - 'sparql/**'
+      - '.vscode/**'
   pull_request:
     branches: [ master ]
     paths-ignore:
       - 'README.md'
       - 'docs/**'
+      - 'screenshots/**'
+      - 'sparql/**'      
+      - '.vscode/**'
 
 permissions:
   contents: read

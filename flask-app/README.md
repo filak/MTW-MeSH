@@ -70,6 +70,7 @@ Prerequisites: Python 3.12+, Git, Java17 JRE
 ## Deploy on Linux
 
 https://github.com/filak/MTW-MeSH/wiki#docker
+
 https://flask.palletsprojects.com/en/stable/deploying/#deployment
 
 ## Building for Windows

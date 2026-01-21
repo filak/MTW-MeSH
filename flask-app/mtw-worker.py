@@ -6,6 +6,7 @@ import logging
 from waitress import serve
 
 from application.worker import create_app
+from application.logger import configure_log
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 55933
@@ -16,6 +17,11 @@ appname = "mtw-worker"
 appdesc = "MTW Worker 0.1.8"
 appusage = "Help:  " + appname + " -h \n"
 appauthor = "Filip Kriz"
+
+# Silence waitress internals
+logging.getLogger("waitress").setLevel(logging.ERROR)
+logging.getLogger("waitress.queue").setLevel(logging.ERROR)
+logging.getLogger("waitress.task").setLevel(logging.ERROR)
 
 
 def start():
@@ -61,12 +67,8 @@ def start():
         print("Try help : py " + appname + ".py -h")
         return
 
-    logger = logging.getLogger("waitress")
-    logger.setLevel(logging.ERROR)
-
     app = create_app(
         debug=args.debug,
-        logger=logger,
         port=args.port,
         config_path=args.config,
         relax=args.relax,
@@ -77,6 +79,8 @@ def start():
             "Server cannot be started - check the config / modify the args / check if the port is available"
         )
         return
+
+    configure_log(app, "mtw_worker")
 
     if getattr(sys, "frozen", False):
         app.static_folder = os.path.join(os.path.dirname(sys.executable), "static")

@@ -4,7 +4,6 @@ MeSH Traslation Workflow (MTW) - Flask app factory
 """
 
 import datetime
-import logging
 import os
 from flask import Flask
 from cachelib import FileSystemCache
@@ -22,7 +21,6 @@ from application.modules import utils as mtu
 
 def create_app(
     debug=False,
-    logger=None,
     port=5900,
     config_path="conf/mtw.ini",
     server_name=None,
@@ -52,28 +50,6 @@ def create_app(
 
     if app.debug:
         print("MTW Config:  ", config_path, " - port: ", port)
-
-    if logger:
-        app.logger = logger
-
-    if not app.debug:
-        file_handler = logging.FileHandler(
-            mtu.get_instance_dir(app, "logs/mtw_server.log")
-        )
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(
-            logging.Formatter("%(asctime)s %(levelname)s: %(message)s ")
-        )
-        app.logger.addHandler(file_handler)
-    else:
-        file_handler = logging.FileHandler(
-            mtu.get_instance_dir(app, "logs/mtw_server_debug.log")
-        )
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(
-            logging.Formatter("%(asctime)s %(levelname)s: %(message)s ")
-        )
-        app.logger.addHandler(file_handler)
 
     app.config.update(
         dict(

@@ -9,6 +9,7 @@ import gzip
 import html
 import io
 import json
+import logging
 import os
 import sys
 import time
@@ -24,7 +25,7 @@ from pyuca import Collator
 from requests_futures.sessions import FuturesSession
 from urllib import parse as uparse
 
-from flask import abort
+from flask import abort, has_request_context, request
 from flask import current_app as app
 
 from application.modules import sparql
@@ -34,6 +35,29 @@ from application.modules.auth import genApiHeaders, getReqHost
 coll = Collator()
 fsession = FuturesSession()
 pp = pprint.PrettyPrinter(indent=2)
+
+
+class SafeFormatter(logging.Formatter):
+    """A custom formatter to safely handle missing attributes."""
+
+    def format(self, record):
+        if "ip" not in record.__dict__:
+            record.ip = "N/A"
+        return super().format(record)
+
+
+class RequestIPFilter(logging.Filter):
+    def __init__(self, max_len=15):
+        super().__init__()
+        self.max_len = max_len
+
+    def filter(self, record):
+        if has_request_context():
+            record.ip = request.remote_addr or "None"
+        else:
+            record.ip = "N/A"
+        # record.ip = record.ip.ljust(self.max_len)
+        return True
 
 
 def get_instance_dir(app, file_path):

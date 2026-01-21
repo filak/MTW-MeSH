@@ -480,7 +480,7 @@ def update_concept(dui, pref):
             else:
                 msg = "Operation FAILED for Concept : " + concept
                 flash(msg, "danger")
-                app.logger.error(msg)
+                app.logger.error(f"[update_concept] {msg}")
 
     return redirect(url_for("search", dui=dui))
 
@@ -526,7 +526,7 @@ def add_cpid(dui, cui):
                     check = False
                     msg = "CUI already exist ! "
                     flash(msg, "danger")
-                    app.logger.error(msg + cpid + " for " + curi)
+                    app.logger.error(f"[add_cpid] {msg} : {cpid} for {curi}")
                     return redirect(ref_redirect())
         if check:
             updated = sparql.updateTriple(
@@ -555,11 +555,11 @@ def add_cpid(dui, cui):
             )
             msg = "CUI generated: " + cpid
             flash(msg, "info")
-            app.logger.info(msg + " for " + curi)
+            app.logger.info(f"[add_cpid] {msg} : {cpid} for {curi}")
         else:
             msg = "CUI update FAILED ! "
             flash(msg, "danger")
-            app.logger.error(msg + cpid + " for " + curi)
+            app.logger.error(f"[add_cpid] {msg} : {cpid} for {curi}")
 
     else:
         msg = "CUI already issued - please try again"
@@ -575,6 +575,7 @@ def update_note(dui):
     if session["ugroup"] in ["viewer", "disabled", "locked"]:
         msg = "Insufficient priviledges"
         flash(msg, "warning")
+        app.logger.warning(f"[update_note] {dui} : {msg}")
         return render_template("errors/error_page.html", errcode=403, error=msg), 403
 
     if request.form.get("predicate") and request.form.get("label"):
@@ -583,9 +584,9 @@ def update_note(dui):
         label = request.form["label"].replace("?", "").strip()
 
         if predicate not in app.config["DESC_NOTES"]:
-            msg = "Update note: Unknown mesht predicate"
+            msg = "Unknown mesht: predicate"
             flash(msg, "danger")
-            app.logger.error(msg)
+            app.logger.error(f"[update_note] {msg}")
             return (
                 render_template("errors/error_page.html", errcode=403, error=msg),
                 403,

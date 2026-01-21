@@ -54,7 +54,7 @@ def public_api_only():
                         print(code, msg)
 
                     if code != 200:
-                        app.logger.error(msg)
+                        app.logger.error(f"[check_public] {msg}")
                         abort(403)
 
             return f(*args, **kwargs)
@@ -81,7 +81,7 @@ def validateBasicAuth():
             return True
 
     if has_app_context():
-        app.logger.error("Basic Auth failed")
+        app.logger.error("[validateBasicAuth] failed")
 
 
 def getReqHost():

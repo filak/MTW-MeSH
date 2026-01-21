@@ -25,10 +25,10 @@ def get_db():
         try:
             g.sqlite_db = connect_db()
             # g.sqlite_db.execute('pragma foreign_keys=on')
-        except sqlite3.Error as e:
-            error = "Flask get_db error : " + str(e.args[0])
+        except sqlite3.Error as err:
+            error = "Flask get_db error : " + str(err.args[0])
             flash(error, "danger")
-            app.logger.error(error)
+            app.logger.error(f"[get_db] {err}")
             return None
         else:
             return g.sqlite_db

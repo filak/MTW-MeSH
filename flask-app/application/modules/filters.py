@@ -4,7 +4,6 @@ import uuid
 from flask import current_app as app
 from application.modules import utils as mtu
 
-
 # Filters & Context processors
 
 

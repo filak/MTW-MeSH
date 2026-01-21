@@ -2,6 +2,7 @@
 """
 MeSH Traslation Workflow (MTW) background worker - Flask app factory
 """
+
 import logging
 import os
 from flask import Flask

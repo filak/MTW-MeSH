@@ -14,7 +14,7 @@ DEFAULT_CONFIG = "conf/mtw-dist.ini"
 DEFAULT_PREFIX = "mtw"
 
 appname = "mtw-server"
-appdesc = "MTW Server 1.7.4"
+appdesc = "MTW Server 1.7.5"
 appusage = "Help:  " + appname + " -h \n"
 appauthor = "Filip Kriz"
 

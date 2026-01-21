@@ -2,6 +2,7 @@
 """
 MeSH Traslation Workflow (MTW) - Flask app factory
 """
+
 import datetime
 import logging
 import os
@@ -78,7 +79,7 @@ def create_app(
         dict(
             APPLICATION_ROOT=url_prefix,
             APP_NAME="MTW",
-            APP_VER="1.7.4",
+            APP_VER="1.7.5",
             API_VER="1.0.0",
             DBVERSION=1.0,
             CACHE_DIR=mtu.get_instance_dir(app, "cache"),

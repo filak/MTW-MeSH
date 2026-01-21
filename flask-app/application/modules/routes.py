@@ -2,6 +2,7 @@
 """
 Routes & pages
 """
+
 import bcrypt
 import json
 import pprint
@@ -1489,6 +1490,7 @@ def search(dui, action):
     if text_query:
         data = sparql.getSparqlData(
             "search",
+            # "search_old",
             query=text_query,
             show=session.get("sshow"),
             status=session.get("sstatus"),
@@ -1496,9 +1498,9 @@ def search(dui, action):
             scr=session.get("scr"),
             qtp=session.get("qtp"),
         )
-        # pp.pprint(data)
-
         if data:
+            # if app.debug:
+            #    app.logger.error(json.dumps(data))
             started = timer()
             hits = sparql.parseSparqlData(data)
             # pp.pprint(hits)

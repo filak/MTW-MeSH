@@ -163,9 +163,6 @@ def settings():
     return redirect(ref_redirect())
 
 
-#  Audit
-
-
 @app.route("/todo/", defaults={"tlist": "Preferred"}, methods=["GET"])
 @app.route("/todo/list:<tlist>", methods=["GET"])
 @login_required
@@ -191,6 +188,7 @@ def todo(tlist):
             # pp.pprint(data)
             hits = sparql.parseSparqlData(data)
             # pp.pprint(hits)
+
     else:
         session.pop("tlist", None)
         tlist = "Select a list"
@@ -1013,9 +1011,6 @@ def update_audit():
             return redirect(url_for("search", dui=dui, tab="history"))
 
 
-#  Compare
-
-
 @app.route("/compare/", defaults={"dui": ""}, methods=["GET"])
 @app.route("/compare/dui:<dui>", methods=["GET"])
 @login_required
@@ -1065,9 +1060,6 @@ def compare(dui):
     )
 
 
-#  Audit
-
-
 @app.route("/audit/", defaults={"dui": "", "cui": ""}, methods=["GET"])
 @app.route("/audit/dui:<dui>", defaults={"cui": ""}, methods=["GET"])
 @app.route("/audit/dui:<dui>/cui:<cui>", methods=["GET"])
@@ -1105,9 +1097,6 @@ def audit(dui, cui):
         target_years=target_years,
         year=year,
     )
-
-
-#  Approval
 
 
 @app.route(
@@ -1568,9 +1557,6 @@ def store_visited(dui, label):
                 del session["visited"][rem]
 
 
-#  Reporting
-
-
 @app.route("/report/", defaults={"userid": "", "year": ""}, methods=["GET"])
 @app.route("/report/userid:<userid>", defaults={"year": ""}, methods=["GET"])
 @app.route("/report/year:<year>", defaults={"userid": ""}, methods=["GET"])
@@ -1675,9 +1661,6 @@ def report(userid, year):
         )
 
 
-#  Management
-
-
 @app.route("/manage/", defaults={"action": ""}, methods=["GET"])
 @app.route("/manage/action:<action>", methods=["POST"])
 @login_required
@@ -1776,7 +1759,7 @@ def manage(action):
             exp_files[f]["fname"] = fp.name
             exp_files[f]["fdate"] = mtu.getFpathDate(fp)
 
-    # 2024_umls.tsv
+    # YYYY_umls.tsv
     show_umls_exports = False
     umls_tsv = mtu.getTempFpath("umls", ext="tsv")
     if umls_tsv.is_file():
@@ -2057,9 +2040,6 @@ def update_user():
             )
 
         return redirect(url_for("manage"))
-
-
-#  Login | Logout
 
 
 @app.route("/login/", methods=["GET", "POST"])

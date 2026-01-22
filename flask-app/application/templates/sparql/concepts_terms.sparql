@@ -1,4 +1,4 @@
-## Descriptor query v1.0
+## Descriptor query v1.0 - concept terms
 
 {% include 'sparql/_namespaces.sparql' %}
 

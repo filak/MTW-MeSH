@@ -98,7 +98,7 @@ ORDER BY DESC(?score)
   {% endif %}
 
   {% if status == 'revised' %}
-      ?d meshv:dateRevised|lastUpdated ?dateRev .
+      ?d meshv:dateRevised|meshv:lastUpdated ?dateRev .
       FILTER( ?dateRev >= "{{ config.REVISED_AFTER }}"^^xsd:date )
   {% endif %}
 

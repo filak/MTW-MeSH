@@ -428,12 +428,12 @@ def getLookupJson(lookups, export):
         dui = item["dui"]
 
         d = {}
-        if item.get("active") == "false":
-            d["active"] = False
-            d["eng"] = item.get("den", "").replace("[OBSOLETE]", "").strip()
-        else:
+        if not item.get("active") == "false":
             d["active"] = True
             d["eng"] = item.get("den", "")
+        else:
+            d["active"] = False
+            d["eng"] = item.get("den", "").replace("[OBSOLETE]", "").strip()
 
         if item.get("notrx", "") != "":
             d["notrx"] = True

@@ -13,7 +13,7 @@ WHERE {
   ?d meshv:identifier ?dui .
 
   # Assume absence of meshv:active as true
-  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status) .
+  BIND(NOT EXISTS { ?d meshv:active false } AS ?status)
 
   ?d meshv:preferredConcept ?c .
   ?c meshv:identifier ?cui .
@@ -38,7 +38,7 @@ WHERE {
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
 
-  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status) .
+  BIND(NOT EXISTS { ?d meshv:active false } AS ?status)
 
   ?d meshv:concept|mesht:concept ?c .
   OPTIONAL { ?c meshv:identifier|mesht:identifier ?cui }
@@ -63,7 +63,7 @@ WHERE {
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
   ?d meshv:identifier ?dui .
 
-  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?status) .
+  BIND(NOT EXISTS { ?d meshv:active false } AS ?status)
 
   ?d meshv:preferredConcept|meshv:concept|mesht:concept ?c .
   OPTIONAL { ?c meshv:identifier|mesht:identifier ?cui }

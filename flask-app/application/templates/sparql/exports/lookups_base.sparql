@@ -1,4 +1,4 @@
-## Base export query v1.5
+## Base export query v1.6
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -15,19 +15,23 @@ WHERE {
   ?d meshv:identifier ?dui .
 
   # Assume absence of meshv:active as true
-  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
-
-  ?d meshv:dateCreated ?crt .
+  BIND(NOT EXISTS { ?d meshv:active false } AS ?active)
+  
   ?d meshv:dateEstablished|meshv:dateIntroduced ?est .
+
+  ?d meshv:preferredConcept ?c .
+  ?c meshv:identifier ?cui .
+  ?c meshv:preferredTerm ?t .
+  ?t meshv:prefLabel ?den .
+
+  OPTIONAL { ?d meshv:dateCreated ?crt }
+
   OPTIONAL { ?d meshv:lastActiveYear ?last }
   OPTIONAL {
     ?d meshv:treeNumber ?tree .
     ?tree rdfs:label ?trns
   }
-  ?d meshv:preferredConcept ?c .
-  ?c meshv:identifier ?cui .
-  ?c meshv:preferredTerm ?t .
-  ?t meshv:prefLabel ?den .
+
   OPTIONAL {
     ?c mesht:preferredTerm ?tp .
     ?tp mesht:prefLabel ?trx

@@ -7,13 +7,13 @@ WHERE {
   ?ddq meshv:hasDescriptor ?d .
 
   # Assume absence of meshv:active as true
-  BIND(IF(EXISTS { ?ddq meshv:active false }, false, true) AS ?ddqactive) .
+  BIND(NOT EXISTS { ?ddq meshv:active false } AS ?ddqactive)
   FILTER(?ddqactive) .
 
   ?d meshv:identifier ?dui .
   ?ddq meshv:useInstead ?adq .
 
-  BIND(IF(EXISTS { ?adq meshv:active false }, false, true) AS ?adqactive) .
+  BIND(NOT EXISTS { ?adq meshv:active false } AS ?adqactive)
   FILTER(?adqactive) .
 
   ?ddq meshv:hasQualifier ?q .

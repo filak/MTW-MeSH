@@ -50,7 +50,7 @@ WHERE {
 }} UNION {
 SELECT ?p ?o
 WHERE {
-  BIND(meshv:dateRevised as ?p)
+  BIND(meshv:dateRevised|lastUpdated as ?p)
   mesh:{{ query }} ?p ?val
   BIND(STR(?val) AS ?o)
 }} UNION {

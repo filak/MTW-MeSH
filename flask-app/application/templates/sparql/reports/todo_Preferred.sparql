@@ -19,7 +19,7 @@ WHERE {
   BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
 
   #?d meshv:dateCreated ?dateCrt .
-  #OPTIONAL { ?d meshv:dateRevised ?dateRev }
+  #OPTIONAL { ?d meshv:dateRevised|lastUpdated ?dateRev }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
 }

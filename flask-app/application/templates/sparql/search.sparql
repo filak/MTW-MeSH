@@ -172,7 +172,7 @@ WHERE {
       FILTER (!?active)
   {% elif status == 'revised' %}
       # Only revised
-      ?descriptor meshv:dateRevised ?dateRev .
+      ?descriptor meshv:dateRevised|lastUpdated ?dateRev .
       FILTER(?dateRev >= "{{ config.REVISED_AFTER }}"^^xsd:date)
   {% elif status == 'new' %}
       # Only new

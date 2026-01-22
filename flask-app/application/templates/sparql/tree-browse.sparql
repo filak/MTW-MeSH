@@ -103,7 +103,7 @@ SELECT distinct ?tn ?label ?d ?type ?val ?active ?scn ?scnt ?ntx ?lockedBy {
              }
 
     {% if status == 'revised' %}
-        ?d meshv:dateRevised ?dateRev .
+        ?d meshv:dateRevised|lastUpdated ?dateRev .
         FILTER( ?dateRev >= "{{ config.REVISED_AFTER }}"^^xsd:date )
     {% endif %}
 

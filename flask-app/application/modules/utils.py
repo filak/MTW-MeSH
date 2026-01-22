@@ -745,9 +745,11 @@ def getElasticDoc(dui, item, lookup, xnote=None):
             rels = []
             for d in item.get(key, []):
                 rel = lookup.get(d)
-                eng = rel.get("eng")
-                r = rel.get("trx", eng) + "~" + eng + "|" + d
-                rels.append(r)
+                if rel:
+                    eng = rel.get("eng")
+                    if eng:
+                        r = rel.get("trx", eng) + "~" + eng + "|" + d
+                        rels.append(r)
             if rels:
                 item[key] = rels
 

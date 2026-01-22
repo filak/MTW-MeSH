@@ -1,4 +1,4 @@
-## Base export query v1.4
+## Base export query v1.5
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -18,7 +18,7 @@ WHERE {
   BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
 
   ?d meshv:dateCreated ?crt .
-  ?d meshv:dateEstablished ?est .
+  ?d meshv:dateEstablished|meshv:dateIntroduced ?est .
   OPTIONAL { ?d meshv:lastActiveYear ?last }
   OPTIONAL {
     ?d meshv:treeNumber ?tree .

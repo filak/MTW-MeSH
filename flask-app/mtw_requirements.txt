@@ -19,8 +19,11 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 pip_audit==2.10.0  ## Run: pip freeze > requirements.txt ; pip-audit ; pip-audit -r mtw_requirements.txt
 pyuca==1.2
+rdflib==7.5.0
 requests==2.32.5
 requests_futures==1.0.2
+SPARQLWrapper==2.0.0
+tqdm==4.67.1
 urllib3==2.6.3
 waitress==3.0.2
 Werkzeug==3.1.5

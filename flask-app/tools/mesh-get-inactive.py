@@ -122,3 +122,5 @@ if __name__ == "__main__":
             total_triples=total,
             limit=1000,
         )
+
+        print(f"Output: {output_file_path}")

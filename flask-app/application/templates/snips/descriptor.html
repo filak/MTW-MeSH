@@ -22,6 +22,11 @@
     <!-- <h4 class="text-success">{{ descriptor['labels']['target'] }}</h4> -->
   </li>
   <li class="list-inline-item float-right">
+    <a class="btn btn-secondary ml-1 mr-1" role="button" href="{{ url_for('audit', dui=dui) }}"
+         title="Show Audit" aria-label="Show Audit">
+      <i class="fas fa-bars"></i></a>
+  </li>
+  <li class="list-inline-item float-right">
     {% if session.ugroup in ['admin'] %}
         {% set disabled = 'disabled' %}
         {% set invisible = 'invisible' %}

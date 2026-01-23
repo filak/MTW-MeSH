@@ -9,13 +9,13 @@ WHERE {
   FILTER(?dtype IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
 
   # Assume absence of meshv:active as true
-  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?actived) .
-  FILTER(?actived)
+  BIND(NOT EXISTS { ?d meshv:active false } AS ?active)
+  FILTER(?active)
 
   ?d meshv:identifier ?dui .
   ?d meshv:allowableQualifier ?q .
 
-  ##BIND(IF(EXISTS { ?q meshv:active false }, false, true) AS ?activeq) .
+  ##BIND(NOT EXISTS { ?q meshv:active false } AS ?activeq)
   ##FILTER(?activeq)
 
   ?q meshv:identifier ?qui

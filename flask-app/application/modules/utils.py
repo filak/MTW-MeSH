@@ -2,12 +2,14 @@
 """
 MeSH Traslation Workflow (MTW) - utils
 """
+
 import csv
 import datetime
 import gzip
 import html
 import io
 import json
+import logging
 import os
 import sys
 import time
@@ -23,7 +25,7 @@ from pyuca import Collator
 from requests_futures.sessions import FuturesSession
 from urllib import parse as uparse
 
-from flask import abort
+from flask import abort, has_request_context, request
 from flask import current_app as app
 
 from application.modules import sparql
@@ -33,6 +35,29 @@ from application.modules.auth import genApiHeaders, getReqHost
 coll = Collator()
 fsession = FuturesSession()
 pp = pprint.PrettyPrinter(indent=2)
+
+
+class SafeFormatter(logging.Formatter):
+    """A custom formatter to safely handle missing attributes."""
+
+    def format(self, record):
+        if "ip" not in record.__dict__:
+            record.ip = "N/A"
+        return super().format(record)
+
+
+class RequestIPFilter(logging.Filter):
+    def __init__(self, max_len=15):
+        super().__init__()
+        self.max_len = max_len
+
+    def filter(self, record):
+        if has_request_context():
+            record.ip = request.remote_addr or "None"
+        else:
+            record.ip = "N/A"
+        # record.ip = record.ip.ljust(self.max_len)
+        return True
 
 
 def get_instance_dir(app, file_path):
@@ -403,12 +428,12 @@ def getLookupJson(lookups, export):
         dui = item["dui"]
 
         d = {}
-        if item.get("active") == "false":
-            d["active"] = False
-            d["eng"] = item.get("den", "").replace("[OBSOLETE]", "").strip()
-        else:
+        if not item.get("active") == "false":
             d["active"] = True
             d["eng"] = item.get("den", "")
+        else:
+            d["active"] = False
+            d["eng"] = item.get("den", "").replace("[OBSOLETE]", "").strip()
 
         if item.get("notrx", "") != "":
             d["notrx"] = True
@@ -720,9 +745,11 @@ def getElasticDoc(dui, item, lookup, xnote=None):
             rels = []
             for d in item.get(key, []):
                 rel = lookup.get(d)
-                eng = rel.get("eng")
-                r = rel.get("trx", eng) + "~" + eng + "|" + d
-                rels.append(r)
+                if rel:
+                    eng = rel.get("eng")
+                    if eng:
+                        r = rel.get("trx", eng) + "~" + eng + "|" + d
+                        rels.append(r)
             if rels:
                 item[key] = rels
 

@@ -2,7 +2,7 @@
 
 {% include 'sparql/_namespaces.sparql' %}
 
-SELECT ?p ?o ?label ?tlabel ?cas ?rn 
+SELECT ?p ?o ?label ?tlabel ?cas ?rn
 (GROUP_CONCAT(DISTINCT ?rnr ; separator='~') AS ?rrn)
 {
   {
@@ -21,17 +21,17 @@ SELECT ?p ?o ?label ?tlabel ?cas ?rn
    ?t mesht:prefLabel ?tlabel
   }
    OPTIONAL {
-   ?d meshv:preferredConcept ?o . 
+   ?d meshv:preferredConcept ?o .
    ?o meshv:casn1_label ?cas
   }
    OPTIONAL {
-   ?d meshv:preferredConcept ?o . 
+   ?d meshv:preferredConcept ?o .
    ?o meshv:registryNumber ?rn
-  }  
+  }
    OPTIONAL {
-   ?d meshv:preferredConcept ?o . 
-   ?o meshv:relatedRegistryNumber ?rnr 
-  }  
+   ?d meshv:preferredConcept ?o .
+   ?o meshv:relatedRegistryNumber ?rnr
+  }
 }
 GROUP BY ?p ?o ?label ?tlabel ?cas ?rn
 ORDER BY ?p ?label

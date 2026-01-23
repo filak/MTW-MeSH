@@ -20,14 +20,13 @@ WHERE {
   FILTER (!BOUND(?nval))
 
   # Assume absence of meshv:active as true
-  BIND(IF(EXISTS { ?d meshv:active false }, false, true) AS ?active) .
+  BIND(NOT EXISTS { ?d meshv:active false } AS ?active)
 
-  #?d meshv:dateCreated ?dateCrt .
-  #OPTIONAL { ?d meshv:dateRevised ?dateRev }
+  #OPTIONAL { ?d meshv:dateCreated ?dateCrt }
+  #OPTIONAL { ?d meshv:dateRevised|meshv:lastUpdated ?dateRev }
   OPTIONAL { ?d mesht:lockedBy ?lockedBy }
   OPTIONAL { ?c mesht:notTranslatable ?ntx }
   FILTER (!BOUND(?ntx))
   FILTER (!BOUND(?ntxnc))
 }
 ORDER BY ?label LIMIT 200
-

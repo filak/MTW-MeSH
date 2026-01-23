@@ -17,10 +17,12 @@ choice /C AN /M "Clean build ?  A/N"
 if errorlevel 1 set buildClean=--clean
 if errorlevel 2 set buildClean=
 
+echo.
 choice /C AN /M "Test run ?  A/N"
 if errorlevel 1 set testRun=1
 if errorlevel 2 set testRun=0
 
+echo.
 echo Build using pyinstaller : %python%
 
 set srcDir=application

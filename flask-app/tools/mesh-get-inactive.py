@@ -97,7 +97,13 @@ if __name__ == "__main__":
     }
     """
 
-    proceed = input(f"Query & download the inactive MeSH triples from {endpoint_url} ? (y/n):  ").strip().lower()
+    proceed = (
+        input(
+            f"Query & download the inactive MeSH triples from {endpoint_url} ? (y/n):  "
+        )
+        .strip()
+        .lower()
+    )
     if proceed not in ("y", "yes"):
         print("Aborted.")
     else:
@@ -110,5 +116,11 @@ if __name__ == "__main__":
             print("Proceeding without total count...")
 
         retrieve_all_rdf(
-            endpoint_url, sparql_query, output_file_path, total_triples=total, limit=1000
+            endpoint_url,
+            sparql_query,
+            output_file_path,
+            total_triples=total,
+            limit=1000,
         )
+
+        print(f"Output: {output_file_path}")

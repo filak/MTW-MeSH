@@ -1,4 +1,4 @@
-### Search for duplicates in translation v1.0
+### Search for duplicates in translation v1.1
 
 {% include 'sparql/_namespaces.sparql' %}
 
@@ -8,8 +8,8 @@ SELECT ?trx ?ttype (count(*) as ?cnt)
     (GROUP_CONCAT(DISTINCT ?dui ; separator='~') AS ?ids)
 WHERE {
   ?d rdf:type ?type .
-  ?d meshv:active true .
   FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag))
+  FILTER NOT EXISTS { ?d meshv:active false }
   ?d meshv:identifier ?dui .
   ?d meshv:preferredConcept|meshv:concept ?c .
   ?c mesht:preferredTerm|mesht:term ?t .
@@ -25,8 +25,8 @@ SELECT ?trx ?ttype (count(*) as ?cnt)
    (GROUP_CONCAT(DISTINCT ?dui ; separator='~') AS ?ids)
 WHERE {
   ?d rdf:type ?type .
-  ?d meshv:active true .
   FILTER(?type IN(meshv:Qualifier))
+  FILTER NOT EXISTS { ?d meshv:active false }
   ?d meshv:identifier ?dui .
   ?d meshv:preferredConcept|meshv:concept ?c .
   ?c mesht:preferredTerm|mesht:term ?t .

@@ -2,6 +2,7 @@
 """
 Routes & pages
 """
+
 import bcrypt
 import json
 import pprint
@@ -162,9 +163,6 @@ def settings():
     return redirect(ref_redirect())
 
 
-#  Audit
-
-
 @app.route("/todo/", defaults={"tlist": "Preferred"}, methods=["GET"])
 @app.route("/todo/list:<tlist>", methods=["GET"])
 @login_required
@@ -190,6 +188,7 @@ def todo(tlist):
             # pp.pprint(data)
             hits = sparql.parseSparqlData(data)
             # pp.pprint(hits)
+
     else:
         session.pop("tlist", None)
         tlist = "Select a list"
@@ -479,7 +478,7 @@ def update_concept(dui, pref):
             else:
                 msg = "Operation FAILED for Concept : " + concept
                 flash(msg, "danger")
-                app.logger.error(msg)
+                app.logger.error(f"[update_concept] {msg}")
 
     return redirect(url_for("search", dui=dui))
 
@@ -525,7 +524,7 @@ def add_cpid(dui, cui):
                     check = False
                     msg = "CUI already exist ! "
                     flash(msg, "danger")
-                    app.logger.error(msg + cpid + " for " + curi)
+                    app.logger.error(f"[add_cpid] {msg} : {cpid} for {curi}")
                     return redirect(ref_redirect())
         if check:
             updated = sparql.updateTriple(
@@ -554,11 +553,11 @@ def add_cpid(dui, cui):
             )
             msg = "CUI generated: " + cpid
             flash(msg, "info")
-            app.logger.info(msg + " for " + curi)
+            app.logger.info(f"[add_cpid] {msg} : {cpid} for {curi}")
         else:
             msg = "CUI update FAILED ! "
             flash(msg, "danger")
-            app.logger.error(msg + cpid + " for " + curi)
+            app.logger.error(f"[add_cpid] {msg} : {cpid} for {curi}")
 
     else:
         msg = "CUI already issued - please try again"
@@ -574,6 +573,7 @@ def update_note(dui):
     if session["ugroup"] in ["viewer", "disabled", "locked"]:
         msg = "Insufficient priviledges"
         flash(msg, "warning")
+        app.logger.warning(f"[update_note] {dui} : {msg}")
         return render_template("errors/error_page.html", errcode=403, error=msg), 403
 
     if request.form.get("predicate") and request.form.get("label"):
@@ -582,9 +582,9 @@ def update_note(dui):
         label = request.form["label"].replace("?", "").strip()
 
         if predicate not in app.config["DESC_NOTES"]:
-            msg = "Update note: Unknown mesht predicate"
+            msg = "Unknown mesht: predicate"
             flash(msg, "danger")
-            app.logger.error(msg)
+            app.logger.error(f"[update_note] {msg}")
             return (
                 render_template("errors/error_page.html", errcode=403, error=msg),
                 403,
@@ -1011,9 +1011,6 @@ def update_audit():
             return redirect(url_for("search", dui=dui, tab="history"))
 
 
-#  Compare
-
-
 @app.route("/compare/", defaults={"dui": ""}, methods=["GET"])
 @app.route("/compare/dui:<dui>", methods=["GET"])
 @login_required
@@ -1063,9 +1060,6 @@ def compare(dui):
     )
 
 
-#  Audit
-
-
 @app.route("/audit/", defaults={"dui": "", "cui": ""}, methods=["GET"])
 @app.route("/audit/dui:<dui>", defaults={"cui": ""}, methods=["GET"])
 @app.route("/audit/dui:<dui>/cui:<cui>", methods=["GET"])
@@ -1103,9 +1097,6 @@ def audit(dui, cui):
         target_years=target_years,
         year=year,
     )
-
-
-#  Approval
 
 
 @app.route(
@@ -1489,6 +1480,7 @@ def search(dui, action):
     if text_query:
         data = sparql.getSparqlData(
             "search",
+            # "search_old",
             query=text_query,
             show=session.get("sshow"),
             status=session.get("sstatus"),
@@ -1496,9 +1488,9 @@ def search(dui, action):
             scr=session.get("scr"),
             qtp=session.get("qtp"),
         )
-        # pp.pprint(data)
-
         if data:
+            # if app.debug:
+            #    app.logger.error(json.dumps(data))
             started = timer()
             hits = sparql.parseSparqlData(data)
             # pp.pprint(hits)
@@ -1563,9 +1555,6 @@ def store_visited(dui, label):
             if len(session["visited_check"]) > app.config["CLIPBOARD_SIZE"]:
                 rem = session["visited_check"].pop(0)
                 del session["visited"][rem]
-
-
-#  Reporting
 
 
 @app.route("/report/", defaults={"userid": "", "year": ""}, methods=["GET"])
@@ -1672,9 +1661,6 @@ def report(userid, year):
         )
 
 
-#  Management
-
-
 @app.route("/manage/", defaults={"action": ""}, methods=["GET"])
 @app.route("/manage/action:<action>", methods=["POST"])
 @login_required
@@ -1773,7 +1759,7 @@ def manage(action):
             exp_files[f]["fname"] = fp.name
             exp_files[f]["fdate"] = mtu.getFpathDate(fp)
 
-    # 2024_umls.tsv
+    # YYYY_umls.tsv
     show_umls_exports = False
     umls_tsv = mtu.getTempFpath("umls", ext="tsv")
     if umls_tsv.is_file():
@@ -2054,9 +2040,6 @@ def update_user():
             )
 
         return redirect(url_for("manage"))
-
-
-#  Login | Logout
 
 
 @app.route("/login/", methods=["GET", "POST"])

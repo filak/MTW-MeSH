@@ -1,0 +1,167 @@
+### Search/Text query v1.5
+## All Descriptors & Concepts
+## params: query string [+ filter: active=false]
+
+{% include 'sparql/_namespaces.sparql' %}
+
+{% if config.USE_PROP_LISTS %}
+    {% if qtp == 'all' %}
+        {% set prop_list = 'mesht:queryAll' %}
+    {% elif qtp == 'notes' %}
+        {% set prop_list = 'mesht:queryNotes' %}
+    {% elif qtp == 'def' %}
+        {% set prop_list = 'mesht:queryDef' %}
+    {% else %}
+        {% set prop_list = 'mesht:queryDef' %}
+    {% endif %}
+{% else %}
+    {% set prop_list = '' %}
+{% endif %}
+
+SELECT distinct ?label ?d ?type ?active ?val ?scn ?scnt ?ntx ?lockedBy ?score {
+{
+SELECT distinct ?d ?type ?score
+WHERE {
+
+  {% if slang == 'target' %}
+      (?s ?score) text:query ({{ prop_list }} "{{ query }}" 500 "lang:{{ lang }}") .
+  {% elif slang == 'source' %}
+      (?s ?score) text:query ({{ prop_list }} "{{ query }}" 500 "lang:en") .
+  {% else %}
+      (?s ?score) text:query ({{ prop_list }} "{{ query }}" 500) .
+  {% endif %}
+
+  OPTIONAL {
+    BIND(?s as ?d)
+    ?s rdf:type ?type .
+    ?s rdfs:label ?label .
+    FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+    }
+
+  {% if scr == 'yes' %}
+  OPTIONAL {
+    ?s meshv:mappedTo|meshv:preferredMappedTo|meshv:pharmacologicalAction ?d .
+    ?d rdf:type ?type .
+    ?d rdfs:label ?label .
+    FILTER (?type IN(meshv:TopicalDescriptor,meshv:Descriptor))
+    }
+  {% endif %}
+
+  OPTIONAL {
+    ?d meshv:treeNumber ?s .
+    ?d rdf:type ?type .
+    ?d rdfs:label ?label .
+    }
+  OPTIONAL {
+    ?c meshv:preferredTerm|meshv:term ?s .
+    ?d meshv:preferredConcept|meshv:concept ?c .
+    ?d rdf:type ?type .
+    FILTER(?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+  {% if scr == 'no' %}
+    ?c rdf:type ?ctype .
+    FILTER(?ctype NOT IN(meshv:SCR_Anatomy, meshv:SCR_Disease, meshv:SCR_Chemical, meshv:SCR_Organism, meshv:SCR_Population, meshv:SCR_Protocol))
+  {% endif %}
+    }
+  OPTIONAL {
+    ?s rdf:type ?stype .
+    ?d meshv:preferredConcept|meshv:concept ?s .
+    ?d rdf:type ?type .
+    FILTER(?stype IN(meshv:Concept))
+    }
+  OPTIONAL {
+    ?c mesht:preferredTerm|mesht:term ?s .
+    ?d meshv:preferredConcept|meshv:concept ?c .
+    ?d rdf:type ?type .
+    }
+  OPTIONAL {
+    ?d mesht:concept ?s .
+    ?d rdf:type ?type .
+    }
+
+FILTER (BOUND(?d))
+FILTER (?type IN(meshv:TopicalDescriptor,meshv:GeographicalDescriptor,meshv:PublicationType,meshv:CheckTag,meshv:Qualifier))
+}
+ORDER BY DESC(?score)
+  }
+  ?d rdfs:label ?label .
+  FILTER ( lang(?label) = 'en' )
+  ?d meshv:preferredConcept ?c .
+
+  # Assume absence of meshv:active as true
+  BIND(NOT EXISTS { ?d meshv:active false } AS ?active)
+
+  {% if status == 'active' %}
+      FILTER (?active)
+  {% endif %}
+  {% if status == 'deleted' %}
+      FILTER (!?active)
+  {% endif %}
+
+  {% if status == 'revised' %}
+      ?d meshv:dateRevised|meshv:lastUpdated ?dateRev .
+      FILTER( ?dateRev >= "{{ config.REVISED_AFTER }}"^^xsd:date )
+  {% endif %}
+
+  {% if status == 'new' %}
+      ?d meshv:dateCreated ?dateCrt .
+      FILTER( ?dateCrt >= "{{ config.CREATED_AFTER }}"^^xsd:date )
+  {% endif %}
+
+  OPTIONAL { ?d mesht:lockedBy ?lockedBy }
+
+  {% if show == 'ntx' %}
+  OPTIONAL { ?c mesht:notTranslatable ?ntx }
+  {% endif %}
+
+  OPTIONAL {
+    ?c mesht:preferredTerm ?termID .
+    ?termID mesht:prefLabel ?val
+  }
+
+  OPTIONAL {?c meshv:scopeNote ?scnv .
+            BIND('YES' as ?scn)
+           }
+  OPTIONAL {?c mesht:scopeNote ?scntv
+            BIND('YES' as ?scnt)
+           }
+
+    {% if status == 'notpref' %}
+
+        ?d meshv:concept ?npc
+
+        OPTIONAL { ?npc mesht:notTranslatable ?ntxnp }
+
+        OPTIONAL { ?npc mesht:preferredTerm ?termIDnp }
+        {% if show == 'translated' %}
+            FILTER (BOUND(?termIDnp))   ## Translated
+        {% endif %}
+        {% if show == 'todo' %}
+            FILTER (!BOUND(?termIDnp))  ## notTranslated
+        {% endif %}
+        {% if show == 'ntx' %}
+            FILTER (BOUND(?ntxnp))
+        {% endif %}
+
+    {% endif %}
+
+    {% if show == 'translated' %}
+        FILTER (BOUND(?val))   ## Translated
+    {% endif %}
+
+    {% if show == 'todo' and status != 'notpref' %}
+        FILTER (!BOUND(?val))  ## notTranslated
+    {% endif %}
+
+    {% if show == 'scn' %}
+        FILTER (BOUND(?val))   ## Translated
+        FILTER (BOUND(?scn))   ## ScopeNote
+        FILTER (!BOUND(?scnt)) ## notTranslatedScopeNote
+    {% endif %}
+
+    {% if show == 'ntx' %}
+      {% if status != 'notpref' %}
+        FILTER (BOUND(?ntx))
+      {% endif %}
+    {% endif %}
+
+} LIMIT 500

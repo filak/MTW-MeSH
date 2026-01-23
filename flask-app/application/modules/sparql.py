@@ -2,6 +2,7 @@
 """
 MeSH Traslation Workflow (MTW) - SPARQL ops
 """
+
 import datetime
 import requests
 import pprint
@@ -108,6 +109,7 @@ def getSparqlData(
                 endpoint, headers=headers, data=sparql.encode("utf-8"), timeout=600
             )
         ) as r:
+            r.raise_for_status()
             show_elapsed(t0, tag="result ready: " + template)
             if r.status_code == 200:
                 if output == "json":
@@ -125,6 +127,9 @@ def getSparqlData(
         app.logger.error(
             "%s \n\n %s \n\n %s \n\n %s", endpoint, template, query, str(err)
         )
+
+    except Exception as err:
+        app.logger.error(f"[getSparqlData] {err}")
 
 
 def getSparqlDataExt(dui, output, year="", key=None, cache=None, otype="Descriptor"):

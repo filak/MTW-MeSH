@@ -7,7 +7,7 @@ import gzip
 from timeit import default_timer as timer
 
 appname = "mesh-nt-update-ns"
-appversion = "1.0.1 22-1-2025"
+appversion = "1.0.2 22-1-2026"
 appdesc = "Update MeSH namespace"
 appusage = "Help:   " + appname + ".py -h \n"
 appauthor = "Filip Kriz"
@@ -94,13 +94,15 @@ def updateNS(inputFile, ns_old, ns_new, outputFile):
 
     s = io.StringIO()
 
+    writeOutputGzip(outputFile, s.getvalue())
+
     for line in fh:
         count += 1
         batch += 1
         s.write(line.replace(mesh_ns_old, mesh_ns_new))
 
         if batch == bsize:
-            writeOutputGzip(outputFile, s.getvalue())
+            writeOutputGzip(outputFile, s.getvalue(), mode="at")
             batch = 0
             s.close()
             s = io.StringIO()
@@ -108,7 +110,7 @@ def updateNS(inputFile, ns_old, ns_new, outputFile):
     fh.close()
 
     if s.getvalue():
-        writeOutputGzip(outputFile, s.getvalue())
+        writeOutputGzip(outputFile, s.getvalue(), mode="at")
 
     s.close()
 

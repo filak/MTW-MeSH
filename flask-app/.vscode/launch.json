@@ -52,7 +52,7 @@
             },
             "args": [
                 //"--port", "80",
-                //"--config", "conf/mtw.ini",
+                "--config", "conf/mtw.ini",
                 //"--config", "conf/mtw-fr.ini",
                 "--debug",
                 "--fqdn=test.medvik.cz",
@@ -72,7 +72,7 @@
             },
             "args": [
                 //"--port", "5903",
-                //"--config", "conf/mtw.ini",
+                "--config", "conf/mtw.ini",
                 //"--config", "conf/mtw-fr.ini",
                 "--debug"
                 //"--relax"

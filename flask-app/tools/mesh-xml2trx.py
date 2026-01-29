@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 appname = "mesh-xml2trx"
 appversion = "1.5.1 14-5-2024"
-appdesc = "Extracting translation dataset from MeSH XML"
+appdesc = "[OBSOLETE] Extracting translation dataset from MeSH XML"
 appusage = "Help:   " + appname + ".py -h \n"
 appauthor = "Filip Kriz"
 

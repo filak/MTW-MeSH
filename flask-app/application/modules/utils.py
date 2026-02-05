@@ -277,6 +277,10 @@ def getLocalConfValue(conf, fp=""):
         print("ERROR: " + error)
 
 
+def getSparqlEndpoint(sufix="query"):
+    return app.config["SPARQL_HOST"] + app.config["SPARQL_DATASET"] + "/" + sufix
+
+
 def refreshStats(stat, force=False):
     interval = None
     lpath = getLockFpath("stats")

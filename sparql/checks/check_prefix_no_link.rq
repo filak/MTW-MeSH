@@ -1,0 +1,17 @@
+### arq --query=check_prefix_no_link.rq --data=mtw-trx_2026-01-30.nt.gz > mtw-trx_2026-01-30__prefix_no_link.txt
+SELECT DISTINCT ?term
+WHERE {
+  {
+    ?term ?p ?o .
+    FILTER(isIRI(?term))
+    FILTER(STRSTARTS(STR(?term), "http://mesh.inserm.fr/"))
+    FILTER(!STRSTARTS(STR(?term), "http://mesh.inserm.fr/link/"))
+  }
+  UNION
+  {
+    ?s ?p ?term .
+    FILTER(isIRI(?term))
+    FILTER(STRSTARTS(STR(?term), "http://mesh.inserm.fr/"))
+    FILTER(!STRSTARTS(STR(?term), "http://mesh.inserm.fr/link/"))
+  }
+}

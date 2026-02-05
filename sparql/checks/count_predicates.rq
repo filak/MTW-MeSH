@@ -1,0 +1,7 @@
+### arq --query=count_predicates.rq --data=mesh.nt.gz > mesh.nt.gz_stats.txt
+SELECT ?p (COUNT(*) AS ?count)
+WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?p
+ORDER BY ?p

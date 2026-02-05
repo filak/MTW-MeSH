@@ -1142,14 +1142,18 @@ def getMarcFields(
     btd = {}
     btdx = []
     for d in item.get("btd", []):
-        des = descriptors.get(d)
-        if des.get("active", True) is True:
-            trx = des.get("trx")
-            if not trx:
-                trx = des.get("eng")
+        if d.startswith("Q"):
+            des = qualifiers.get(d)
+        else:
+            des = descriptors.get(d)
+        if des:
+            if des.get("active", True) is True:
+                trx = des.get("trx")
+                if not trx:
+                    trx = des.get("eng")
 
-            btd[trx] = d
-            btdx.append(trx)
+                btd[trx] = d
+                btdx.append(trx)
 
     for x in sorted(btdx, key=coll.sort_key):
         xtr = "$w" + fw + "g" + fw + "$a" + fw + x + fw + "$7" + fw + btd[x]
@@ -1158,14 +1162,18 @@ def getMarcFields(
     ntd = {}
     ntdx = []
     for d in item.get("ntd", []):
-        des = descriptors.get(d)
-        if des.get("active", True) is True:
-            trx = des.get("trx")
-            if not trx:
-                trx = des.get("eng")
+        if d.startswith("Q"):
+            des = qualifiers.get(d)
+        else:
+            des = descriptors.get(d)
+        if des:
+            if des.get("active", True) is True:
+                trx = des.get("trx")
+                if not trx:
+                    trx = des.get("eng")
 
-            ntd[trx] = d
-            ntdx.append(trx)
+                ntd[trx] = d
+                ntdx.append(trx)
 
     for x in sorted(ntdx, key=coll.sort_key):
         xtr = "$w" + fw + "h" + fw + "$a" + fw + x + fw + "$7" + fw + ntd[x]
@@ -1174,14 +1182,19 @@ def getMarcFields(
     rtd = {}
     rtdx = []
     for d in item.get("rtd", []):
-        des = descriptors.get(d)
-        if des.get("active", True) is True:
-            trx = des.get("trx")
-            if not trx:
-                trx = des.get("eng")
+        if d.startswith("Q"):
+            des = qualifiers.get(d)
+        else:
+            des = descriptors.get(d)
+        if des:
+            des = descriptors.get(d)
+            if des.get("active", True) is True:
+                trx = des.get("trx")
+                if not trx:
+                    trx = des.get("eng")
 
-            rtd[trx] = d
-            rtdx.append(trx)
+                rtd[trx] = d
+                rtdx.append(trx)
 
     for x in sorted(rtdx, key=coll.sort_key):
         xtr = (
@@ -1207,13 +1220,14 @@ def getMarcFields(
     pax = []
     for d in item.get("pa", []):
         des = descriptors.get(d)
-        if des.get("active", True) is True:
-            trx = des.get("trx")
-            if not trx:
-                trx = des.get("eng")
+        if des:
+            if des.get("active", True) is True:
+                trx = des.get("trx")
+                if not trx:
+                    trx = des.get("eng")
 
-            pa[trx] = d
-            pax.append(trx)
+                pa[trx] = d
+                pax.append(trx)
 
     for x in sorted(pax, key=coll.sort_key):
         xtr = (

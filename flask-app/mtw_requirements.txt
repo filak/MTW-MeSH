@@ -1,4 +1,4 @@
-### Version 1.7.5 ###
+### Version 1.7.6 ###
 ### Python 3.12 ###
 arrow==1.4.0
 bcrypt==5.0.0  ## NOT python-bcrypt !!!
@@ -23,7 +23,7 @@ rdflib==7.5.0
 requests==2.32.5
 requests_futures==1.0.2
 SPARQLWrapper==2.0.0
-tqdm==4.67.1
+tqdm==4.67.3
 urllib3==2.6.3
 waitress==3.0.2
 Werkzeug==3.1.5

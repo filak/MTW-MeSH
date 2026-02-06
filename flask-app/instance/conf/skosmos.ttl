@@ -1,0 +1,73 @@
+@prefix :      <http://base/#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tdb2:  <http://jena.apache.org/2016/tdb#> .
+@prefix text:  <http://jena.apache.org/text#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix fuseki: <http://jena.apache.org/fuseki#> .
+
+[] rdf:type fuseki:Server ;
+   fuseki:services (
+     :skosmos_service
+   )
+.
+
+:skosmos_service rdf:type fuseki:Service ;
+    rdfs:label                        "TDB2+text skosmos" ;
+    fuseki:name                       "skosmos" ;
+    fuseki:serviceQuery               "query" , "" , "sparql" ;
+    fuseki:serviceReadGraphStore      "get" ;
+    fuseki:serviceReadQuads           "" ;
+    fuseki:serviceReadWriteGraphStore "data" ;
+    fuseki:serviceReadWriteQuads      "" ;
+    fuseki:serviceUpdate              "" , "update" ;
+    fuseki:serviceUpload              "upload" ;
+    fuseki:dataset                    :text_dataset
+.
+
+:text_dataset rdf:type text:TextDataset ;
+    text:dataset    :tdb_dataset_readwrite ;
+    text:index      <#indexLucene>
+.
+
+:tdb_dataset_readwrite rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location               "d:/Data/jena5/databases/skosmos" ;
+    tdb2:unionDefaultGraph    true ;
+.
+
+<#indexLucene> rdf:type text:TextIndexLucene ;
+    text:directory "d:/Data/jena5/indexes/skosmos" ;
+    text:entityMap      <#entMap> ;
+    text:storeValues    true
+.
+
+# Text index configuration for Skosmos
+<#entMap> rdf:type text:EntityMap ;
+    text:defaultField     "pref" ;
+    text:entityField      "uri" ;
+    text:uidField         "uid" ;
+    text:langField        "lang" ;
+    text:graphField       "graph" ;
+    text:map (
+         # skos:prefLabel
+         [ text:field "pref" ;
+           text:predicate skos:prefLabel ;
+           text:analyzer [ rdf:type text:LowerCaseKeywordAnalyzer ]
+         ]
+         # skos:altLabel
+         [ text:field "alt" ;
+           text:predicate skos:altLabel ;
+           text:analyzer [ rdf:type text:LowerCaseKeywordAnalyzer ]
+         ]
+         # skos:hiddenLabel
+         [ text:field "hidden" ;
+           text:predicate skos:hiddenLabel ;
+           text:analyzer [ rdf:type text:LowerCaseKeywordAnalyzer ]
+         ]
+         # skos:notation
+         [ text:field "notation" ;
+           text:predicate skos:notation ;
+           text:analyzer [ rdf:type text:LowerCaseKeywordAnalyzer ]
+         ]
+     )
+.

@@ -8,7 +8,8 @@
 @prefix meshv:   <http://id.nlm.nih.gov/mesh/vocab#> .
 @prefix mesht:   <http://www.medvik.cz/schema/mesh/vocab/#> .
 
-### Version 1.5.0 for Jena v5
+### Version 1.5.0 for Apache Jena version 5
+### Updated: 2025-05-06
 
 ## Initialize text query
 [] ja:loadClass       "org.apache.jena.query.text.TextQuery" .
@@ -51,7 +52,8 @@ text:TextIndexES    rdfs:subClassOf   text:TextIndex .
            )
        ] ;
     ## text:queryAnalyzer [ a text:KeywordAnalyzer ] ;
-    text:queryParser text:AnalyzingQueryParser ;
+    ### Deprecated:
+    # text:queryParser text:AnalyzingQueryParser ;
     ## text:defineAnalyzers [ . . . ] ;
     text:multilingualSupport true ;
     ## https://jena.apache.org/documentation/query/text-query.html#lists-of-indexed-properties - available since Jena 5.0

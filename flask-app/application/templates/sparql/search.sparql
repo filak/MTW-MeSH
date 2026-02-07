@@ -136,7 +136,7 @@ WHERE {
     ?descriptor meshv:preferredConcept ?concept2 .
     ?concept2 mesht:preferredTerm ?pt2 .
     ?pt2 mesht:prefLabel ?label_cs .
-    FILTER(lang(?label_cs) = "cs")
+    FILTER(lang(?label_cs) = "{{ lang }}")
   }
 
   #################################################################

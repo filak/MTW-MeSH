@@ -27,11 +27,10 @@ def clear_cached(dui=None, cache=None):
 
 def show_elapsed(begin, tag=""):
 
-    # TURN OFF:
-    return
-
     elapsed = timer() - begin
-    print("    %.3f" % elapsed, tag)
+
+    if app.debug:
+        print("Elapsed:  %.3f" % elapsed, tag)
 
     return elapsed
 
@@ -94,14 +93,13 @@ def getSparqlData(
     if app.debug:
         print(sparql, "\n")
 
-    endpoint = app.config["SPARQL_HOST"] + app.config["SPARQL_DATASET"] + "/query"
+    endpoint = mtu.getSparqlEndpoint()
 
     if output in ["tsv", "csv", "json"]:
         endpoint += "?format=" + output
 
     headers = {"Content-Type": "application/sparql-query; charset=utf-8"}
-    # headers = {'Content-Type': 'application/sparql-query; charset=utf-8', 'Connection': 'close'}
-    # headers = {'Content-Type': 'application/sparql-query; charset=utf-8', 'Connection': 'keep-alive'}
+    # headers = {"Content-Type": "application/sparql-query; charset=utf-8", "Accept-Encoding": "gzip"}
 
     try:
         with closing(
@@ -206,12 +204,15 @@ def updateSparqlBatch(
     )
     # print(sparql)
 
-    endpoint = app.config["SPARQL_HOST"] + app.config["SPARQL_DATASET"] + "/update"
+    endpoint = mtu.getSparqlEndpoint(sufix="update")
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/sparql-update; charset=utf-8",
         "Connection": "close",
     }
+
+    # if app.debug:
+    #    print(sparql, "\n")
 
     try:
         with closing(
@@ -264,12 +265,15 @@ def updateTriple(
     )
     # pp.pprint(sparql)
 
-    endpoint = app.config["SPARQL_HOST"] + app.config["SPARQL_DATASET"] + "/update"
+    endpoint = mtu.getSparqlEndpoint(sufix="update")
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/sparql-update; charset=utf-8",
         "Connection": "close",
     }
+
+    if app.debug:
+        print(sparql, "\n")
 
     try:
         with closing(

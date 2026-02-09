@@ -95,7 +95,7 @@ def intro():
     stats_actual = {}
     show_stats = False
     worker = app.config["WORKER_HOST"]
-    endpoint = app.config["SPARQL_HOST"] + app.config["SPARQL_DATASET"] + "/query"
+    endpoint = mtu.getSparqlEndpoint()
 
     initial = mtu.getStatsFpath("initial")
     actual = mtu.getStatsFpath("actual")
@@ -1835,7 +1835,7 @@ def update_stats(stat):
     # fpath = mtu.getStatsFpath(stat)
     lpath = mtu.getLockFpath("stats")
     worker = app.config["WORKER_HOST"]
-    endpoint = app.config["SPARQL_HOST"] + app.config["SPARQL_DATASET"] + "/query"
+    endpoint = mtu.getSparqlEndpoint()
 
     force = False
     if request.args.get("force"):

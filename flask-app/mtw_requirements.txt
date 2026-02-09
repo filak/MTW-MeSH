@@ -1,4 +1,4 @@
-### Version 1.7.5 ###
+### Version 1.7.6 ###
 ### Python 3.12 ###
 arrow==1.4.0
 bcrypt==5.0.0  ## NOT python-bcrypt !!!
@@ -8,7 +8,6 @@ colorama==0.4.6
 diff_match_patch==20241021
 Flask==3.1.2
 Flask-Caching==2.3.1
-# Flask-Limiter==3.13  ## NOT used yet
 Flask-Paranoid==0.3.0
 Flask-SeaSurf==2.0.0
 Flask-Session==0.8.0
@@ -23,7 +22,7 @@ rdflib==7.5.0
 requests==2.32.5
 requests_futures==1.0.2
 SPARQLWrapper==2.0.0
-tqdm==4.67.1
+tqdm==4.67.3
 urllib3==2.6.3
 waitress==3.0.2
 Werkzeug==3.1.5

@@ -6,7 +6,6 @@ import logging
 from waitress import serve
 
 from application.main import create_app
-from application.logger import configure_log
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 55930
@@ -15,7 +14,7 @@ DEFAULT_CONFIG = "conf/mtw-dist.ini"
 DEFAULT_PREFIX = "mtw"
 
 appname = "mtw-server"
-appdesc = "MTW Server 1.7.5"
+appdesc = "MTW Server 1.7.7"
 appusage = "Help:  " + appname + " -h \n"
 appauthor = "Filip Kriz"
 
@@ -91,8 +90,6 @@ def start():
             "Server cannot be started - check the config / modify the args / check if the port is available"
         )
         return
-
-    configure_log(app, "mtw_server")
 
     if getattr(sys, "frozen", False):
         app.static_folder = os.path.join(os.path.dirname(sys.executable), "static")

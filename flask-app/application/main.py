@@ -146,8 +146,8 @@ def create_app(
             }
         )
 
-    app.logger.info(f"Server host: {app.config["SERVER_NAME"]}")
-    app.logger.info(f"Worker host: {app.config["WORKER_HOST"]}")
+    app.logger.info(f"Server host: {app.config['SERVER_NAME']}")
+    app.logger.info(f"Worker host: {app.config['WORKER_HOST']}")
 
     # Flask Extensions init
 

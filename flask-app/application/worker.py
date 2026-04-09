@@ -72,7 +72,7 @@ def create_app(
     app.config.update({"APP_HOST": app.config.get("SERVER_NAME")})
     app.config.update({"SERVER_NAME": None})
 
-    app.logger.info(f"Worker host: {app.config["WORKER_HOST"]}")
+    app.logger.info(f"Worker host: {app.config['WORKER_HOST']}")
 
     if relax:
         app.config.update({"APP_RELAXED": True})

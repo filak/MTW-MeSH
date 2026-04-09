@@ -66,8 +66,7 @@ def show_elapsed(begin, started=None, tag="", msg=False):
     if started:
         process = timer() - started
 
-    if app.debug:
-        print("%.3f" % elapsed, "%.3f" % process, tag)
+    app.logger.debug(f"{elapsed:.3f} {process:.3f} {tag}")
 
     if msg:
         return "%.3f" % elapsed + "s"
@@ -1489,8 +1488,7 @@ def search(dui, action):
             qtp=session.get("qtp"),
         )
         if data:
-            # if app.debug:
-            #    app.logger.error(json.dumps(data))
+            # app.logger.debug(json.dumps(data))
             started = timer()
             hits = sparql.parseSparqlData(data)
             # pp.pprint(hits)

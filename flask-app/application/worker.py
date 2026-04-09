@@ -26,9 +26,6 @@ def create_app(
     if debug is True or os.getenv("FLASK_DEBUG", None) == "1":
         app.debug = True
 
-    if app.debug:
-        print("MTW Config:  ", config_path, " - port: ", port)
-
     app.config.update(
         dict(
             APP_NAME="MTW Worker",
@@ -43,6 +40,8 @@ def create_app(
     app.app_context().push()
 
     configure_log(app, "mtw_worker")
+
+    app.logger.info(f"MTW Worker config: {config_path} - port: {port}")
 
     adminConfig = mtu.getConfig(app.config["admin_config_file"], admin=True)
 
@@ -73,8 +72,7 @@ def create_app(
     app.config.update({"APP_HOST": app.config.get("SERVER_NAME")})
     app.config.update({"SERVER_NAME": None})
 
-    if app.debug:
-        print("Worker host: ", app.config["WORKER_HOST"])
+    app.logger.info(f"Worker host: {app.config["WORKER_HOST"]}")
 
     if relax:
         app.config.update({"APP_RELAXED": True})

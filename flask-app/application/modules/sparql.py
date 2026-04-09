@@ -29,8 +29,7 @@ def show_elapsed(begin, tag=""):
 
     elapsed = timer() - begin
 
-    if app.debug:
-        print("Elapsed:  %.3f" % elapsed, tag)
+    app.logger.debug(f"Elapsed: {elapsed:.3f} {tag}")
 
     return elapsed
 
@@ -90,8 +89,7 @@ def getSparqlData(
         qtp=qtp,
     )
 
-    if app.debug:
-        print(sparql, "\n")
+    app.logger.debug(sparql)
 
     endpoint = mtu.getSparqlEndpoint()
 
@@ -211,8 +209,7 @@ def updateSparqlBatch(
         "Connection": "close",
     }
 
-    # if app.debug:
-    #    print(sparql, "\n")
+    # app.logger.debug(sparql)
 
     try:
         with closing(
@@ -272,8 +269,7 @@ def updateTriple(
         "Connection": "close",
     }
 
-    if app.debug:
-        print(sparql, "\n")
+    app.logger.debug(sparql)
 
     try:
         with closing(

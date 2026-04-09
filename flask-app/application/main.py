@@ -17,6 +17,7 @@ from application.modules.extensions import (
     sess,
 )  # limiter
 from application.modules import utils as mtu
+from application.logger import configure_log
 
 
 def create_app(
@@ -43,19 +44,14 @@ def create_app(
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
-    if debug and not app.debug:
-        app.debug = debug
-    elif os.getenv("FLASK_DEBUG", None):
+    if debug is True or os.getenv("FLASK_DEBUG", None) == "1":
         app.debug = True
-
-    if app.debug:
-        print("MTW Config:  ", config_path, " - port: ", port)
 
     app.config.update(
         dict(
             APPLICATION_ROOT=url_prefix,
             APP_NAME="MTW",
-            APP_VER="1.7.6",
+            APP_VER="1.7.7",
             API_VER="1.0.0",
             DBVERSION=1.0,
             CACHE_DIR=mtu.get_instance_dir(app, "cache"),
@@ -89,6 +85,10 @@ def create_app(
     )
 
     app.app_context().push()
+
+    configure_log(app, "mtw_server")
+
+    app.logger.info(f"MTW config: {config_path} - port: {port}")
 
     adminConfig = mtu.getConfig(app.config["admin_config_file"], admin=True)
     if not adminConfig:
@@ -146,9 +146,8 @@ def create_app(
             }
         )
 
-    if app.debug:
-        print("Server host: ", app.config["SERVER_NAME"])
-        print("Worker host: ", app.config["WORKER_HOST"])
+    app.logger.info(f"Server host: {app.config['SERVER_NAME']}")
+    app.logger.info(f"Worker host: {app.config['WORKER_HOST']}")
 
     # Flask Extensions init
 

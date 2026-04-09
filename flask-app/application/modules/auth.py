@@ -50,11 +50,10 @@ def public_api_only():
 
                     code, msg = validateRequest()
 
-                    if app.debug:
-                        print(code, msg)
+                    app.logger.debug(f"[check_public] {code} - {msg}")
 
                     if code != 200:
-                        app.logger.error(f"[check_public] {msg}")
+                        app.logger.error(f"[check_public] {code} - {msg}")
                         abort(403)
 
             return f(*args, **kwargs)

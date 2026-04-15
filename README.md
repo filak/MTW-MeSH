@@ -1,7 +1,7 @@
 # MTW-MeSH
 Medical Subject Headings Translation Workflow
 
-Please see the [Wiki](https://github.com/filak/MTW-MeSH/wiki) for details of this project.
+Please see the [Wiki](https://github.com/filak/MTW-MeSH/wiki) for all the details of this project.
 
 [![CodeQL](https://github.com/filak/MTW-MeSH/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/filak/MTW-MeSH/actions/workflows/codeql-analysis.yml)
 

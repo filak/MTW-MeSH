@@ -307,3 +307,102 @@ function get_statRep(status) {
     return sRep[status];
 };
 */
+
+var mtwStaticRoot = (function () {
+    var script = document.currentScript;
+    if (script && script.src) {
+        var src = script.src.split('?')[0];
+        var idx = src.lastIndexOf('/static/js/');
+        if (idx !== -1) {
+            return src.substring(0, idx + 8);
+        }
+        idx = src.lastIndexOf('/js/');
+        if (idx !== -1) {
+            return src.substring(0, idx + 1);
+        }
+    }
+    return '';
+})();
+
+var mtwChatPromptCache = null;
+
+function getDescriptorTargetLanguage() {
+    var $root = $('#descriptor').first();
+    if ($root.data('target-language')) {
+        return $root.data('target-language');
+    }
+    var $node = $('#descriptorTarget, .descriptor-target, #descriptor .badge, #descriptorTabs .badge').first();
+    return $node.text().trim();
+}
+
+function getDescriptorDetailHtml() {
+    var selectors = ['#descriptorDetail', '.descriptor-detail', '#descriptorDetails', '#descriptorTabs'];
+    for (var i = 0; i < selectors.length; i++) {
+        var $node = $(selectors[i]).first();
+        if ($node.length) {
+            var $wrapper = $('<div>').append($node.clone());
+            $wrapper.find('form, .modal, input, button, select, textarea, script').remove();
+            return $wrapper.html() || $node.html();
+        }
+    }
+    return '';
+}
+
+function fillDescriptorChatModal() {
+    var promptUrl = mtwStaticRoot + 'prompts/mtw_mesh_translation.txt';
+    var $detail = $('#chatDescriptorDetail');
+
+    if (mtwChatPromptCache === null) {
+        fetch(promptUrl)
+            .then(function (response) { return response.text(); })
+            .then(function (text) { mtwChatPromptCache = text; })
+            .catch(function () { mtwChatPromptCache = 'Prompt template is not available.'; });
+    }
+
+    var prompt = mtwChatPromptCache || 'Loading prompt...';
+    var lang = getDescriptorTargetLanguage();
+    if (lang && prompt) {
+        prompt = prompt.replace(/\{language\}/g, lang).replace(/\{target_language\}/g, lang);
+    }
+    $('#chatPrompt').text(prompt);
+    $detail.html(getDescriptorDetailHtml());
+}
+
+function copyDescriptorChatContent() {
+    var prompt = $('#chatPrompt').text() || '';
+    var detail = $('#chatDescriptorDetail').text() || '';
+    var content = prompt;
+    if (detail) {
+        content += '\n\n' + detail;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(content).catch(function () {
+            window.prompt('Copy from below', content);
+        });
+    } else {
+        window.prompt('Copy from below', content);
+    }
+}
+
+$(document).on('click', '#descriptorChatButton', function (e) {
+    e.preventDefault();
+    fillDescriptorChatModal();
+    $('#descriptorChatModal').modal('show');
+});
+
+$('#copyChatPromptTop, #copyChatPromptBottom').on('click', function () {
+    copyDescriptorChatContent();
+});
+
+$(document).ready(function () {
+    var $tabs = $('#descriptorTabs').first();
+    if ($tabs.length) {
+        var $toolbar = $('#descriptorToolbar').first();
+        if (!$toolbar.length) {
+            $toolbar = $('<div class="toolbar d-flex mb-2"></div>');
+            $tabs.before($toolbar);
+        }
+        var $button = $('<button type="button" class="btn btn-sm btn-outline-info ml-2" id="descriptorChatButton" title="Open LLM chat prompt with descriptor details"><i class="fas fa-comments"></i> Chat</button>');
+        $toolbar.append($button);
+    }
+});

@@ -1,0 +1,31 @@
+<div class="modal fade" id="descriptorChatModal" tabindex="-1" role="dialog" aria-labelledby="descriptorChatTitle" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="descriptorChatTitle">LLM Chat</h4>
+        <button type="button" class="btn btn-sm btn-secondary ml-3" id="copyChatPromptTop" title="Copy prompt and descriptor details">
+          <i class="fas fa-copy"></i> Copy
+        </button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="chatPrompt" class="font-weight-bold">Prompt</label>
+          <pre id="chatPrompt"></pre>
+        </div>
+        <div class="form-group">
+          <label for="chatDescriptorDetail" class="font-weight-bold">Descriptor detail view</label>
+          <div id="chatDescriptorDetail"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary ml-3" id="copyChatPromptBottom" title="Copy prompt and descriptor details">
+          <i class="fas fa-copy"></i> Copy
+        </button>
+        <button type="button" class="btn btn-link ml-3" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -4,19 +4,25 @@ on:
   push:
     branches: [ master ]
     paths-ignore:
+      - 'AGENTS.md'
       - 'README.md'
       - 'docs/**'
       - 'screenshots/**'
       - 'sparql/**'
-      - '.vscode/**'
+      - 'specs/**'
+      - '.codex/**'
+      - '.vscode/**'     
   pull_request:
     branches: [ master ]
     paths-ignore:
+      - 'AGENTS.md'
       - 'README.md'
       - 'docs/**'
       - 'screenshots/**'
-      - 'sparql/**'      
-      - '.vscode/**'
+      - 'sparql/**'
+      - 'specs/**'
+      - '.codex/**'
+      - '.vscode/**'   
 
 permissions:
   contents: read

@@ -10,7 +10,7 @@ import requests
 
 from contextlib import closing
 from timeit import default_timer as timer
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from flask import current_app as app
 
@@ -44,14 +44,49 @@ def close_db(error):
 
 
 def ref_redirect():
+    fallback = url_for("intro")
+    referrer = request.referrer
+
+    if not referrer:
+        return fallback
+
     try:
-        purl = urlparse(request.referrer)
-        new_url = purl.path
-        if purl.query:
-            new_url += "?" + purl.query
-        return new_url
-    except:  # noqa: E722
-        return url_for("intro")
+        purl = urlparse(referrer)
+        decoded_path = unquote(purl.path or "/")
+    except (TypeError, ValueError, UnicodeError):
+        return fallback
+
+    # Allow only HTTP(S) URLs.
+    if purl.scheme and purl.scheme not in {"http", "https"}:
+        return fallback
+
+    # Reject referrers from another host.
+    if purl.netloc and purl.netloc.lower() != request.host.lower():
+        return fallback
+
+    # Require a local absolute path.
+    if not decoded_path.startswith("/"):
+        return fallback
+
+    # Reject protocol-relative paths, including encoded variants.
+    if decoded_path.startswith("//"):
+        return fallback
+
+    # Some clients interpret backslashes as path separators.
+    if "\\" in decoded_path:
+        return fallback
+
+    # Reject control characters.
+    if any(ord(char) < 32 for char in decoded_path):
+        return fallback
+
+    # Return the original encoded path to preserve URL semantics.
+    new_url = purl.path or "/"
+
+    if purl.query:
+        new_url = f"{new_url}?{purl.query}"
+
+    return new_url
 
 
 def show_elapsed(begin, started=None, tag="", msg=False):

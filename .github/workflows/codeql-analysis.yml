@@ -4,19 +4,25 @@ on:
   push:
     branches: [ master ]
     paths-ignore:
+      - 'AGENTS.md'
       - 'README.md'
       - 'docs/**'
       - 'screenshots/**'
       - 'sparql/**'
-      - '.vscode/**'
+      - 'specs/**'
+      - '.codex/**'
+      - '.vscode/**'     
   pull_request:
     branches: [ master ]
     paths-ignore:
+      - 'AGENTS.md'
       - 'README.md'
       - 'docs/**'
       - 'screenshots/**'
-      - 'sparql/**'      
-      - '.vscode/**'
+      - 'sparql/**'
+      - 'specs/**'
+      - '.codex/**'
+      - '.vscode/**'   
 
 permissions:
   contents: read
@@ -30,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.12
       - name: Install dependencies
         run: |
           cd flask-app
